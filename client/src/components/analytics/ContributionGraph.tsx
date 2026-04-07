@@ -13,7 +13,7 @@ interface Props {
   to?: string;
 }
 
-const CELL = 14;
+const CELL = 16;
 const GAP = 3;
 const STEP = CELL + GAP;
 

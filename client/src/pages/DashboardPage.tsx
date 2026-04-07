@@ -7,7 +7,7 @@ import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { CostByModelChart } from "@/components/dashboard/CostByModelChart";
 import { CostBySourceChart } from "@/components/dashboard/CostBySourceChart";
 import { DailyCostChart } from "@/components/dashboard/DailyCostChart";
-import { PeriodTable } from "@/components/dashboard/PeriodTable";
+// PeriodTable removido — dados redundantes com SummaryCards
 import { DashboardFilters as DashboardFiltersBar } from "@/components/dashboard/DashboardFilters";
 import { BudgetAlert } from "@/components/dashboard/BudgetAlert";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -86,10 +86,6 @@ export function DashboardPage() {
     );
   }
 
-  const periodRows = [
-    { label: "Este periodo", cost_usd: s.total_cost_usd, tokens: Number(s.total_tokens), entries: s.entry_count },
-  ];
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -134,8 +130,6 @@ export function DashboardPage() {
       </div>
 
       <DailyCostChart data={c?.daily || []} />
-
-      <PeriodTable rows={periodRows} brlRate={brlRate} />
     </div>
   );
 }

@@ -135,7 +135,7 @@ export function ProjectDetailPage() {
     Promise.all(promises)
       .then(() => {
         toast.success(
-          `${selectedSessions.size} sessão(ões) adicionada(s) ao projeto`
+          `${selectedSessions.size} ${selectedSessions.size === 1 ? "sessão adicionada" : "sessões adicionadas"} ao projeto`
         );
         setAddDialogOpen(false);
         setSelectedSessions(new Set());
@@ -289,8 +289,7 @@ export function ProjectDetailPage() {
           <CardContent>
             <div className="text-2xl font-bold">{project.session_count}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              sessão{project.session_count !== 1 ? "ões" : ""} ativa
-              {project.session_count !== 1 ? "s" : ""}
+              {project.session_count === 1 ? "sessão ativa" : "sessões ativas"}
             </p>
           </CardContent>
         </Card>

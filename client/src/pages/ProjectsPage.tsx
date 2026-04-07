@@ -120,7 +120,7 @@ export function ProjectsPage() {
                 <div className="flex items-start justify-between">
                   <CardTitle className="text-lg">{project.name}</CardTitle>
                   <Badge variant="secondary">
-                    {project.session_count} sessão{project.session_count !== 1 ? "ões" : ""}
+                    {project.session_count} {project.session_count === 1 ? "sessão" : "sessões"}
                   </Badge>
                 </div>
                 {project.description && (
