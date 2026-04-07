@@ -43,14 +43,14 @@ export function MonthNarrative({
   const parts: string[] = [];
 
   if (cost > plan) {
-    parts.push(`Voce extraiu ${formatUSD(cost)} em valor API-equivalent este mes — ${pct}% do seu plano de ${formatUSD(plan)}.`);
+    parts.push(`Você extraiu ${formatUSD(cost)} em valor API-equivalent este mes — ${pct}% do seu plano de ${formatUSD(plan)}.`);
   } else if (cost > 0) {
-    parts.push(`Voce esta em ${formatUSD(cost)} este mes (${pct}% do plano de ${formatUSD(plan)}).`);
+    parts.push(`Você está em ${formatUSD(cost)} este mes (${pct}% do plano de ${formatUSD(plan)}).`);
   }
 
   if (topModelName) {
     const capitalized = topModelName.charAt(0).toUpperCase() + topModelName.slice(1);
-    parts.push(`${capitalized} e seu modelo principal (${topModelPct}% do custo).`);
+    parts.push(`${capitalized} é seu modelo principal (${topModelPct}% do custo).`);
   }
 
   if (topSource && bySource.length > 1) {
@@ -61,7 +61,7 @@ export function MonthNarrative({
     parts.push(`Dia mais intenso: ${busiestDayLabel} (${formatUSD(busiestDay.cost_usd)}).`);
   }
 
-  parts.push(`${sessionCount} sessoes e ${entryCount} chamadas no periodo.`);
+  parts.push(`${sessionCount} sessões e ${entryCount} chamadas no período.`);
 
   if (parts.length <= 1) return null;
 

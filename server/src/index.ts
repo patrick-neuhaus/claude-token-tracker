@@ -16,7 +16,10 @@ const { pool } = await import("./config/database.js");
 await pool.query(`
   ALTER TABLE user_settings
     ADD COLUMN IF NOT EXISTS daily_budget_usd NUMERIC(10,4),
-    ADD COLUMN IF NOT EXISTS session_budget_usd NUMERIC(10,4)
+    ADD COLUMN IF NOT EXISTS session_budget_usd NUMERIC(10,4),
+    ADD COLUMN IF NOT EXISTS plan_start_date DATE,
+    ADD COLUMN IF NOT EXISTS weekly_reset_dow INT DEFAULT 2,
+    ADD COLUMN IF NOT EXISTS weekly_reset_hour INT DEFAULT 15
 `);
 
 // Mount API routes
