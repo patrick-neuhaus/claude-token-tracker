@@ -27,7 +27,7 @@ const PERIOD_PRESETS = [
 
 export function DashboardFilters({ filters, onChange }: Props) {
   const { data: projectsData } = useProjects();
-  const projects = (projectsData as any)?.projects ?? [];
+  const projects = projectsData || [];
 
   const hasActiveFilters = !!(filters.model || filters.source || filters.project_id);
 
@@ -80,7 +80,7 @@ export function DashboardFilters({ filters, onChange }: Props) {
             className="w-36"
           >
             <option value="">Todos os projetos</option>
-            {projects.map((p: any) => (
+            {projects.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </NativeSelect>

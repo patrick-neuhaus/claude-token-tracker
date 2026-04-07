@@ -12,6 +12,7 @@ interface Project {
   total_output: number;
   session_count: number;
   last_activity: string | null;
+  sparkline?: Array<{ day: string; cost: number }>;
 }
 
 interface ProjectDetail extends Project {

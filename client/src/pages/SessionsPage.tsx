@@ -26,9 +26,7 @@ export function SessionsPage() {
     to: dateRange.to,
   });
   const { data: projectsData } = useProjects();
-  const projects = (projectsData as any)?.projects ?? [];
-
-  const d = data as any;
+  const projects = projectsData || [];
 
   function handleSort(col: string) {
     setFilters((f) => ({
@@ -80,7 +78,7 @@ export function SessionsPage() {
             className="w-44"
           >
             <option value="">Todos os projetos</option>
-            {projects.map((p: any) => (
+            {projects.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </NativeSelect>
@@ -100,15 +98,15 @@ export function SessionsPage() {
 
       {isLoading ? (
         <p className="text-muted-foreground">Carregando...</p>
-      ) : d?.sessions?.length > 0 ? (
+      ) : data?.sessions?.length ? (
         <>
           <SessionsTable
-            sessions={d.sessions}
+            sessions={data!.sessions}
             sortBy={filters.sort_by}
             sortDir={filters.sort_dir}
             onSort={handleSort}
           />
-          <Pagination page={filters.page} pages={d.pages} onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))} />
+          <Pagination page={filters.page} pages={data!.pages} onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))} />
         </>
       ) : (
         <EmptyState message="Nenhuma sessão encontrada." />

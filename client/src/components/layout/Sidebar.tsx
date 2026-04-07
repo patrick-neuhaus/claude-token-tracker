@@ -26,7 +26,7 @@ function PlanCountdown() {
   const { user } = useAuth();
   const { data } = usePlanStatus();
   const planCost = Number(user?.plan_cost_usd) || 200;
-  const totalCost = Number((data as any)?.total_cost_usd) || 0;
+  const totalCost = Number(data?.total_cost_usd) || 0;
   const diff = totalCost - planCost;
   const above = diff >= 0;
 

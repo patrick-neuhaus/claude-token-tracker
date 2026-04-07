@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import type { DashboardSummary, DashboardCharts } from "@/lib/types";
 
 export interface DashboardFilters {
   period?: string;
@@ -22,14 +23,14 @@ function buildParams(filters: DashboardFilters): string {
 }
 
 export function useSummary(filters: DashboardFilters) {
-  return useQuery({
+  return useQuery<DashboardSummary>({
     queryKey: ["dashboard", "summary", filters],
     queryFn: () => api.get(`/dashboard/summary?${buildParams(filters)}`),
   });
 }
 
 export function useCharts(filters: DashboardFilters) {
-  return useQuery({
+  return useQuery<DashboardCharts>({
     queryKey: ["dashboard", "charts", filters],
     queryFn: () => api.get(`/dashboard/charts?${buildParams(filters)}`),
   });

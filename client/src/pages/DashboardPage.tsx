@@ -47,8 +47,8 @@ export function DashboardPage() {
   const { data: summary, isLoading: loadingSummary, isError: errorSummary, refetch: refetchSummary } = useSummary(filters);
   const { data: charts, isLoading: loadingCharts, isError: errorCharts, refetch: refetchCharts } = useCharts(filters);
 
-  const s = summary as any;
-  const c = charts as any;
+  const s = summary;
+  const c = charts;
 
   if (loadingSummary || loadingCharts) {
     return <DashboardSkeleton />;
