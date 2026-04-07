@@ -173,7 +173,7 @@ function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: str
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="day" tickFormatter={fmtDay} tick={{ fontSize: 11 }} />
                   <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-                  <Tooltip formatter={(v: any) => formatUSD(v)} labelFormatter={(v) => fmtDay(String(v))} />
+                  <Tooltip formatter={(v: any) => formatUSD(v)} labelFormatter={(v) => fmtDay(String(v))} contentStyle={{ background: "#1c1c2e", border: "1px solid #2e2e44", borderRadius: 8, color: "#e2e2e2" }} labelStyle={{ color: "#a0a0b8" }} itemStyle={{ color: "#e2e2e2" }} />
                   <Legend />
                   {projectNamesInComparison.map((name, i) => (
                     <Line key={name} type="monotone" dataKey={name} stroke={COLORS[i % COLORS.length]} dot={false} strokeWidth={2} connectNulls />
@@ -409,7 +409,7 @@ export function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="day" tickFormatter={fmtDay} tick={{ fontSize: 11 }} />
                 <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-                <Tooltip formatter={(v: any) => formatUSD(v)} labelFormatter={(v) => fmtDay(String(v))} />
+                <Tooltip formatter={(v: any) => formatUSD(v)} labelFormatter={(v) => fmtDay(String(v))} contentStyle={{ background: "#1c1c2e", border: "1px solid #2e2e44", borderRadius: 8, color: "#e2e2e2" }} labelStyle={{ color: "#a0a0b8" }} itemStyle={{ color: "#e2e2e2" }} />
                 <Legend />
                 {projectNames.map((name, i) => (
                   <Line key={name} type="monotone" dataKey={name} stroke={COLORS[i % COLORS.length]} dot={false} strokeWidth={2} connectNulls />
@@ -437,7 +437,7 @@ export function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="week" tick={{ fontSize: 11 }} />
                 <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-                <Tooltip formatter={(v: any) => formatUSD(v)} />
+                <Tooltip formatter={(v: any) => formatUSD(v)} contentStyle={{ background: "#1c1c2e", border: "1px solid #2e2e44", borderRadius: 8, color: "#e2e2e2" }} labelStyle={{ color: "#a0a0b8" }} itemStyle={{ color: "#e2e2e2" }} />
                 <Legend />
                 {modelNames.map((name, i) => (
                   <Area key={name} type="monotone" dataKey={name} stroke={COLORS[i % COLORS.length]} fill={COLORS[i % COLORS.length]} fillOpacity={0.15} strokeWidth={2} stackId="1" connectNulls />
@@ -469,7 +469,7 @@ export function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
                 <XAxis type="number" tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} />
                 <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v: any) => formatUSD(v)} />
+                <Tooltip formatter={(v: any) => formatUSD(v)} contentStyle={{ background: "#1c1c2e", border: "1px solid #2e2e44", borderRadius: 8, color: "#e2e2e2" }} labelStyle={{ color: "#a0a0b8" }} itemStyle={{ color: "#e2e2e2" }} />
                 <Bar dataKey="cost" radius={[0, 4, 4, 0]}>
                   {top_sessions.map((_: any, i: number) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
@@ -481,17 +481,15 @@ export function AnalyticsPage() {
         </CardContent>
       </Card>
 
-      {/* Contribution Graph (Wave 3A) */}
-      {daily_cost?.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Atividade por Dia</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ContributionGraph data={daily_cost} from={dateRange.from} to={dateRange.to} />
-          </CardContent>
-        </Card>
-      )}
+      {/* Contribution Graph (Wave 3A) — sempre mostra */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Atividade por Dia</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ContributionGraph data={daily_cost || []} from={dateRange.from} to={dateRange.to} />
+        </CardContent>
+      </Card>
 
       {/* Conquistas */}
       <Achievements />

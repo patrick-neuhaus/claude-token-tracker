@@ -1,4 +1,4 @@
-import { format, eachWeekOfInterval, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
+import { format, eachWeekOfInterval, startOfWeek, endOfWeek } from "date-fns";
 
 interface DayData {
   day: string; // "2024-03-15"
@@ -15,9 +15,6 @@ const MONTH_LABELS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "S
 const DOW_LABELS = ["", "Seg", "", "Qua", "", "Sex", ""];
 
 export function ContributionGraph({ data, from, to }: Props) {
-  if (!data.length && !from && !to) return null;
-
-  // Determina range
   const now = new Date();
   const dataMap: Record<string, number> = {};
   let maxCost = 0;
@@ -27,28 +24,23 @@ export function ContributionGraph({ data, from, to }: Props) {
     if (dataMap[key] > maxCost) maxCost = dataMap[key];
   }
 
-  if (maxCost === 0) return null;
-
-  // Calcula min/max dos dados reais para range do gráfico
-  const allDays = Object.keys(dataMap).sort();
-  if (!allDays.length) return null;
-
-  const startDate = from ? new Date(from) : new Date(allDays[0]);
+  // Sempre mostra pelo menos 90 dias — não esconde se poucos dados
+  const startDate = from
+    ? new Date(from)
+    : new Date(now.getTime() - 90 * 86400000);
   const endDate = to ? new Date(to) : now;
 
-  // Garante que startDate começa no domingo da semana
   const startSunday = startOfWeek(startDate, { weekStartsOn: 0 });
   const endSaturday = endOfWeek(endDate, { weekStartsOn: 0 });
 
-  // Gera lista de semanas
   const weeks = eachWeekOfInterval({ start: startSunday, end: endSaturday }, { weekStartsOn: 0 });
 
   function getAlpha(cost: number) {
-    if (cost === 0) return 0.06;
+    if (cost === 0 || maxCost === 0) return 0.06;
     return 0.15 + (cost / maxCost) * 0.85;
   }
 
-  // Detecta onde mudam os meses para labels
+  // Labels de mês
   const monthLabelWeeks: { idx: number; label: string }[] = [];
   let lastMonth = -1;
   weeks.forEach((weekStart, idx) => {
@@ -58,6 +50,9 @@ export function ContributionGraph({ data, from, to }: Props) {
       lastMonth = m;
     }
   });
+
+  // Contagem de dias ativos
+  const activeDays = Object.keys(dataMap).filter((k) => dataMap[k] > 0).length;
 
   return (
     <div className="overflow-x-auto">
@@ -97,18 +92,18 @@ export function ContributionGraph({ data, from, to }: Props) {
                 {days.map((day, dayIdx) => {
                   const key = format(day, "yyyy-MM-dd");
                   const cost = dataMap[key] || 0;
-                  const alpha = cost > 0 ? getAlpha(cost) : 0.06;
-                  const isInRange = isWithinInterval(day, { start: startDate, end: endDate });
+                  const alpha = getAlpha(cost);
+                  const inRange = day >= startDate && day <= endDate;
 
                   return (
                     <div
                       key={dayIdx}
-                      title={cost > 0 ? `${key}: $${cost.toFixed(4)}` : key}
+                      title={cost > 0 ? `${key}: $${cost.toFixed(2)}` : key}
                       className="rounded-sm"
                       style={{
                         width: 13,
                         height: 13,
-                        background: isInRange
+                        background: inRange
                           ? `rgba(99,102,241,${alpha.toFixed(2)})`
                           : "transparent",
                       }}
@@ -127,7 +122,10 @@ export function ContributionGraph({ data, from, to }: Props) {
             <div key={o} className="rounded-sm" style={{ width: 12, height: 12, background: `rgba(99,102,241,${o})` }} />
           ))}
           <span className="text-xs text-muted-foreground">Mais</span>
-          <span className="text-xs text-muted-foreground ml-2">· máx: ${maxCost.toFixed(2)}/dia</span>
+          {maxCost > 0 && (
+            <span className="text-xs text-muted-foreground ml-2">· máx: ${maxCost.toFixed(2)}/dia</span>
+          )}
+          <span className="text-xs text-muted-foreground ml-2">· {activeDays} dias ativos</span>
         </div>
       </div>
     </div>
