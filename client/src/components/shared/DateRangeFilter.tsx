@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MS_PER_DAY } from "@/lib/constants";
 
 export interface DateRange {
   from?: string;
@@ -29,8 +30,8 @@ export function presetToRange(preset: string): { from?: string; to?: string } {
     const from = new Date(now); from.setHours(0, 0, 0, 0);
     return { from: from.toISOString(), to };
   }
-  if (preset === "7d") return { from: new Date(now.getTime() - 7 * 86400000).toISOString(), to };
-  if (preset === "30d") return { from: new Date(now.getTime() - 30 * 86400000).toISOString(), to };
+  if (preset === "7d") return { from: new Date(now.getTime() - 7 * MS_PER_DAY).toISOString(), to };
+  if (preset === "30d") return { from: new Date(now.getTime() - 30 * MS_PER_DAY).toISOString(), to };
   if (preset === "month") {
     const from = new Date(now.getFullYear(), now.getMonth(), 1);
     return { from: from.toISOString(), to };

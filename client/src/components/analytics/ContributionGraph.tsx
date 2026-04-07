@@ -1,7 +1,8 @@
 import { format, eachWeekOfInterval, startOfWeek, endOfWeek } from "date-fns";
+import { MONTH_LABELS, DOW_LABELS_SPARSE, MS_PER_DAY } from "@/lib/constants";
 
 interface DayData {
-  day: string; // "2024-03-15"
+  day: string;
   cost: number;
 }
 
@@ -10,9 +11,6 @@ interface Props {
   from?: string;
   to?: string;
 }
-
-const MONTH_LABELS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-const DOW_LABELS = ["", "Seg", "", "Qua", "", "Sex", ""];
 
 export function ContributionGraph({ data, from, to }: Props) {
   const now = new Date();
@@ -27,7 +25,7 @@ export function ContributionGraph({ data, from, to }: Props) {
   // Sempre mostra pelo menos 90 dias — não esconde se poucos dados
   const startDate = from
     ? new Date(from)
-    : new Date(now.getTime() - 90 * 86400000);
+    : new Date(now.getTime() - 90 * MS_PER_DAY);
   const endDate = to ? new Date(to) : now;
 
   const startSunday = startOfWeek(startDate, { weekStartsOn: 0 });
@@ -72,7 +70,7 @@ export function ContributionGraph({ data, from, to }: Props) {
         <div className="flex gap-0">
           {/* Labels de dia da semana */}
           <div className="flex flex-col gap-0.5 mr-1 pt-0.5">
-            {DOW_LABELS.map((label, i) => (
+            {DOW_LABELS_SPARSE.map((label, i) => (
               <div key={i} className="text-xs text-muted-foreground text-right" style={{ height: 13, lineHeight: "13px" }}>
                 {label}
               </div>

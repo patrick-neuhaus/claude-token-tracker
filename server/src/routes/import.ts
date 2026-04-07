@@ -1,7 +1,7 @@
 import { Router, json } from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { insertTokenEntry } from "../services/tokenService.js";
-import type { AuthRequest } from "../types/index.js";
+import { getUserId } from "../utils/routeHelpers.js";
 
 const router = Router();
 
@@ -46,8 +46,7 @@ function parseCostUsd(raw: string): number {
 }
 
 router.post("/", async (req, res) => {
-  const authReq = req as AuthRequest;
-  const userId = authReq.user!.userId;
+  const userId = getUserId(req);
   const csvText: string = req.body.csv_text;
 
   if (!csvText || typeof csvText !== "string") {

@@ -2,6 +2,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recha
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SOURCE_COLORS } from "@/lib/constants";
 import { formatUSD } from "@/lib/formatters";
+import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 
 interface SourceData {
   source: string;
@@ -33,7 +34,7 @@ export function CostBySourceChart({ data }: Props) {
                 `${formatUSD(Number(value))} (${total > 0 ? ((Number(value) / total) * 100).toFixed(1) : 0}%)`,
                 "Custo",
               ]}
-              contentStyle={{ background: "#1f1f23", border: "1px solid #333" }}
+              {...TOOLTIP_PROPS}
             />
             <Legend />
           </PieChart>

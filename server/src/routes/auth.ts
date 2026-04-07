@@ -74,8 +74,8 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/me", authMiddleware, async (req, res) => {
-  const authReq = req as AuthRequest;
-  const user = await getMe(authReq.user!.userId);
+  const { getUserId } = await import("../utils/routeHelpers.js");
+  const user = await getMe(getUserId(req));
   if (!user) {
     res.status(404).json({ status: "error", message: "User not found" });
     return;

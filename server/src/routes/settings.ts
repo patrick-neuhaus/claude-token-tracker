@@ -1,15 +1,14 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { getSettings, updateSettings } from "../services/settingsService.js";
-import type { AuthRequest } from "../types/index.js";
+import { getUserId } from "../utils/routeHelpers.js";
 
 const router = Router();
 
 router.use(authMiddleware);
 
 router.get("/", async (req, res) => {
-  const authReq = req as AuthRequest;
-  const settings = await getSettings(authReq.user!.userId);
+  const settings = await getSettings(getUserId(req));
   if (!settings) {
     res.status(404).json({ status: "error", message: "Settings not found" });
     return;
@@ -18,7 +17,6 @@ router.get("/", async (req, res) => {
 });
 
 router.patch("/", async (req, res) => {
-  const authReq = req as AuthRequest;
   const { brl_rate, plan_cost_usd } = req.body;
 
   const updates: Record<string, number> = {};
@@ -39,7 +37,7 @@ router.patch("/", async (req, res) => {
     updates.plan_cost_usd = n;
   }
 
-  const result = await updateSettings(authReq.user!.userId, updates);
+  const result = await updateSettings(getUserId(req), updates);
   if (!result) {
     res.status(400).json({ status: "error", message: "No fields to update" });
     return;

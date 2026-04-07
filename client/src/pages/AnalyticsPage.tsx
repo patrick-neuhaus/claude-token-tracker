@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { formatUSD, formatTokens, formatNumber, formatShortDate, formatFullDate } from "@/lib/formatters";
 import { useProjects } from "@/hooks/useProjects";
-import { formatUSD, formatTokens, formatNumber } from "@/lib/formatters";
-import { format, parseISO } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -13,25 +14,9 @@ import { TrendingUp, TrendingDown, Minus, BarChart2, Clock, Flame, Trophy, Zap }
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { ContributionGraph } from "@/components/analytics/ContributionGraph";
 import { Achievements } from "@/components/analytics/Achievements";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { format as fmtDate, parseISO as parseISODate } from "date-fns";
-
-// Cores hardcoded — funcionam em dark/light mode sem depender de CSS variables oklch
-const COLORS = [
-  "#6366f1", // indigo
-  "#f59e0b", // amber
-  "#10b981", // emerald
-  "#ef4444", // red
-  "#8b5cf6", // violet
-  "#06b6d4", // cyan
-  "#f97316", // orange
-  "#84cc16", // lime
-  "#ec4899", // pink
-  "#14b8a6", // teal
-];
-
-const DOW_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+import { CHART_COLORS, DOW_LABELS_FULL } from "@/lib/constants";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 
 function delta(current: number, last: number) {
   if (last === 0) return null;
@@ -51,22 +36,12 @@ function DeltaBadge({ current, last }: { current: number; last: number }) {
   );
 }
 
+// EmptyChart usa EmptyState compartilhado
 function EmptyChart({ message }: { message: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center h-40 gap-2 text-muted-foreground">
-      <BarChart2 className="h-8 w-8 opacity-30" />
-      <p className="text-sm">{message}</p>
-    </div>
-  );
+  return <EmptyState icon={BarChart2} message={message} className="h-40 py-0" />;
 }
 
-function fmtDay(v: string) {
-  try { return format(parseISO(v), "dd/MM"); } catch { return v.slice(5, 10); }
-}
 
-function fmtFullDate(iso: string) {
-  try { return fmtDate(parseISODate(iso), "dd/MM/yyyy"); } catch { return iso.slice(0, 10); }
-}
 
 // Componente de comparação de projetos
 function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: string } }) {
@@ -153,7 +128,7 @@ function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: str
                   {(cd.summary || []).map((row: any, i: number) => (
                     <tr key={row.project_id} className="border-b last:border-0">
                       <td className="p-3 flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: COLORS[i % COLORS.length] }} />
+                        <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
                         {row.project}
                       </td>
                       <td className="p-3 text-right font-medium tabular-nums">{formatUSD(row.total_cost_usd)}</td>
@@ -171,12 +146,12 @@ function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: str
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={dailyData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="day" tickFormatter={fmtDay} tick={{ fontSize: 11 }} />
+                  <XAxis dataKey="day" tickFormatter={formatShortDate} tick={{ fontSize: 11 }} />
                   <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-                  <Tooltip formatter={(v: any) => formatUSD(v)} labelFormatter={(v) => fmtDay(String(v))} contentStyle={{ background: "#1c1c2e", border: "1px solid #2e2e44", borderRadius: 8, color: "#e2e2e2" }} labelStyle={{ color: "#a0a0b8" }} itemStyle={{ color: "#e2e2e2" }} />
+                  <Tooltip formatter={(v: any) => formatUSD(v)} labelFormatter={(v) => formatShortDate(String(v))} {...TOOLTIP_PROPS} />
                   <Legend />
                   {projectNamesInComparison.map((name, i) => (
-                    <Line key={name} type="monotone" dataKey={name} stroke={COLORS[i % COLORS.length]} dot={false} strokeWidth={2} connectNulls />
+                    <Line key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} dot={false} strokeWidth={2} connectNulls />
                   ))}
                 </LineChart>
               </ResponsiveContainer>
@@ -236,7 +211,7 @@ export function AnalyticsPage() {
   const modelTrendData = Object.entries(weekMap)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([week, costs]) => ({
-      week: fmtDay(week),
+      week: formatShortDate(week),
       ...costs,
     }));
 
@@ -326,7 +301,7 @@ export function AnalyticsPage() {
             <CardContent>
               <div className="text-2xl font-bold tabular-nums">{formatUSD(streaks.most_expensive_day_cost ?? 0)}</div>
               <div className="text-xs text-muted-foreground mt-1">
-                {streaks.most_expensive_day ? fmtFullDate(streaks.most_expensive_day) : "—"}
+                {streaks.most_expensive_day ? formatFullDate(streaks.most_expensive_day) : "—"}
               </div>
             </CardContent>
           </Card>
@@ -407,12 +382,12 @@ export function AnalyticsPage() {
             <ResponsiveContainer width="100%" height={260}>
               <LineChart data={projectTrendData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="day" tickFormatter={fmtDay} tick={{ fontSize: 11 }} />
+                <XAxis dataKey="day" tickFormatter={formatShortDate} tick={{ fontSize: 11 }} />
                 <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-                <Tooltip formatter={(v: any) => formatUSD(v)} labelFormatter={(v) => fmtDay(String(v))} contentStyle={{ background: "#1c1c2e", border: "1px solid #2e2e44", borderRadius: 8, color: "#e2e2e2" }} labelStyle={{ color: "#a0a0b8" }} itemStyle={{ color: "#e2e2e2" }} />
+                <Tooltip formatter={(v: any) => formatUSD(v)} labelFormatter={(v) => formatShortDate(String(v))} {...TOOLTIP_PROPS} />
                 <Legend />
                 {projectNames.map((name, i) => (
-                  <Line key={name} type="monotone" dataKey={name} stroke={COLORS[i % COLORS.length]} dot={false} strokeWidth={2} connectNulls />
+                  <Line key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} dot={false} strokeWidth={2} connectNulls />
                 ))}
               </LineChart>
             </ResponsiveContainer>
@@ -437,10 +412,10 @@ export function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="week" tick={{ fontSize: 11 }} />
                 <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-                <Tooltip formatter={(v: any) => formatUSD(v)} contentStyle={{ background: "#1c1c2e", border: "1px solid #2e2e44", borderRadius: 8, color: "#e2e2e2" }} labelStyle={{ color: "#a0a0b8" }} itemStyle={{ color: "#e2e2e2" }} />
+                <Tooltip formatter={(v: any) => formatUSD(v)} {...TOOLTIP_PROPS} />
                 <Legend />
                 {modelNames.map((name, i) => (
-                  <Area key={name} type="monotone" dataKey={name} stroke={COLORS[i % COLORS.length]} fill={COLORS[i % COLORS.length]} fillOpacity={0.15} strokeWidth={2} stackId="1" connectNulls />
+                  <Area key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} fill={CHART_COLORS[i % CHART_COLORS.length]} fillOpacity={0.15} strokeWidth={2} stackId="1" connectNulls />
                 ))}
               </AreaChart>
             </ResponsiveContainer>
@@ -469,10 +444,10 @@ export function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
                 <XAxis type="number" tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} />
                 <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v: any) => formatUSD(v)} contentStyle={{ background: "#1c1c2e", border: "1px solid #2e2e44", borderRadius: 8, color: "#e2e2e2" }} labelStyle={{ color: "#a0a0b8" }} itemStyle={{ color: "#e2e2e2" }} />
+                <Tooltip formatter={(v: any) => formatUSD(v)} {...TOOLTIP_PROPS} />
                 <Bar dataKey="cost" radius={[0, 4, 4, 0]}>
                   {top_sessions.map((_: any, i: number) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                   ))}
                 </Bar>
               </BarChart>
@@ -512,7 +487,7 @@ export function AnalyticsPage() {
                     </div>
                   ))}
                 </div>
-                {DOW_LABELS.map((day, dow) => (
+                {DOW_LABELS_FULL.map((day, dow) => (
                   <div key={dow} className="flex items-center gap-1 mb-1">
                     <div className="w-8 text-right text-xs text-muted-foreground pr-2">{day}</div>
                     {Array.from({ length: 24 }, (_, hour) => {

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { query } from "../config/database.js";
-import type { AuthRequest } from "../types/index.js";
+import { getUserId, getDateRange } from "../utils/routeHelpers.js";
 
 const router = Router();
 
@@ -11,7 +11,7 @@ const ALLOWED_SORT = ["last_seen", "first_seen", "total_cost_usd", "entry_count"
 type SortCol = typeof ALLOWED_SORT[number];
 
 router.get("/", async (req, res) => {
-  const authReq = req as AuthRequest;
+  const userId = getUserId(req);
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = 50;
   const offset = (page - 1) * limit;
@@ -20,11 +20,10 @@ router.get("/", async (req, res) => {
   const sortBy: SortCol = ALLOWED_SORT.includes(rawSort as SortCol) ? (rawSort as SortCol) : "last_seen";
   const sortDir = req.query.sort_dir === "asc" ? "ASC" : "DESC";
   const projectId = req.query.project_id as string | undefined;
-  const from = req.query.from as string | undefined;
-  const to = req.query.to as string | undefined;
+  const { from, to } = getDateRange(req);
 
   let where = "WHERE s.user_id = $1";
-  const params: any[] = [authReq.user!.userId];
+  const params: any[] = [userId];
 
   if (search) {
     where += ` AND (s.custom_name ILIKE $${params.length + 1} OR s.session_id ILIKE $${params.length + 1})`;
@@ -67,7 +66,6 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:id/entries", async (req, res) => {
-  const authReq = req as AuthRequest;
   const result = await query(
     `SELECT id, timestamp, source, model, input_tokens, output_tokens,
             cache_read, cache_write, total_tokens, cost_usd::float, conversation_url
@@ -76,13 +74,12 @@ router.get("/:id/entries", async (req, res) => {
        SELECT session_id FROM sessions WHERE id = $2 AND user_id = $1
      )
      ORDER BY timestamp DESC`,
-    [authReq.user!.userId, req.params.id]
+    [getUserId(req), req.params.id]
   );
   res.json(result.rows);
 });
 
 router.patch("/:id", async (req, res) => {
-  const authReq = req as AuthRequest;
   const { custom_name } = req.body;
   if (typeof custom_name !== "string") {
     res.status(400).json({ status: "error", message: "custom_name required" });
@@ -93,7 +90,7 @@ router.patch("/:id", async (req, res) => {
     `UPDATE sessions SET custom_name = $3
      WHERE id = $1 AND user_id = $2
      RETURNING id, session_id, custom_name`,
-    [req.params.id, authReq.user!.userId, custom_name]
+    [req.params.id, getUserId(req), custom_name]
   );
 
   if (result.rows.length === 0) {

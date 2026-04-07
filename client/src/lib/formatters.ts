@@ -40,3 +40,11 @@ export function formatNumber(n: number | string): string {
 export function formatPercent(value: number | string): string {
   return `${Number(value).toFixed(1)}%`;
 }
+
+export function formatShortDate(iso: string): string {
+  try { return format(parseISO(iso), "dd/MM"); } catch { return iso.slice(5, 10); }
+}
+
+export function formatFullDate(iso: string): string {
+  try { return format(parseISO(iso), "dd/MM/yyyy"); } catch { return iso.slice(0, 10); }
+}

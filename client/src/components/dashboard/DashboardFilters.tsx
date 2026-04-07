@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useProjects } from "@/hooks/useProjects";
 import type { DashboardFilters } from "@/hooks/useDashboard";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
+import { NativeSelect } from "@/components/shared/NativeSelect";
 
 interface Props {
   filters: DashboardFilters;
@@ -61,28 +62,28 @@ export function DashboardFilters({ filters, onChange }: Props) {
         />
 
         {/* Fonte */}
-        <select
+        <NativeSelect
           value={filters.source || ""}
           onChange={(e) => onChange({ ...filters, source: e.target.value || undefined })}
-          className="h-8 w-36 rounded-md border border-input bg-background px-2 text-sm text-foreground"
+          className="w-36"
         >
           {SOURCE_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
-        </select>
+        </NativeSelect>
 
         {/* Projeto */}
         {projects.length > 0 && (
-          <select
+          <NativeSelect
             value={filters.project_id || ""}
             onChange={(e) => onChange({ ...filters, project_id: e.target.value || undefined })}
-            className="h-8 w-36 rounded-md border border-input bg-background px-2 text-sm text-foreground"
+            className="w-36"
           >
             <option value="">Todos os projetos</option>
             {projects.map((p: any) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
-          </select>
+          </NativeSelect>
         )}
 
         {/* Limpar filtros extras */}

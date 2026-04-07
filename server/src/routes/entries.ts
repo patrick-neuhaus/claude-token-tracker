@@ -1,20 +1,20 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { query } from "../config/database.js";
-import type { AuthRequest } from "../types/index.js";
+import { getUserId } from "../utils/routeHelpers.js";
 
 const router = Router();
 
 router.use(authMiddleware);
 
 router.get("/", async (req, res) => {
-  const authReq = req as AuthRequest;
+  const userId = getUserId(req);
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = 50;
   const offset = (page - 1) * limit;
 
   const conditions: string[] = ["e.user_id = $1"];
-  const params: any[] = [authReq.user!.userId];
+  const params: any[] = [userId];
   let idx = 2;
 
   if (req.query.model) {
@@ -61,10 +61,8 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/export", async (req, res) => {
-  const authReq = req as AuthRequest;
-
   const conditions: string[] = ["e.user_id = $1"];
-  const params: any[] = [authReq.user!.userId];
+  const params: any[] = [getUserId(req)];
   let idx = 2;
 
   if (req.query.model) { conditions.push(`e.model ILIKE $${idx++}`); params.push(`%${req.query.model}%`); }
