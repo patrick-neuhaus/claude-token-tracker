@@ -64,9 +64,29 @@ function computeBadges(data: any): Badge[] {
       progress: cost >= 100 ? undefined : `$${cost.toFixed(0)}/$100`, tier: "bronze",
     },
     {
-      id: "cost-1000", icon: "💰", label: "Milionário em Tokens",
+      id: "cost-1000", icon: "💰", label: "Mil Dólares",
       description: "Gastou $1.000 em tokens", unlocked: cost >= 1000,
-      progress: cost >= 1000 ? undefined : `$${cost.toFixed(0)}/$1000`, tier: "gold",
+      progress: cost >= 1000 ? undefined : `$${cost.toFixed(0)}/$1000`, tier: "silver",
+    },
+    {
+      id: "cost-5000", icon: "🤑", label: "Investidor Pesado",
+      description: "Gastou $5.000 em tokens", unlocked: cost >= 5000,
+      progress: cost >= 5000 ? undefined : `$${cost.toFixed(0)}/$5000`, tier: "gold",
+    },
+    {
+      id: "cost-10000", icon: "👑", label: "Rei do Token",
+      description: "Gastou $10.000 em tokens", unlocked: cost >= 10000,
+      progress: cost >= 10000 ? undefined : `$${cost.toFixed(0)}/$10000`, tier: "gold",
+    },
+    {
+      id: "cost-25000", icon: "🏦", label: "Banco Central",
+      description: "Gastou $25.000 em tokens", unlocked: cost >= 25000,
+      progress: cost >= 25000 ? undefined : `$${cost.toFixed(0)}/$25000`, tier: "diamond",
+    },
+    {
+      id: "cost-50000", icon: "🚀", label: "To the Moon",
+      description: "Gastou $50.000 em tokens", unlocked: cost >= 50000,
+      progress: cost >= 50000 ? undefined : `$${cost.toFixed(0)}/$50000`, tier: "diamond",
     },
     // Sessions
     {
@@ -89,6 +109,21 @@ function computeBadges(data: any): Badge[] {
       id: "days-30", icon: "🗓️", label: "Mês Completo",
       description: "30 dias ativos", unlocked: activeDays >= 30,
       progress: activeDays >= 30 ? undefined : `${activeDays}/30`, tier: "silver",
+    },
+    {
+      id: "days-90", icon: "🏅", label: "Trimestre de Fogo",
+      description: "90 dias ativos", unlocked: activeDays >= 90,
+      progress: activeDays >= 90 ? undefined : `${activeDays}/90`, tier: "gold",
+    },
+    {
+      id: "days-180", icon: "⭐", label: "Meio Ano",
+      description: "180 dias ativos", unlocked: activeDays >= 180,
+      progress: activeDays >= 180 ? undefined : `${activeDays}/180`, tier: "gold",
+    },
+    {
+      id: "days-365", icon: "🎖️", label: "Veterano",
+      description: "365 dias ativos", unlocked: activeDays >= 365,
+      progress: activeDays >= 365 ? undefined : `${activeDays}/365`, tier: "diamond",
     },
     // Cache
     {
@@ -124,6 +159,16 @@ function computeBadges(data: any): Badge[] {
       description: "Sessão custando $100+", unlocked: maxSessionCost >= 100,
       progress: maxSessionCost >= 100 ? undefined : `$${maxSessionCost.toFixed(0)}/$100`, tier: "gold",
     },
+    {
+      id: "megalodon", icon: "🦈", label: "Megalodon",
+      description: "Sessão custando $500+", unlocked: maxSessionCost >= 500,
+      progress: maxSessionCost >= 500 ? undefined : `$${maxSessionCost.toFixed(0)}/$500`, tier: "diamond",
+    },
+    {
+      id: "ultra-marathon", icon: "🏋️", label: "Ultra Maratonista",
+      description: "Sessão com 1.000+ calls", unlocked: maxSessionEntries >= 1000,
+      progress: maxSessionEntries >= 1000 ? undefined : `${maxSessionEntries}/1000`, tier: "diamond",
+    },
     // Tokens
     {
       id: "tokens-1m", icon: "🔢", label: "1M Tokens",
@@ -138,6 +183,21 @@ function computeBadges(data: any): Badge[] {
     {
       id: "tokens-1b", icon: "🌌", label: "1B Tokens",
       description: "Processou 1 bilhão de tokens", unlocked: tokens >= 1_000_000_000,
+      tier: "gold",
+    },
+    {
+      id: "tokens-10b", icon: "🪐", label: "10B Tokens",
+      description: "Processou 10 bilhões de tokens", unlocked: tokens >= 10_000_000_000,
+      tier: "diamond",
+    },
+    {
+      id: "tokens-100b", icon: "🌟", label: "100B Tokens",
+      description: "Processou 100 bilhões de tokens", unlocked: tokens >= 100_000_000_000,
+      tier: "diamond",
+    },
+    {
+      id: "tokens-1t", icon: "🔮", label: "1 Trilhão",
+      description: "Processou 1 trilhão de tokens — lenda viva", unlocked: tokens >= 1_000_000_000_000,
       tier: "diamond",
     },
   ];
