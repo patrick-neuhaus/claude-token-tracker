@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
+import { NativeSelect } from "@/components/shared/NativeSelect";
+import { Pagination } from "@/components/shared/Pagination";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 export function SessionsPage() {
   const [filters, setFilters] = useState<SessionFilters>({
@@ -71,16 +74,16 @@ export function SessionsPage() {
 
       <div className="flex items-center gap-2 flex-wrap">
         {projects.length > 0 && (
-          <select
+          <NativeSelect
             value={filters.project_id || ""}
             onChange={(e) => setFilters((f) => ({ ...f, project_id: e.target.value || undefined, page: 1 }))}
-            className="h-8 w-44 rounded-md border border-input bg-background px-2 text-sm text-foreground"
+            className="w-44"
           >
             <option value="">Todos os projetos</option>
             {projects.map((p: any) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
-          </select>
+          </NativeSelect>
         )}
         {hasActiveFilters && (
           <Button
@@ -105,22 +108,10 @@ export function SessionsPage() {
             sortDir={filters.sort_dir}
             onSort={handleSort}
           />
-          {d.pages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-4">
-              <Button variant="outline" size="sm" disabled={filters.page <= 1} onClick={() => setFilters((f) => ({ ...f, page: f.page - 1 }))}>
-                Anterior
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                {filters.page} / {d.pages}
-              </span>
-              <Button variant="outline" size="sm" disabled={filters.page >= d.pages} onClick={() => setFilters((f) => ({ ...f, page: f.page + 1 }))}>
-                Próxima
-              </Button>
-            </div>
-          )}
+          <Pagination page={filters.page} pages={d.pages} onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))} />
         </>
       ) : (
-        <p className="text-center py-10 text-muted-foreground">Nenhuma sessão encontrada.</p>
+        <EmptyState message="Nenhuma sessão encontrada." />
       )}
     </div>
   );

@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Download } from "lucide-react";
+import { NativeSelect } from "@/components/shared/NativeSelect";
+import { Pagination } from "@/components/shared/Pagination";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 async function downloadCsv(params: URLSearchParams) {
   const token = localStorage.getItem("token");
@@ -54,22 +57,22 @@ export function EntriesPage() {
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Fonte</Label>
-          <select
+          <NativeSelect
+            sizing="default"
             value={source}
             onChange={(e) => { setSource(e.target.value); setPage(1); }}
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
           >
             <option value="">Todas</option>
             <option value="claude-code">claude-code</option>
             <option value="claude.ai">claude.ai</option>
-          </select>
+          </NativeSelect>
         </div>
         <div className="space-y-1">
           <Label className="text-xs">De</Label>
           <Input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(1); }} className="w-40" />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs">Ate</Label>
+          <Label className="text-xs">Até</Label>
           <Input type="date" value={to} onChange={(e) => { setTo(e.target.value); setPage(1); }} className="w-40" />
         </div>
         <Button variant="outline" size="sm" onClick={clearFilters}>
@@ -100,22 +103,10 @@ export function EntriesPage() {
           <div className="overflow-x-auto">
             <EntriesTable entries={d.entries} />
           </div>
-          {d.pages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-4">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-                Anterior
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                {page} / {d.pages} ({d.total} total)
-              </span>
-              <Button variant="outline" size="sm" disabled={page >= d.pages} onClick={() => setPage(page + 1)}>
-                Proxima
-              </Button>
-            </div>
-          )}
+          <Pagination page={page} pages={d.pages} onPageChange={setPage} />
         </>
       ) : (
-        <p className="text-center py-10 text-muted-foreground">Nenhuma entrada encontrada.</p>
+        <EmptyState message="Nenhuma entrada encontrada." />
       )}
     </div>
   );

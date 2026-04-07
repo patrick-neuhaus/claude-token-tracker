@@ -1,53 +1,10 @@
 import { query } from "../config/database.js";
 
-interface PeriodRange {
-  start: string;
-  end: string;
-}
-
 export interface DashboardFilters {
-  period?: PeriodRange;
+  period?: { start: string; end: string };
   model?: string;
   source?: string;
   project_id?: string;
-}
-
-export function parsePeriod(
-  period: string | undefined,
-  from?: string,
-  to?: string
-): PeriodRange {
-  // from/to custom têm prioridade sobre preset
-  if (from || to) {
-    const now = new Date();
-    return {
-      start: from || "1970-01-01T00:00:00.000Z",
-      end: to || now.toISOString(),
-    };
-  }
-
-  const now = new Date();
-  const end = now.toISOString();
-
-  if (period === "today") {
-    const start = new Date(now);
-    start.setHours(0, 0, 0, 0);
-    return { start: start.toISOString(), end };
-  }
-  if (period === "7d") {
-    const start = new Date(now.getTime() - 7 * 86400000);
-    return { start: start.toISOString(), end };
-  }
-  if (period === "month") {
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    return { start: start.toISOString(), end };
-  }
-  if (period === "all") {
-    return { start: "1970-01-01T00:00:00.000Z", end };
-  }
-  // Default: 30d
-  const start = new Date(now.getTime() - 30 * 86400000);
-  return { start: start.toISOString(), end };
 }
 
 function buildFilters(userId: string, filters: DashboardFilters): { where: string; params: unknown[] } {

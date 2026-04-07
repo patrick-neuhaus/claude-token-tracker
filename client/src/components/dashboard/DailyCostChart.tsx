@@ -1,8 +1,8 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { normalizeModelFamily, MODEL_COLORS } from "@/lib/constants";
-import { formatUSD } from "@/lib/formatters";
-import { parseISO, format } from "date-fns";
+import { formatUSD, formatShortDate } from "@/lib/formatters";
+import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 
 interface DailyData {
   day: string;
@@ -27,7 +27,7 @@ export function DailyCostChart({ data }: Props) {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([day, models]) => {
       const total = Object.values(models).reduce((s, v) => s + v, 0);
-      const label = (() => { try { return format(parseISO(day), "dd/MM"); } catch { return day.slice(5, 10); } })();
+      const label = formatShortDate(day);
       return { day: label, ...models, total };
     });
 
@@ -46,7 +46,7 @@ export function DailyCostChart({ data }: Props) {
             <YAxis tick={{ fontSize: 12, fill: "#999" }} tickFormatter={(v) => `$${v}`} />
             <Tooltip
               formatter={(value, name) => [formatUSD(Number(value)), String(name)]}
-              contentStyle={{ background: "#1f1f23", border: "1px solid #333" }}
+              {...TOOLTIP_PROPS}
             />
             {families.map((f) => (
               <Area

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useUpdateSettings } from "@/hooks/useSettings";
 import { toast } from "sonner";
 import { Bell, CalendarClock } from "lucide-react";
+import { NativeSelect } from "@/components/shared/NativeSelect";
 
 const DOW_OPTIONS = [
   { value: 0, label: "Domingo" },
@@ -96,15 +97,16 @@ export function SettingsForm({
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Reset semanal — dia</Label>
-                  <select
+                  <NativeSelect
+                    sizing="default"
                     value={resetDow}
                     onChange={(e) => setResetDow(parseInt(e.target.value))}
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                    className="w-full"
                   >
                     {DOW_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
-                  </select>
+                  </NativeSelect>
                 </div>
                 <div className="space-y-2">
                   <Label>Reset semanal — hora (BRT)</Label>

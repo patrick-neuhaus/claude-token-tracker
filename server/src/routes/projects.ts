@@ -5,7 +5,7 @@ import {
   getProjects, getProjectDetail, createProject, updateProject, deleteProject,
   assignSession, unassignSession, getUnassignedSessions,
 } from "../services/projectService.js";
-import type { AuthRequest } from "../types/index.js";
+import { getUserId, getDateRange } from "../utils/routeHelpers.js";
 
 const router = Router();
 router.use(authMiddleware);
@@ -16,22 +16,18 @@ const createSchema = z.object({
 });
 
 router.get("/", async (req, res) => {
-  const authReq = req as AuthRequest;
-  const projects = await getProjects(authReq.user!.userId);
+  const projects = await getProjects(getUserId(req));
   res.json(projects);
 });
 
 router.get("/unassigned-sessions", async (req, res) => {
-  const authReq = req as AuthRequest;
-  const sessions = await getUnassignedSessions(authReq.user!.userId);
+  const sessions = await getUnassignedSessions(getUserId(req));
   res.json(sessions);
 });
 
 router.get("/:id", async (req, res) => {
-  const authReq = req as AuthRequest;
-  const from = req.query.from as string | undefined;
-  const to = req.query.to as string | undefined;
-  const project = await getProjectDetail(authReq.user!.userId, req.params.id, from, to);
+  const { from, to } = getDateRange(req);
+  const project = await getProjectDetail(getUserId(req), req.params.id, from, to);
   if (!project) {
     res.status(404).json({ status: "error", message: "Project not found" });
     return;
@@ -45,14 +41,12 @@ router.post("/", async (req, res) => {
     res.status(400).json({ status: "error", message: parsed.error.issues[0].message });
     return;
   }
-  const authReq = req as AuthRequest;
-  const project = await createProject(authReq.user!.userId, parsed.data.name, parsed.data.description);
+  const project = await createProject(getUserId(req), parsed.data.name, parsed.data.description);
   res.status(201).json(project);
 });
 
 router.patch("/:id", async (req, res) => {
-  const authReq = req as AuthRequest;
-  const result = await updateProject(authReq.user!.userId, req.params.id, req.body);
+  const result = await updateProject(getUserId(req), req.params.id, req.body);
   if (!result) {
     res.status(404).json({ status: "error", message: "Project not found" });
     return;
@@ -61,8 +55,7 @@ router.patch("/:id", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
-  const authReq = req as AuthRequest;
-  const deleted = await deleteProject(authReq.user!.userId, req.params.id);
+  const deleted = await deleteProject(getUserId(req), req.params.id);
   if (!deleted) {
     res.status(404).json({ status: "error", message: "Project not found" });
     return;
@@ -71,8 +64,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 router.post("/:id/sessions/:sessionId", async (req, res) => {
-  const authReq = req as AuthRequest;
-  const result = await assignSession(authReq.user!.userId, req.params.sessionId, req.params.id);
+  const result = await assignSession(getUserId(req), req.params.sessionId, req.params.id);
   if (!result) {
     res.status(404).json({ status: "error", message: "Session not found" });
     return;
@@ -81,8 +73,7 @@ router.post("/:id/sessions/:sessionId", async (req, res) => {
 });
 
 router.delete("/:id/sessions/:sessionId", async (req, res) => {
-  const authReq = req as AuthRequest;
-  const result = await unassignSession(authReq.user!.userId, req.params.sessionId);
+  const result = await unassignSession(getUserId(req), req.params.sessionId);
   if (!result) {
     res.status(404).json({ status: "error", message: "Session not found" });
     return;

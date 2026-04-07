@@ -1,4 +1,5 @@
 import { query } from "../config/database.js";
+import { MS_PER_DAY } from "../utils/routeHelpers.js";
 
 export async function getAnalytics(userId: string, from?: string, to?: string) {
   const now = new Date();
@@ -6,8 +7,8 @@ export async function getAnalytics(userId: string, from?: string, to?: string) {
   const endTs = to || now.toISOString();
 
   // Para project_trend e model_trend: usa from/to se fornecido, senão padrão 60d/12w
-  const projectStart = from || new Date(now.getTime() - 60 * 86400000).toISOString();
-  const modelStart = from || new Date(now.getTime() - 12 * 7 * 86400000).toISOString();
+  const projectStart = from || new Date(now.getTime() - 60 * MS_PER_DAY).toISOString();
+  const modelStart = from || new Date(now.getTime() - 12 * 7 * MS_PER_DAY).toISOString();
 
   const [projectTrend, modelTrend, sessionDist, periodComparison, heatmap, dataRange, hourlyData, dailyCostData, streaksData] = await Promise.all([
     // 1. Custo por projeto ao longo do tempo
@@ -187,7 +188,7 @@ export async function getProjectComparison(userId: string, projectIds: string[],
   if (!projectIds.length) return [];
 
   const now = new Date();
-  const startTs = from || new Date(now.getTime() - 30 * 86400000).toISOString();
+  const startTs = from || new Date(now.getTime() - 30 * MS_PER_DAY).toISOString();
   const endTs = to || now.toISOString();
 
   // Garante que os IDs são UUIDs válidos (segurança)
