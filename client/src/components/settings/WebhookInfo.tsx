@@ -25,7 +25,7 @@ export function WebhookInfo({ webhookToken }: Props) {
   -H "X-Webhook-Token: ${webhookToken}" \\
   -d '{
     "source": "claude.ai",
-    "model": "claude-opus-4-5",
+    "model": "claude-opus-4-6",
     "input_tokens": 1500,
     "output_tokens": 800,
     "cache_read_tokens": 0,
@@ -180,21 +180,21 @@ export function WebhookInfo({ webhookToken }: Props) {
             </TableHeader>
             <TableBody>
               <TableRow>
-                <TableCell className="font-medium">claude-opus-4-5</TableCell>
+                <TableCell className="font-medium">claude-opus-4-6</TableCell>
                 <TableCell className="text-right">$15.00</TableCell>
                 <TableCell className="text-right">$75.00</TableCell>
                 <TableCell className="text-right">$1.50</TableCell>
                 <TableCell className="text-right">$18.75</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="font-medium">claude-sonnet-4-5</TableCell>
+                <TableCell className="font-medium">claude-sonnet-4-6</TableCell>
                 <TableCell className="text-right">$3.00</TableCell>
                 <TableCell className="text-right">$15.00</TableCell>
                 <TableCell className="text-right">$0.30</TableCell>
                 <TableCell className="text-right">$3.75</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="font-medium">claude-haiku-3-5</TableCell>
+                <TableCell className="font-medium">claude-haiku-4-5</TableCell>
                 <TableCell className="text-right">$0.80</TableCell>
                 <TableCell className="text-right">$4.00</TableCell>
                 <TableCell className="text-right">$0.08</TableCell>

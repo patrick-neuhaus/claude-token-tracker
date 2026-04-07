@@ -91,6 +91,16 @@ export function DashboardPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Dashboard</h1>
       </div>
+      <SummaryCards
+        totalCostUsd={s.total_cost_usd}
+        totalTokens={Number(s.total_tokens)}
+        entryCount={s.entry_count}
+        sessionCount={s.session_count}
+        brlRate={brlRate}
+        totalCacheRead={Number(s.total_cache_read)}
+        totalInput={Number(s.total_input)}
+      />
+
       <DashboardFiltersBar filters={filters} onChange={setFilters} />
 
       <BudgetAlert todayCostUsd={s?.today_cost_usd ?? 0} dailyBudgetUsd={dailyBudget} />
@@ -112,16 +122,6 @@ export function DashboardPage() {
         weeklyResetDow={user?.weekly_reset_dow ?? 2}
         weeklyResetHour={user?.weekly_reset_hour ?? 15}
         planStartDate={user?.plan_start_date}
-      />
-
-      <SummaryCards
-        totalCostUsd={s.total_cost_usd}
-        totalTokens={Number(s.total_tokens)}
-        entryCount={s.entry_count}
-        sessionCount={s.session_count}
-        brlRate={brlRate}
-        totalCacheRead={Number(s.total_cache_read)}
-        totalInput={Number(s.total_input)}
       />
 
       <div className="grid grid-cols-2 gap-4">
