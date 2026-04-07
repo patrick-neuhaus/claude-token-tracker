@@ -15,6 +15,7 @@ import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { ContributionGraph } from "@/components/analytics/ContributionGraph";
 import { Achievements } from "@/components/analytics/Achievements";
 import { CHART_COLORS, DOW_LABELS_FULL } from "@/lib/constants";
+import type { ProjectComparisonData, AnalyticsData } from "@/lib/types";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 
@@ -46,7 +47,7 @@ function EmptyChart({ message }: { message: string }) {
 // Componente de comparação de projetos
 function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: string } }) {
   const { data: projectsData } = useProjects();
-  const projects = (projectsData as any)?.projects ?? [];
+  const projects = projectsData || [];
   const [selected, setSelected] = useState<string[]>([]);
 
   const qs = new URLSearchParams();
@@ -60,7 +61,7 @@ function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: str
     enabled: selected.length >= 2,
   });
 
-  const cd = compareData as any;
+  const cd = compareData as ProjectComparisonData | undefined;
 
   // pivot daily por projeto
   const dailyMap: Record<string, Record<string, number>> = {};
@@ -72,7 +73,7 @@ function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: str
   const dailyData = Object.entries(dailyMap)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([day, costs]) => ({ day, ...costs }));
-  const projectNamesInComparison = [...new Set<string>((cd?.daily || []).map((r: any) => r.project))];
+  const projectNamesInComparison = [...new Set<string>((cd?.daily || []).map((r) => r.project))];
 
   function toggleProject(id: string) {
     setSelected((prev) =>
@@ -91,7 +92,7 @@ function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: str
       <CardContent className="space-y-4">
         {/* Seleção */}
         <div className="flex flex-wrap gap-2">
-          {projects.map((p: any) => (
+          {projects.map((p) => (
             <button
               key={p.id}
               onClick={() => toggleProject(p.id)}
@@ -125,7 +126,7 @@ function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: str
                   </tr>
                 </thead>
                 <tbody>
-                  {(cd.summary || []).map((row: any, i: number) => (
+                  {(cd.summary || []).map((row, i) => (
                     <tr key={row.project_id} className="border-b last:border-0">
                       <td className="p-3 flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
@@ -148,7 +149,7 @@ function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: str
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="day" tickFormatter={formatShortDate} tick={{ fontSize: 11 }} />
                   <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-                  <Tooltip formatter={(v: any) => formatUSD(v)} labelFormatter={(v) => formatShortDate(String(v))} {...TOOLTIP_PROPS} />
+                  <Tooltip formatter={(v) => formatUSD(Number(v))} labelFormatter={(v) => formatShortDate(String(v))} {...TOOLTIP_PROPS} />
                   <Legend />
                   {projectNamesInComparison.map((name, i) => (
                     <Line key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} dot={false} strokeWidth={2} connectNulls />
@@ -178,8 +179,8 @@ export function AnalyticsPage() {
     );
   }
 
-  const d = data as any;
-  if (!d) return null;
+  if (!data) return null;
+  const d = data as AnalyticsData;
 
   const { project_trend, model_trend, top_sessions, period_comparison, heatmap, data_range, hourly, streaks, daily_cost } = d;
 
@@ -189,9 +190,12 @@ export function AnalyticsPage() {
     : "Padrão de Uso";
 
   // --- 1. Project Trend: pivot por projeto ---
-  const projectNames = [...new Set<string>((project_trend || []).map((r: any) => r.project))];
+  type PT = AnalyticsData["project_trend"][number];
+  type MT = AnalyticsData["model_trend"][number];
+  type HM = AnalyticsData["heatmap"][number];
+  const projectNames = [...new Set<string>(project_trend.map((r: PT) => r.project))];
   const dayMap: Record<string, Record<string, number>> = {};
-  for (const row of (project_trend || [])) {
+  for (const row of project_trend) {
     const day = row.day.slice(0, 10);
     if (!dayMap[day]) dayMap[day] = {};
     dayMap[day][row.project] = (dayMap[day][row.project] || 0) + row.cost_usd;
@@ -201,9 +205,9 @@ export function AnalyticsPage() {
     .map(([day, costs]) => ({ day, ...costs }));
 
   // --- 2. Model Trend: pivot por modelo ---
-  const modelNames = [...new Set<string>((model_trend || []).map((r: any) => r.model))];
+  const modelNames = [...new Set<string>(model_trend.map((r: MT) => r.model))];
   const weekMap: Record<string, Record<string, number>> = {};
-  for (const row of (model_trend || [])) {
+  for (const row of model_trend) {
     const week = row.week.slice(0, 10);
     if (!weekMap[week]) weekMap[week] = {};
     weekMap[week][row.model] = (weekMap[week][row.model] || 0) + row.cost_usd;
@@ -216,9 +220,9 @@ export function AnalyticsPage() {
     }));
 
   // --- Heatmap: matrix 7×24 ---
-  const heatmapMax = Math.max(...(heatmap || []).map((r: any) => r.entries), 1);
+  const heatmapMax = Math.max(...heatmap.map((r: HM) => r.entries), 1);
   const heatmapMatrix: Record<string, number> = {};
-  for (const row of (heatmap || [])) {
+  for (const row of heatmap) {
     heatmapMatrix[`${row.dow}-${row.hour}`] = row.entries;
   }
 
@@ -384,7 +388,7 @@ export function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="day" tickFormatter={formatShortDate} tick={{ fontSize: 11 }} />
                 <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-                <Tooltip formatter={(v: any) => formatUSD(v)} labelFormatter={(v) => formatShortDate(String(v))} {...TOOLTIP_PROPS} />
+                <Tooltip formatter={(v) => formatUSD(Number(v))} labelFormatter={(v) => formatShortDate(String(v))} {...TOOLTIP_PROPS} />
                 <Legend />
                 {projectNames.map((name, i) => (
                   <Line key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} dot={false} strokeWidth={2} connectNulls />
@@ -412,7 +416,7 @@ export function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="week" tick={{ fontSize: 11 }} />
                 <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-                <Tooltip formatter={(v: any) => formatUSD(v)} {...TOOLTIP_PROPS} />
+                <Tooltip formatter={(v) => formatUSD(Number(v))} {...TOOLTIP_PROPS} />
                 <Legend />
                 {modelNames.map((name, i) => (
                   <Area key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} fill={CHART_COLORS[i % CHART_COLORS.length]} fillOpacity={0.15} strokeWidth={2} stackId="1" connectNulls />
@@ -434,7 +438,7 @@ export function AnalyticsPage() {
           ) : (
             <ResponsiveContainer width="100%" height={Math.max(180, top_sessions.length * 28)}>
               <BarChart
-                data={top_sessions.map((s: any) => ({
+                data={top_sessions.map((s: typeof top_sessions[number]) => ({
                   name: s.custom_name || s.session_id.slice(0, 12) + "…",
                   cost: s.total_cost_usd,
                 }))}
@@ -442,11 +446,11 @@ export function AnalyticsPage() {
                 margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-                <XAxis type="number" tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} />
+                <XAxis type="number" tickFormatter={(v: number) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} />
                 <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v: any) => formatUSD(v)} {...TOOLTIP_PROPS} />
+                <Tooltip formatter={(v) => formatUSD(Number(v))} {...TOOLTIP_PROPS} />
                 <Bar dataKey="cost" radius={[0, 4, 4, 0]}>
-                  {top_sessions.map((_: any, i: number) => (
+                  {top_sessions.map((_: unknown, i: number) => (
                     <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                   ))}
                 </Bar>

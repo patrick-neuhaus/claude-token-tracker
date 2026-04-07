@@ -31,7 +31,7 @@ export function EntriesPage() {
   const [to, setTo] = useState("");
 
   const { data, isLoading } = useEntries({ page, model, source, from, to });
-  const d = data as any;
+  const d = data;
 
   function clearFilters() {
     setModel("");
@@ -98,12 +98,12 @@ export function EntriesPage() {
 
       {isLoading ? (
         <p className="text-muted-foreground">Carregando...</p>
-      ) : d?.entries?.length > 0 ? (
+      ) : d?.entries?.length ? (
         <>
           <div className="overflow-x-auto">
-            <EntriesTable entries={d.entries} />
+            <EntriesTable entries={d!.entries} />
           </div>
-          <Pagination page={page} pages={d.pages} onPageChange={setPage} />
+          <Pagination page={page} pages={d!.pages} onPageChange={setPage} />
         </>
       ) : (
         <EmptyState message="Nenhuma entrada encontrada." />

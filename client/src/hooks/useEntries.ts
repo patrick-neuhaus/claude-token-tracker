@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import type { EntryListResponse } from "@/lib/types";
 
 interface EntryFilters {
   page: number;
@@ -17,7 +18,7 @@ export function useEntries(filters: EntryFilters) {
   if (filters.from) params.set("from", filters.from);
   if (filters.to) params.set("to", filters.to);
 
-  return useQuery({
+  return useQuery<EntryListResponse>({
     queryKey: ["entries", filters],
     queryFn: () => api.get(`/entries?${params.toString()}`),
   });

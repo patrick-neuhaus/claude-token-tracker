@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import type { SessionListResponse } from "@/lib/types";
 
 export interface SessionFilters {
   page: number;
@@ -12,7 +13,7 @@ export interface SessionFilters {
 }
 
 export function useSessions(filters: SessionFilters) {
-  return useQuery({
+  return useQuery<SessionListResponse>({
     queryKey: ["sessions", filters],
     queryFn: () => {
       const params = new URLSearchParams();

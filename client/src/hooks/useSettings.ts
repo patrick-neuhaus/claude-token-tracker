@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import type { AdminUser } from "@/lib/types";
 
 export function useSettings() {
   return useQuery({
@@ -24,7 +25,7 @@ export function useUpdateSettings() {
 }
 
 export function useAdminUsers() {
-  return useQuery({
+  return useQuery<AdminUser[]>({
     queryKey: ["admin-users"],
     queryFn: () => api.get("/admin/users"),
   });

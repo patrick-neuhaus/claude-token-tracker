@@ -10,7 +10,7 @@ export function AdminPage() {
       {isLoading ? (
         <p className="text-muted-foreground">Carregando...</p>
       ) : (
-        <UserManagement users={(data as any[]) || []} />
+        <UserManagement users={data || []} />
       )}
     </div>
   );

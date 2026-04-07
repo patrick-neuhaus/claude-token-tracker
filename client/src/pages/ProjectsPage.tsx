@@ -63,7 +63,7 @@ export function ProjectsPage() {
     return <p className="text-muted-foreground">Carregando...</p>;
   }
 
-  const projectList = projects as any[] | undefined;
+  const projectList = projects;
 
   return (
     <div className="space-y-6">
@@ -146,7 +146,7 @@ export function ProjectsPage() {
                     </span>
                   )}
                 </div>
-                {project.sparkline?.length > 0 && (
+                {project.sparkline?.length && (
                   <div className="h-10 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={project.sparkline} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
@@ -196,7 +196,7 @@ export function ProjectsPage() {
                       {project.last_activity ? formatDate(project.last_activity) : "—"}
                     </td>
                     <td className="p-3 hidden md:table-cell">
-                      {project.sparkline?.length > 0 ? (
+                      {project.sparkline?.length ? (
                         <div className="h-8 w-24">
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={project.sparkline} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
