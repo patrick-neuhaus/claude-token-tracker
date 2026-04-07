@@ -30,11 +30,11 @@ export function SummaryCards({
     },
     { label: "Total Tokens", value: formatTokens(totalTokens), icon: Hash, color: "text-blue-400" },
     { label: "Entradas", value: Number(entryCount).toLocaleString("pt-BR"), icon: FileText, color: "text-purple-400" },
-    { label: "Sessoes", value: Number(sessionCount).toLocaleString("pt-BR"), icon: MessageSquare, color: "text-amber-400" },
+    { label: "Sessões", value: Number(sessionCount).toLocaleString("pt-BR"), icon: MessageSquare, color: "text-amber-400" },
     {
       label: "Cache Hit Rate",
       value: `${cacheRate.toFixed(1)}%`,
-      sub: cacheRate > 50 ? "Otimo aproveitamento" : "Cache pode melhorar",
+      sub: cacheRate > 50 ? "Ótimo aproveitamento" : "Cache pode melhorar",
       icon: Zap,
       color: cacheRate > 50 ? "text-green-400" : "text-yellow-400",
     },

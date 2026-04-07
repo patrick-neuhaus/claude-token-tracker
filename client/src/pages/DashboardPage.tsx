@@ -109,7 +109,14 @@ export function DashboardPage() {
         daily={c?.daily || []}
       />
 
-      <PlanIndicator totalCostUsd={s.total_cost_usd} planCostUsd={planCost} brlRate={brlRate} />
+      <PlanIndicator
+        totalCostUsd={s.total_cost_usd}
+        planCostUsd={planCost}
+        brlRate={brlRate}
+        weeklyResetDow={user?.weekly_reset_dow ?? 2}
+        weeklyResetHour={user?.weekly_reset_hour ?? 15}
+        planStartDate={user?.plan_start_date}
+      />
 
       <SummaryCards
         totalCostUsd={s.total_cost_usd}

@@ -11,8 +11,11 @@ export function useSettings() {
 export function useUpdateSettings() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { brl_rate?: number; plan_cost_usd?: number; daily_budget_usd?: number | null; session_budget_usd?: number | null }) =>
-      api.patch("/settings", data),
+    mutationFn: (data: {
+      brl_rate?: number; plan_cost_usd?: number;
+      daily_budget_usd?: number | null; session_budget_usd?: number | null;
+      plan_start_date?: string | null; weekly_reset_dow?: number; weekly_reset_hour?: number;
+    }) => api.patch("/settings", data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["settings"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });

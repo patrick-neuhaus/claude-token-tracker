@@ -12,6 +12,7 @@ import {
 import { TrendingUp, TrendingDown, Minus, BarChart2, Clock, Flame, Trophy, Zap } from "lucide-react";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { ContributionGraph } from "@/components/analytics/ContributionGraph";
+import { Achievements } from "@/components/analytics/Achievements";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { format as fmtDate, parseISO as parseISODate } from "date-fns";
@@ -491,6 +492,9 @@ export function AnalyticsPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Conquistas */}
+      <Achievements />
 
       {/* Heatmap hora×dia — label adaptativo */}
       <Card>

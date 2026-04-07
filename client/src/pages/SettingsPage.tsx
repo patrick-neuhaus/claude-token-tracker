@@ -16,6 +16,9 @@ export function SettingsPage() {
         planCostUsd={user.plan_cost_usd}
         dailyBudgetUsd={user.daily_budget_usd}
         sessionBudgetUsd={user.session_budget_usd}
+        planStartDate={user.plan_start_date}
+        weeklyResetDow={user.weekly_reset_dow}
+        weeklyResetHour={user.weekly_reset_hour}
       />
       <WebhookInfo webhookToken={user.webhook_token} />
       <CsvImport />

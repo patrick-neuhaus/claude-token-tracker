@@ -89,7 +89,8 @@ export async function getMe(userId: string) {
   const result = await query(
     `SELECT u.id, u.email, u.display_name, u.webhook_token, u.created_at,
             us.role, us.brl_rate, us.plan_cost_usd,
-            us.daily_budget_usd, us.session_budget_usd
+            us.daily_budget_usd, us.session_budget_usd,
+            us.plan_start_date, us.weekly_reset_dow, us.weekly_reset_hour
      FROM users u
      JOIN user_settings us ON us.user_id = u.id
      WHERE u.id = $1`,

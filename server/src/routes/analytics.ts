@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.js";
-import { getAnalytics, getProjectComparison } from "../services/analyticsService.js";
+import { getAnalytics, getProjectComparison, getAchievements } from "../services/analyticsService.js";
 import type { AuthRequest } from "../types/index.js";
 
 const router = Router();
@@ -11,6 +11,12 @@ router.get("/", async (req, res) => {
   const from = req.query.from as string | undefined;
   const to = req.query.to as string | undefined;
   const data = await getAnalytics(authReq.user!.userId, from, to);
+  res.json(data);
+});
+
+router.get("/achievements", async (req, res) => {
+  const authReq = req as AuthRequest;
+  const data = await getAchievements(authReq.user!.userId);
   res.json(data);
 });
 

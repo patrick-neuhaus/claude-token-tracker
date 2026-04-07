@@ -159,6 +159,29 @@ export async function getAnalytics(userId: string, from?: string, to?: string) {
   };
 }
 
+// Achievements/badges baseados em dados reais
+export async function getAchievements(userId: string) {
+  const result = await query(
+    `SELECT
+       COUNT(*)::int AS total_entries,
+       COALESCE(SUM(cost_usd), 0)::float AS total_cost,
+       COALESCE(SUM(total_tokens), 0)::bigint AS total_tokens,
+       COUNT(DISTINCT session_id)::int AS total_sessions,
+       COUNT(DISTINCT (timestamp AT TIME ZONE 'America/Sao_Paulo')::date)::int AS active_days,
+       COUNT(DISTINCT model)::int AS models_used,
+       MAX(cost_usd)::float AS max_single_entry_cost,
+       COALESCE(SUM(cache_read), 0)::bigint AS total_cache_read,
+       COALESCE(SUM(input_tokens), 0)::bigint AS total_input,
+       (SELECT COUNT(DISTINCT p.id)::int FROM projects p JOIN sessions s ON s.project_id = p.id WHERE s.user_id = $1) AS project_count,
+       (SELECT MAX(entry_count)::int FROM sessions WHERE user_id = $1) AS max_session_entries,
+       (SELECT MAX(total_cost_usd)::float FROM sessions WHERE user_id = $1) AS max_session_cost
+     FROM token_entries
+     WHERE user_id = $1`,
+    [userId]
+  );
+  return result.rows[0];
+}
+
 // Comparação de projetos (Wave 2C)
 export async function getProjectComparison(userId: string, projectIds: string[], from?: string, to?: string) {
   if (!projectIds.length) return [];
