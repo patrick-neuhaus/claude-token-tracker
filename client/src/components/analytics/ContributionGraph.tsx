@@ -108,8 +108,8 @@ export function ContributionGraph({ data, from, to }: Props) {
                           width: CELL,
                           height: CELL,
                           background: inRange
-                            ? `rgba(99,102,241,${alpha.toFixed(2)})`
-                            : "rgba(99,102,241,0.03)",
+                            ? `rgba(16,185,129,${alpha.toFixed(2)})`
+                            : "rgba(16,185,129,0.03)",
                         }}
                       />
                     );
@@ -124,7 +124,7 @@ export function ContributionGraph({ data, from, to }: Props) {
         <div className="flex items-center gap-2 mt-3" style={{ paddingLeft: 36 }}>
           <span className="text-[11px] text-muted-foreground">Menos</span>
           {[0.06, 0.25, 0.45, 0.65, 1].map((o) => (
-            <div key={o} className="rounded-sm" style={{ width: 12, height: 12, background: `rgba(99,102,241,${o})` }} />
+            <div key={o} className="rounded-sm" style={{ width: 12, height: 12, background: `rgba(16,185,129,${o})` }} />
           ))}
           <span className="text-[11px] text-muted-foreground">Mais</span>
           {maxCost > 0 && (
