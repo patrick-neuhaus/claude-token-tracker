@@ -13,8 +13,8 @@ interface Props {
   to?: string;
 }
 
-const CELL = 16;
-const GAP = 3;
+const CELL = 24;
+const GAP = 4;
 const STEP = CELL + GAP;
 
 export function ContributionGraph({ data, from, to }: Props) {
