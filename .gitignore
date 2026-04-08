@@ -1,6 +1,29 @@
+# Dependencies
 node_modules/
+
+# Build
 dist/
+
+# Environment (secrets)
 .env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+
+# Logs
 *.log
+
+# Data / state
 .last_sent_line.json
 token_log.jsonl
+
+# Security
+*.pem
+*.key
+*.cert
+*.p12
+
+# OS
+.DS_Store
+Thumbs.db

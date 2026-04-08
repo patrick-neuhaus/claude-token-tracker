@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatUSD, formatBRL } from "@/lib/formatters";
+import { formatUSD } from "@/lib/formatters";
 import { VALUE_COLORS } from "@/lib/constants";
 import { CalendarClock, CreditCard } from "lucide-react";
 
@@ -8,7 +8,6 @@ const DOW_NAMES = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", 
 interface Props {
   totalCostUsd: number;
   planCostUsd: number;
-  brlRate: number;
   weeklyResetDow?: number;
   weeklyResetHour?: number;
   planStartDate?: string | null;
@@ -43,7 +42,7 @@ function getBillingInfo(planStartDate: string, planCostUsd: number) {
   return { months, totalPaid, dayOfMonth, nextPayment };
 }
 
-export function PlanIndicator({ totalCostUsd, planCostUsd, brlRate, weeklyResetDow = 2, weeklyResetHour = 15, planStartDate }: Props) {
+export function PlanIndicator({ totalCostUsd, planCostUsd, weeklyResetDow = 2, weeklyResetHour = 15, planStartDate }: Props) {
   const cost = Number(totalCostUsd) || 0;
   const plan = Number(planCostUsd) || 200;
   const pct = plan > 0 ? (cost / plan) * 100 : 0;
@@ -69,15 +68,13 @@ export function PlanIndicator({ totalCostUsd, planCostUsd, brlRate, weeklyResetD
         <div className="flex justify-between text-sm gap-4">
           <span className="text-muted-foreground shrink-0">Uso API-equivalent</span>
           <span className="text-right tabular-nums font-medium">
-            {formatUSD(cost)}{" "}
-            <span className="text-muted-foreground font-normal">/ {formatBRL(cost, brlRate)}</span>
+            {formatUSD(cost)}
           </span>
         </div>
         <div className="flex justify-between text-sm gap-4">
           <span className="text-muted-foreground shrink-0">Custo do plano</span>
           <span className="text-right tabular-nums">
-            {formatUSD(plan)}{" "}
-            <span className="text-muted-foreground">/ {formatBRL(plan, brlRate)}</span>
+            {formatUSD(plan)}
           </span>
         </div>
 

@@ -1,8 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatDate, formatUSD, formatBRL, formatNumber } from "@/lib/formatters";
-import { useAuth } from "@/contexts/AuthContext";
+import { formatDate, formatUSD, formatNumber } from "@/lib/formatters";
 
 interface Entry {
   id: string;
@@ -24,9 +23,6 @@ interface Props {
 }
 
 export function EntriesTable({ entries }: Props) {
-  const { user } = useAuth();
-  const brlRate = Number(user?.brl_rate) || 5.5;
-
   return (
     <Table>
       <TableHeader>
@@ -49,8 +45,7 @@ export function EntriesTable({ entries }: Props) {
             </Tooltip>
           </TableHead>
           <TableHead className="text-right">Total</TableHead>
-          <TableHead className="text-right">USD</TableHead>
-          <TableHead className="text-right">BRL</TableHead>
+          <TableHead className="text-right">Custo</TableHead>
           <TableHead>Sessao</TableHead>
         </TableRow>
       </TableHeader>
@@ -68,7 +63,6 @@ export function EntriesTable({ entries }: Props) {
             <TableCell className="text-right text-sm">{formatNumber(e.cache_write)}</TableCell>
             <TableCell className="text-right text-sm">{formatNumber(e.total_tokens)}</TableCell>
             <TableCell className="text-right text-sm font-medium">{formatUSD(e.cost_usd)}</TableCell>
-            <TableCell className="text-right text-sm">{formatBRL(e.cost_usd, brlRate)}</TableCell>
             <TableCell className="text-sm text-muted-foreground max-w-[120px] truncate">
               {e.session_name || (e.session_id ? `${e.session_id.slice(0, 8)}...` : "-")}
             </TableCell>

@@ -1,30 +1,32 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { DollarSign, Hash, FileText, MessageSquare, Zap } from "lucide-react";
-import { formatUSD, formatBRL, formatTokens } from "@/lib/formatters";
+import { formatUSD, formatTokens } from "@/lib/formatters";
 
 interface Props {
   totalCostUsd: number;
   totalTokens: number;
   entryCount: number;
   sessionCount: number;
-  brlRate: number;
   totalCacheRead?: number;
   totalInput?: number;
+  cacheSavingsUsd?: number;
 }
 
 export function SummaryCards({
-  totalCostUsd, totalTokens, entryCount, sessionCount, brlRate,
-  totalCacheRead = 0, totalInput = 0,
+  totalCostUsd, totalTokens, entryCount, sessionCount,
+  totalCacheRead = 0, totalInput = 0, cacheSavingsUsd = 0,
 }: Props) {
   const cacheRate = (Number(totalCacheRead) + Number(totalInput)) > 0
     ? (Number(totalCacheRead) / (Number(totalCacheRead) + Number(totalInput))) * 100
     : 0;
 
+  const withoutCache = totalCostUsd + cacheSavingsUsd;
+
   const cards = [
     {
       label: "Custo Total",
       value: formatUSD(totalCostUsd),
-      sub: formatBRL(totalCostUsd, brlRate),
+      sub: cacheSavingsUsd > 0 ? `Sem cache: ${formatUSD(withoutCache)}` : undefined,
       icon: DollarSign,
       color: "text-green-400",
     },

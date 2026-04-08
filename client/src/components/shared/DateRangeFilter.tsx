@@ -101,14 +101,14 @@ export function DateRangeFilter({ value, onChange, presets = DEFAULT_PRESETS, cl
           type="date"
           value={toDateInputValue(value.from)}
           onChange={(e) => handleFromChange(e.target.value)}
-          className="h-8 rounded-md border border-input bg-background px-2 text-sm text-foreground"
+          className="h-8 rounded-md border border-input bg-background px-2 text-sm text-foreground [color-scheme:dark]"
         />
         <span className="text-muted-foreground text-xs">até</span>
         <input
           type="date"
           value={toDateInputValue(value.to)}
           onChange={(e) => handleToChange(e.target.value)}
-          className="h-8 rounded-md border border-input bg-background px-2 text-sm text-foreground"
+          className="h-8 rounded-md border border-input bg-background px-2 text-sm text-foreground [color-scheme:dark]"
         />
       </div>
 

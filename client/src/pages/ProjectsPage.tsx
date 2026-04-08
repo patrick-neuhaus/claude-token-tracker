@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { useProjects, useCreateProject } from "@/hooks/useProjects";
-import { formatUSD, formatBRL, formatDate } from "@/lib/formatters";
+import { formatUSD, formatDate } from "@/lib/formatters";
 import {
   Card,
   CardContent,
@@ -27,9 +26,6 @@ import { ResponsiveContainer, AreaChart, Area } from "recharts";
 
 export function ProjectsPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const brlRate = Number(user?.brl_rate) || 5.5;
-
   const { data: projects, isLoading } = useProjects();
   const createProject = useCreateProject();
 
@@ -136,9 +132,6 @@ export function ProjectsPage() {
                     <span className="font-medium tabular-nums">
                       {formatUSD(project.total_cost_usd)}
                     </span>
-                    <span className="text-muted-foreground ml-1">
-                      ({formatBRL(project.total_cost_usd, brlRate)})
-                    </span>
                   </div>
                   {project.last_activity && (
                     <span className="text-muted-foreground text-xs">
@@ -167,8 +160,7 @@ export function ProjectsPage() {
               <tr className="border-b bg-muted/40">
                 <th className="text-left p-3 font-medium">Projeto</th>
                 <th className="text-right p-3 font-medium">Sessões</th>
-                <th className="text-right p-3 font-medium">Custo USD</th>
-                <th className="text-right p-3 font-medium">Custo BRL</th>
+                <th className="text-right p-3 font-medium">Custo</th>
                 <th className="text-right p-3 font-medium hidden md:table-cell">Última atividade</th>
                 <th className="p-3 w-24 hidden md:table-cell">7 dias</th>
               </tr>
@@ -191,7 +183,6 @@ export function ProjectsPage() {
                     </td>
                     <td className="p-3 text-right tabular-nums">{project.session_count}</td>
                     <td className="p-3 text-right font-medium tabular-nums">{formatUSD(project.total_cost_usd)}</td>
-                    <td className="p-3 text-right tabular-nums text-muted-foreground">{formatBRL(project.total_cost_usd, brlRate)}</td>
                     <td className="p-3 text-right text-muted-foreground text-xs hidden md:table-cell">
                       {project.last_activity ? formatDate(project.last_activity) : "—"}
                     </td>

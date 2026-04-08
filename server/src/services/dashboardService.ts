@@ -43,7 +43,12 @@ export async function getSummary(userId: string, filters: DashboardFilters) {
        COUNT(DISTINCT session_id)::int AS session_count,
        MIN(timestamp) AS first_entry,
        MAX(timestamp) AS last_entry,
-       COALESCE(SUM(CASE WHEN timestamp >= date_trunc('day', NOW() AT TIME ZONE 'America/Sao_Paulo' AT TIME ZONE 'UTC') THEN cost_usd END), 0)::float AS today_cost_usd
+       COALESCE(SUM(CASE WHEN timestamp >= date_trunc('day', NOW() AT TIME ZONE 'America/Sao_Paulo' AT TIME ZONE 'UTC') THEN cost_usd END), 0)::float AS today_cost_usd,
+       COALESCE(SUM(cache_read * (CASE
+         WHEN model ILIKE '%opus%' THEN 13.5
+         WHEN model ILIKE '%haiku%' THEN 0.72
+         ELSE 2.7
+       END) / 1000000.0), 0)::float AS cache_savings_usd
      FROM token_entries
      WHERE ${where}`,
     params
