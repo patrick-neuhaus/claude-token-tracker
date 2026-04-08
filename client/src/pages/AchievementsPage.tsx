@@ -32,7 +32,7 @@ const CATEGORIES = [
   { key: "tokens", label: "Tokens Processados", icon: "🔢" },
   { key: "sessions", label: "Sessões", icon: "🗂️" },
   { key: "days", label: "Dias Ativos", icon: "📅" },
-  { key: "cache", label: "Economia de Cache", icon: "💾" },
+  { key: "cache", label: "Economia em US$", icon: "💾" },
   { key: "org", label: "Diversidade", icon: "🌈" },
   { key: "epic", label: "Sessões Épicas", icon: "🏆" },
 ];

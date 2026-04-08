@@ -176,11 +176,11 @@ export async function getAchievements(userId: string) {
        (SELECT COUNT(DISTINCT p.id)::int FROM projects p JOIN sessions s ON s.project_id = p.id WHERE s.user_id = $1) AS project_count,
        (SELECT MAX(entry_count)::int FROM sessions WHERE user_id = $1) AS max_session_entries,
        (SELECT MAX(total_cost_usd)::float FROM sessions WHERE user_id = $1) AS max_session_cost,
-       COALESCE(SUM(cache_read * CASE
-         WHEN model ILIKE '%opus%' THEN (15.0 - 1.5)
-         WHEN model ILIKE '%haiku%' THEN (0.8 - 0.08)
-         ELSE (3.0 - 0.3)
-       END / 1000000.0), 0)::float AS cache_savings_usd
+       COALESCE(SUM(cache_read * (CASE
+         WHEN model ILIKE '%opus%' THEN 13.5
+         WHEN model ILIKE '%haiku%' THEN 0.72
+         ELSE 2.7
+       END) / 1000000.0), 0)::float AS cache_savings_usd
      FROM token_entries
      WHERE user_id = $1`,
     [userId]
