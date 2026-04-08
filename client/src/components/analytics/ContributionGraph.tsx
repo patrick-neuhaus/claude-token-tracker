@@ -54,8 +54,8 @@ export function ContributionGraph({ data, from, to }: Props) {
   const totalWidth = weeks.length * STEP;
 
   return (
-    <div className="overflow-x-auto">
-      <div className="inline-block" style={{ minWidth: totalWidth + 40 }}>
+    <div className="overflow-x-auto flex justify-center">
+      <div style={{ minWidth: totalWidth + 40 }}>
         {/* Labels de mês */}
         <div className="flex mb-1" style={{ paddingLeft: 36 }}>
           {weeks.map((_, idx) => {
