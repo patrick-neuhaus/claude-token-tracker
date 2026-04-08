@@ -40,7 +40,6 @@ function DashboardSkeleton() {
 export function DashboardPage() {
   const [filters, setFilters] = useState<DashboardFilters>({ period: "month" });
   const { user } = useAuth();
-  const brlRate = Number(user?.brl_rate) || 5.5;
   const planCost = Number(user?.plan_cost_usd) || 200;
   const dailyBudget = user?.daily_budget_usd ?? null;
 
@@ -96,9 +95,9 @@ export function DashboardPage() {
         totalTokens={Number(s.total_tokens)}
         entryCount={s.entry_count}
         sessionCount={s.session_count}
-        brlRate={brlRate}
         totalCacheRead={Number(s.total_cache_read)}
         totalInput={Number(s.total_input)}
+        cacheSavingsUsd={s.cache_savings_usd}
       />
 
       <DashboardFiltersBar filters={filters} onChange={setFilters} />
@@ -118,7 +117,6 @@ export function DashboardPage() {
       <PlanIndicator
         totalCostUsd={s.total_cost_usd}
         planCostUsd={planCost}
-        brlRate={brlRate}
         weeklyResetDow={user?.weekly_reset_dow ?? 2}
         weeklyResetHour={user?.weekly_reset_hour ?? 15}
         planStartDate={user?.plan_start_date}

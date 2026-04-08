@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import {
   useProjectDetail,
   useUpdateProject,
@@ -10,7 +9,6 @@ import {
 } from "@/hooks/useProjects";
 import {
   formatUSD,
-  formatBRL,
   formatDate,
   formatTokens,
 } from "@/lib/formatters";
@@ -61,8 +59,6 @@ const PERIOD_PRESETS = [
 
 export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
-  const brlRate = Number(user?.brl_rate) || 5.5;
   const [dateRange, setDateRange] = useState<{ preset?: string; from?: string; to?: string }>({ preset: "all" });
   const { from, to } = dateRange;
 
@@ -273,9 +269,6 @@ export function ProjectDetailPage() {
             <div className="text-2xl font-bold">
               {formatUSD(project.total_cost_usd)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatBRL(project.total_cost_usd, brlRate)}
-            </p>
           </CardContent>
         </Card>
 

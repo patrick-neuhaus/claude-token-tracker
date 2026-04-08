@@ -229,17 +229,7 @@ export function AnalyticsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Analytics</h1>
 
-      {/* Filtro de período */}
-      <DateRangeFilter
-        value={dateRange}
-        onChange={setDateRange}
-        presets={[
-          { value: "7d", label: "7 dias" },
-          { value: "30d", label: "30 dias" },
-          { value: "month", label: "Este mês" },
-          { value: "all", label: "Tudo" },
-        ]}
-      />
+      {/* === BLOCO ESTÁTICO — não muda com filtros === */}
 
       {/* Comparação de períodos */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -278,7 +268,7 @@ export function AnalyticsPage() {
         ))}
       </div>
 
-      {/* Gamification — Streaks (Wave 3B) */}
+      {/* Gamification — Streaks */}
       {streaks && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
@@ -308,7 +298,6 @@ export function AnalyticsPage() {
               </div>
             </CardContent>
           </Card>
-          {/* Custo por hora ativa (Wave 2A) */}
           {hourly && (
             <Card>
               <CardHeader className="pb-1 flex flex-row items-center gap-2">
@@ -373,14 +362,14 @@ export function AnalyticsPage() {
         </div>
       )}
 
-      {/* Atividade + Padrão de uso — lado a lado */}
+      {/* Atividade + Padrão de uso — dados globais */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Atividade por Dia</CardTitle>
           </CardHeader>
           <CardContent>
-            <ContributionGraph data={daily_cost || []} from={dateRange.from} to={dateRange.to} />
+            <ContributionGraph data={daily_cost || []} />
           </CardContent>
         </Card>
 
@@ -430,6 +419,21 @@ export function AnalyticsPage() {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      {/* === FILTRO — divide estático de filtrável === */}
+      <div className="border-t pt-4">
+        <h2 className="text-lg font-semibold mb-3">Detalhamento por Período</h2>
+        <DateRangeFilter
+          value={dateRange}
+          onChange={setDateRange}
+          presets={[
+            { value: "7d", label: "7 dias" },
+            { value: "30d", label: "30 dias" },
+            { value: "month", label: "Este mês" },
+            { value: "all", label: "Tudo" },
+          ]}
+        />
       </div>
 
       {/* Custo por Projeto */}

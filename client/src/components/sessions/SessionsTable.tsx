@@ -4,8 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronRight, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SessionNameEditor } from "./SessionNameEditor";
 import { useSessionEntries, useRenameSession } from "@/hooks/useSessions";
-import { formatDate, formatUSD, formatBRL, formatTokens } from "@/lib/formatters";
-import { useAuth } from "@/contexts/AuthContext";
+import { formatDate, formatUSD, formatTokens } from "@/lib/formatters";
 import { toast } from "sonner";
 
 interface Session {
@@ -36,8 +35,6 @@ function SortIcon({ col, sortBy, sortDir }: { col: string; sortBy?: string; sort
 }
 
 export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
-  const { user } = useAuth();
-  const brlRate = Number(user?.brl_rate) || 5.5;
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const rename = useRenameSession();
   const { data: entries } = useSessionEntries(expandedId);
@@ -71,8 +68,7 @@ export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
           {sortableHead("first_seen", "Primeira")}
           {sortableHead("last_seen", "Última")}
           {sortableHead("entry_count", "Entradas", "text-right")}
-          {sortableHead("total_cost_usd", "Custo USD", "text-right")}
-          <TableHead className="text-right">Custo BRL</TableHead>
+          {sortableHead("total_cost_usd", "Custo", "text-right")}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -113,11 +109,10 @@ export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
               <TableCell className="text-sm">{formatDate(s.last_seen)}</TableCell>
               <TableCell className="text-right">{s.entry_count}</TableCell>
               <TableCell className="text-right">{formatUSD(s.total_cost_usd)}</TableCell>
-              <TableCell className="text-right">{formatBRL(s.total_cost_usd, brlRate)}</TableCell>
             </TableRow>
             {expandedId === s.id && entries && (
               <TableRow>
-                <TableCell colSpan={9} className="bg-muted/30 p-4">
+                <TableCell colSpan={8} className="bg-muted/30 p-4">
                   <Table>
                     <TableHeader>
                       <TableRow>

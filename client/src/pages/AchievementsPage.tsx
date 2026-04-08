@@ -2,8 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { formatUSD, formatBRL } from "@/lib/formatters";
-import { useAuth } from "@/contexts/AuthContext";
+import { formatUSD } from "@/lib/formatters";
 
 interface Badge {
   id: string;
@@ -41,7 +40,7 @@ function p(current: number, target: number) {
   return Math.min(100, (current / target) * 100);
 }
 
-function computeBadges(data: any, brlRate: number): Badge[] {
+function computeBadges(data: any): Badge[] {
   if (!data) return [];
 
   const entries = data.total_entries || 0;
@@ -133,20 +132,20 @@ function computeBadges(data: any, brlRate: number): Badge[] {
     { id: "days-7300", icon: "⏳", label: "Imortal", description: "20 anos ativos", unlocked: activeDays >= 7300, progress: p(activeDays, 7300), progressLabel: `${activeDays}/7300`, tier: "diamond", category: "days" },
 
     // === CACHE SAVINGS (9 → 14) ===
-    { id: "cache-10", icon: "🪙", label: "Primeiro Troco", description: `Economizou $10 (${formatBRL(10, brlRate)})`, unlocked: cacheSavings >= 10, progress: p(cacheSavings, 10), progressLabel: `${formatUSD(cacheSavings)}/$10`, tier: "bronze", category: "cache" },
-    { id: "cache-25", icon: "🐷", label: "Cofrinho", description: `Economizou $25 (${formatBRL(25, brlRate)})`, unlocked: cacheSavings >= 25, progress: p(cacheSavings, 25), progressLabel: `${formatUSD(cacheSavings)}/$25`, tier: "bronze", category: "cache" },
-    { id: "cache-50", icon: "💰", label: "Poupança", description: `Economizou $50 (${formatBRL(50, brlRate)})`, unlocked: cacheSavings >= 50, progress: p(cacheSavings, 50), progressLabel: `${formatUSD(cacheSavings)}/$50`, tier: "silver", category: "cache" },
-    { id: "cache-100", icon: "📈", label: "Investidor de Cache", description: `Economizou $100 (${formatBRL(100, brlRate)})`, unlocked: cacheSavings >= 100, progress: p(cacheSavings, 100), progressLabel: `${formatUSD(cacheSavings)}/$100`, tier: "silver", category: "cache" },
-    { id: "cache-250", icon: "🎯", label: "Rendimento", description: `Economizou $250 (${formatBRL(250, brlRate)})`, unlocked: cacheSavings >= 250, progress: p(cacheSavings, 250), progressLabel: `${formatUSD(cacheSavings)}/$250`, tier: "gold", category: "cache" },
-    { id: "cache-500", icon: "⚙️", label: "Cache Machine", description: `Economizou $500 (${formatBRL(500, brlRate)})`, unlocked: cacheSavings >= 500, progress: p(cacheSavings, 500), progressLabel: `${formatUSD(cacheSavings)}/$500`, tier: "gold", category: "cache" },
-    { id: "cache-1k", icon: "🏆", label: "Cofre de Ouro", description: `Economizou $1K (${formatBRL(1000, brlRate)})`, unlocked: cacheSavings >= 1e3, progress: p(cacheSavings, 1e3), progressLabel: `${formatUSD(cacheSavings)}/$1K`, tier: "gold", category: "cache" },
-    { id: "cache-2500", icon: "👔", label: "Tesoureiro", description: `Economizou $2.5K (${formatBRL(2500, brlRate)})`, unlocked: cacheSavings >= 2500, progress: p(cacheSavings, 2500), progressLabel: `${formatUSD(cacheSavings)}/$2.5K`, tier: "diamond", category: "cache" },
-    { id: "cache-5k", icon: "🏦", label: "Banco do Cache", description: `Economizou $5K (${formatBRL(5000, brlRate)})`, unlocked: cacheSavings >= 5e3, progress: p(cacheSavings, 5e3), progressLabel: `${formatUSD(cacheSavings)}/$5K`, tier: "diamond", category: "cache" },
-    { id: "cache-10k", icon: "💎", label: "Mina de Ouro", description: `Economizou $10K (${formatBRL(10000, brlRate)})`, unlocked: cacheSavings >= 1e4, progress: p(cacheSavings, 1e4), progressLabel: `${formatUSD(cacheSavings)}/$10K`, tier: "diamond", category: "cache" },
-    { id: "cache-25k", icon: "🏴‍☠️", label: "Tesouro Pirata", description: `Economizou $25K (${formatBRL(25000, brlRate)})`, unlocked: cacheSavings >= 25e3, progress: p(cacheSavings, 25e3), progressLabel: `${formatUSD(cacheSavings)}/$25K`, tier: "diamond", category: "cache" },
-    { id: "cache-50k", icon: "👑", label: "Rei do Cache", description: `Economizou $50K (${formatBRL(50000, brlRate)})`, unlocked: cacheSavings >= 5e4, progress: p(cacheSavings, 5e4), progressLabel: `${formatUSD(cacheSavings)}/$50K`, tier: "diamond", category: "cache" },
-    { id: "cache-100k", icon: "🗝️", label: "Chave do Cofre", description: `Economizou $100K (${formatBRL(100000, brlRate)})`, unlocked: cacheSavings >= 1e5, progress: p(cacheSavings, 1e5), progressLabel: `${formatUSD(cacheSavings)}/$100K`, tier: "diamond", category: "cache" },
-    { id: "cache-1m", icon: "🌟", label: "El Dorado", description: `Economizou $1M (${formatBRL(1000000, brlRate)})`, unlocked: cacheSavings >= 1e6, progress: p(cacheSavings, 1e6), progressLabel: `${formatUSD(cacheSavings)}/$1M`, tier: "diamond", category: "cache" },
+    { id: "cache-10", icon: "🪙", label: "Primeiro Troco", description: "Economizou $10 em cache", unlocked: cacheSavings >= 10, progress: p(cacheSavings, 10), progressLabel: `${formatUSD(cacheSavings)}/$10`, tier: "bronze", category: "cache" },
+    { id: "cache-25", icon: "🐷", label: "Cofrinho", description: "Economizou $25 em cache", unlocked: cacheSavings >= 25, progress: p(cacheSavings, 25), progressLabel: `${formatUSD(cacheSavings)}/$25`, tier: "bronze", category: "cache" },
+    { id: "cache-50", icon: "💰", label: "Poupança", description: "Economizou $50 em cache", unlocked: cacheSavings >= 50, progress: p(cacheSavings, 50), progressLabel: `${formatUSD(cacheSavings)}/$50`, tier: "silver", category: "cache" },
+    { id: "cache-100", icon: "📈", label: "Investidor de Cache", description: "Economizou $100 em cache", unlocked: cacheSavings >= 100, progress: p(cacheSavings, 100), progressLabel: `${formatUSD(cacheSavings)}/$100`, tier: "silver", category: "cache" },
+    { id: "cache-250", icon: "🎯", label: "Rendimento", description: "Economizou $250 em cache", unlocked: cacheSavings >= 250, progress: p(cacheSavings, 250), progressLabel: `${formatUSD(cacheSavings)}/$250`, tier: "gold", category: "cache" },
+    { id: "cache-500", icon: "⚙️", label: "Cache Machine", description: "Economizou $500 em cache", unlocked: cacheSavings >= 500, progress: p(cacheSavings, 500), progressLabel: `${formatUSD(cacheSavings)}/$500`, tier: "gold", category: "cache" },
+    { id: "cache-1k", icon: "🏆", label: "Cofre de Ouro", description: "Economizou $1K em cache", unlocked: cacheSavings >= 1e3, progress: p(cacheSavings, 1e3), progressLabel: `${formatUSD(cacheSavings)}/$1K`, tier: "gold", category: "cache" },
+    { id: "cache-2500", icon: "👔", label: "Tesoureiro", description: "Economizou $2.5K em cache", unlocked: cacheSavings >= 2500, progress: p(cacheSavings, 2500), progressLabel: `${formatUSD(cacheSavings)}/$2.5K`, tier: "diamond", category: "cache" },
+    { id: "cache-5k", icon: "🏦", label: "Banco do Cache", description: "Economizou $5K em cache", unlocked: cacheSavings >= 5e3, progress: p(cacheSavings, 5e3), progressLabel: `${formatUSD(cacheSavings)}/$5K`, tier: "diamond", category: "cache" },
+    { id: "cache-10k", icon: "💎", label: "Mina de Ouro", description: "Economizou $10K em cache", unlocked: cacheSavings >= 1e4, progress: p(cacheSavings, 1e4), progressLabel: `${formatUSD(cacheSavings)}/$10K`, tier: "diamond", category: "cache" },
+    { id: "cache-25k", icon: "🏴‍☠️", label: "Tesouro Pirata", description: "Economizou $25K em cache", unlocked: cacheSavings >= 25e3, progress: p(cacheSavings, 25e3), progressLabel: `${formatUSD(cacheSavings)}/$25K`, tier: "diamond", category: "cache" },
+    { id: "cache-50k", icon: "👑", label: "Rei do Cache", description: "Economizou $50K em cache", unlocked: cacheSavings >= 5e4, progress: p(cacheSavings, 5e4), progressLabel: `${formatUSD(cacheSavings)}/$50K`, tier: "diamond", category: "cache" },
+    { id: "cache-100k", icon: "🗝️", label: "Chave do Cofre", description: "Economizou $100K em cache", unlocked: cacheSavings >= 1e5, progress: p(cacheSavings, 1e5), progressLabel: `${formatUSD(cacheSavings)}/$100K`, tier: "diamond", category: "cache" },
+    { id: "cache-1m", icon: "🌟", label: "El Dorado", description: "Economizou $1M em cache", unlocked: cacheSavings >= 1e6, progress: p(cacheSavings, 1e6), progressLabel: `${formatUSD(cacheSavings)}/$1M`, tier: "diamond", category: "cache" },
 
     // === DIVERSIDADE ===
     { id: "models-2", icon: "🎨", label: "Bicampeão", description: "Usou 2+ modelos", unlocked: modelsUsed >= 2, progress: p(modelsUsed, 2), progressLabel: `${modelsUsed}/2`, tier: "bronze", category: "org" },
@@ -174,15 +173,13 @@ function computeBadges(data: any, brlRate: number): Badge[] {
 }
 
 export function AchievementsPage() {
-  const { user } = useAuth();
-  const brlRate = Number(user?.brl_rate) || 5.5;
   const { data, isLoading } = useQuery({
     queryKey: ["analytics", "achievements"],
     queryFn: () => api.get("/analytics/achievements"),
     staleTime: 120_000,
   });
 
-  const badges = computeBadges(data, brlRate);
+  const badges = computeBadges(data);
   const totalUnlocked = badges.filter((b) => b.unlocked).length;
 
   if (isLoading) {

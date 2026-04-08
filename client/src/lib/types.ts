@@ -12,6 +12,7 @@ export interface DashboardSummary {
   first_entry: string | null;
   last_entry: string | null;
   today_cost_usd: number;
+  cache_savings_usd: number;
   settings: Record<string, unknown> | null;
 }
 
