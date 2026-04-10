@@ -239,3 +239,67 @@ export async function getProjectComparison(userId: string, projectIds: string[],
 
   return { summary: summary.rows, daily: daily.rows };
 }
+
+// Tempo útil por sessão com gap configurável
+export async function getSessionTime(
+  userId: string,
+  gapMinutes: number,
+  from?: string,
+  to?: string
+) {
+  const now = new Date();
+  const startTs = from || "1970-01-01T00:00:00.000Z";
+  const endTs = to || now.toISOString();
+
+  const result = await query(
+    `WITH ordered AS (
+       SELECT
+         te.session_id,
+         COALESCE(s.custom_name, te.session_id) AS sessao,
+         te.timestamp AT TIME ZONE 'America/Sao_Paulo' AS ts,
+         LAG(te.timestamp AT TIME ZONE 'America/Sao_Paulo')
+           OVER (PARTITION BY te.session_id ORDER BY te.timestamp) AS prev_ts,
+         te.cost_usd,
+         te.total_tokens,
+         p.name AS project_name
+       FROM token_entries te
+       LEFT JOIN sessions s ON s.session_id = te.session_id AND s.user_id = te.user_id
+       LEFT JOIN projects p ON p.id = s.project_id
+       WHERE te.user_id = $1
+         AND te.timestamp >= $2
+         AND te.timestamp <= $3
+         AND te.session_id IS NOT NULL
+     ),
+     calc AS (
+       SELECT
+         session_id,
+         sessao,
+         project_name,
+         cost_usd,
+         total_tokens,
+         ts,
+         CASE
+           WHEN prev_ts IS NOT NULL AND (ts - prev_ts) < make_interval(mins => $4)
+           THEN EXTRACT(EPOCH FROM (ts - prev_ts))
+           ELSE 0
+         END AS tempo_util_seg
+       FROM ordered
+     )
+     SELECT
+       session_id,
+       sessao,
+       MAX(project_name) AS project_name,
+       SUM(cost_usd)::float AS custo_usd,
+       SUM(total_tokens)::bigint AS total_tokens,
+       COUNT(*)::int AS calls,
+       SUM(tempo_util_seg)::int AS tempo_util_segundos,
+       MIN(ts) AS inicio,
+       MAX(ts) AS fim
+     FROM calc
+     GROUP BY session_id, sessao
+     ORDER BY custo_usd DESC`,
+    [userId, startTs, endTs, gapMinutes]
+  );
+
+  return result.rows;
+}

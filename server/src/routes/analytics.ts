@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.js";
-import { getAnalytics, getProjectComparison, getAchievements } from "../services/analyticsService.js";
+import { getAnalytics, getProjectComparison, getAchievements, getSessionTime } from "../services/analyticsService.js";
 import { getUserId, getDateRange } from "../utils/routeHelpers.js";
 
 const router = Router();
@@ -14,6 +14,14 @@ router.get("/", async (req, res) => {
 
 router.get("/achievements", async (req, res) => {
   const data = await getAchievements(getUserId(req));
+  res.json(data);
+});
+
+router.get("/session-time", async (req, res) => {
+  const { from, to } = getDateRange(req);
+  const rawGap = parseInt(req.query.gap as string);
+  const gap = Math.max(0, Math.min(600, isNaN(rawGap) ? 60 : rawGap));
+  const data = await getSessionTime(getUserId(req), gap, from, to);
   res.json(data);
 });
 

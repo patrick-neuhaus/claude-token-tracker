@@ -41,6 +41,18 @@ export interface ProjectComparisonData {
   daily: Array<{ project_id: string; project: string; day: string; cost_usd: number }>;
 }
 
+export interface SessionTimeRow {
+  session_id: string;
+  sessao: string;
+  project_name: string | null;
+  custo_usd: number;
+  total_tokens: string;
+  calls: number;
+  tempo_util_segundos: number;
+  inicio: string;
+  fim: string;
+}
+
 // === Sessions ===
 
 export interface SessionItem {

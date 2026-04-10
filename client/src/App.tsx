@@ -15,6 +15,7 @@ import { ProjectsPage } from "@/pages/ProjectsPage";
 import { ProjectDetailPage } from "@/pages/ProjectDetailPage";
 import { AnalyticsPage } from "@/pages/AnalyticsPage";
 import { AchievementsPage } from "@/pages/AchievementsPage";
+import { SessionTimePage } from "@/pages/SessionTimePage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,6 +42,7 @@ export default function App() {
                 <Route path="/projects/:id" element={<ProjectDetailPage />} />
                 <Route path="/entries" element={<EntriesPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
+                <Route path="/session-time" element={<SessionTimePage />} />
                 <Route path="/achievements" element={<AchievementsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/admin" element={<AdminPage />} />
