@@ -23,12 +23,12 @@ function DashboardSkeleton() {
         <Skeleton className="h-9 w-64" />
       </div>
       <Skeleton className="h-40 w-full rounded-xl" />
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <Skeleton key={i} className="h-24 rounded-xl" />
         ))}
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Skeleton className="h-72 rounded-xl" />
         <Skeleton className="h-72 rounded-xl" />
       </div>
@@ -122,7 +122,7 @@ export function DashboardPage() {
         planStartDate={user?.plan_start_date}
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <CostByModelChart data={c?.by_model || []} />
         <CostBySourceChart data={c?.by_source || []} />
       </div>

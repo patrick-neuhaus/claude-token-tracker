@@ -255,12 +255,14 @@ export async function getSessionTime(
     `WITH ordered AS (
        SELECT
          te.session_id,
+         s.id AS session_db_id,
          COALESCE(s.custom_name, te.session_id) AS sessao,
          te.timestamp AT TIME ZONE 'America/Sao_Paulo' AS ts,
          LAG(te.timestamp AT TIME ZONE 'America/Sao_Paulo')
            OVER (PARTITION BY te.session_id ORDER BY te.timestamp) AS prev_ts,
          te.cost_usd,
          te.total_tokens,
+         s.project_id,
          p.name AS project_name
        FROM token_entries te
        LEFT JOIN sessions s ON s.session_id = te.session_id AND s.user_id = te.user_id
@@ -273,7 +275,9 @@ export async function getSessionTime(
      calc AS (
        SELECT
          session_id,
+         session_db_id,
          sessao,
+         project_id,
          project_name,
          cost_usd,
          total_tokens,
@@ -287,7 +291,9 @@ export async function getSessionTime(
      )
      SELECT
        session_id,
+       MAX(session_db_id) AS session_db_id,
        sessao,
+       MAX(project_id::text) AS project_id,
        MAX(project_name) AS project_name,
        SUM(cost_usd)::float AS custo_usd,
        SUM(total_tokens)::bigint AS total_tokens,

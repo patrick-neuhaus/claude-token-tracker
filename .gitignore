@@ -27,3 +27,6 @@ token_log.jsonl
 # OS
 .DS_Store
 Thumbs.db
+
+# Temporary (pattern-importer)
+.tmp/

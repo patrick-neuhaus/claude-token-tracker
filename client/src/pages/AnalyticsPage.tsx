@@ -23,13 +23,22 @@ function delta(current: number, last: number) {
   return ((current - last) / last) * 100;
 }
 
-function DeltaBadge({ current, last }: { current: number; last: number }) {
+function DeltaBadge({ current, last, metricType = "cost" }: { current: number; last: number; metricType?: "cost" | "neutral" }) {
   const d = delta(current, last);
   if (d === null) return <span className="text-xs text-muted-foreground">Sem mês anterior</span>;
   const up = d >= 0;
   const Icon = d === 0 ? Minus : up ? TrendingUp : TrendingDown;
+  // cost: up = ruim (vermelho); neutral: up = bom (verde); down sempre cinza
+  let color = "text-muted-foreground";
+  if (d !== 0) {
+    if (metricType === "cost") {
+      color = up ? "text-red-400" : "text-green-400";
+    } else {
+      color = up ? "text-green-400" : "text-muted-foreground";
+    }
+  }
   return (
-    <span className={`flex items-center gap-1 text-xs font-medium ${up ? "text-red-400" : "text-green-400"}`}>
+    <span className={`flex items-center gap-1 text-xs font-medium ${color}`}>
       <Icon className="h-3.5 w-3.5" />
       {Math.abs(d).toFixed(1)}% vs mês anterior
     </span>
@@ -239,20 +248,23 @@ export function AnalyticsPage() {
             current: period_comparison?.current_month ?? 0,
             last: period_comparison?.last_month ?? 0,
             fmt: (v: number) => formatUSD(v),
+            metricType: "cost" as const,
           },
           {
             label: "Tokens este mês",
             current: Number(period_comparison?.current_tokens ?? 0),
             last: Number(period_comparison?.last_tokens ?? 0),
             fmt: (v: number) => formatTokens(v),
+            metricType: "neutral" as const,
           },
           {
             label: "Entradas este mês",
             current: period_comparison?.current_entries ?? 0,
             last: period_comparison?.last_entries ?? 0,
             fmt: (v: number) => String(v),
+            metricType: "neutral" as const,
           },
-        ].map(({ label, current, last, fmt }) => (
+        ].map(({ label, current, last, fmt, metricType }) => (
           <Card key={label}>
             <CardHeader className="pb-1">
               <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
@@ -260,7 +272,7 @@ export function AnalyticsPage() {
             <CardContent>
               <div className="text-2xl font-bold tabular-nums">{fmt(current)}</div>
               <div className="mt-1">
-                <DeltaBadge current={current} last={last} />
+                <DeltaBadge current={current} last={last} metricType={metricType} />
               </div>
               <div className="text-xs text-muted-foreground mt-0.5">Mês anterior: {fmt(last)}</div>
             </CardContent>

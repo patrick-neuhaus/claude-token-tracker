@@ -56,6 +56,9 @@ export function useRenameSession() {
   return useMutation({
     mutationFn: ({ id, custom_name }: { id: string; custom_name: string }) =>
       api.patch(`/sessions/${id}`, { custom_name }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["sessions"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sessions"] });
+      qc.invalidateQueries({ queryKey: ["analytics", "session-time"] });
+    },
   });
 }

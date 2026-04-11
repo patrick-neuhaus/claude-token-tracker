@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useSessionTime } from "@/hooks/useSessionTime";
 import { formatUSD, formatNumber, formatDate } from "@/lib/formatters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +10,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import {
-  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell,
+  ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ZAxis,
 } from "recharts";
 import { Clock, DollarSign, Activity, Layers, Info } from "lucide-react";
-import { CHART_COLORS, MS_PER_DAY } from "@/lib/constants";
+import { Tooltip as UITooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { MS_PER_DAY } from "@/lib/constants";
 import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 
 // --- helpers ---
@@ -79,15 +81,14 @@ export function SessionTimePage() {
     );
   }, [rows]);
 
-  // dados ordenados por tempo util pro gráfico
-  const chartByTime = useMemo(() => {
-    return [...rows]
-      .sort((a, b) => b.tempo_util_segundos - a.tempo_util_segundos)
-      .map((r) => ({
-        name: r.sessao.length > 24 ? r.sessao.slice(0, 22) + "…" : r.sessao,
-        tempo: r.tempo_util_segundos,
-        custo: r.custo_usd,
-      }));
+  // scatter data: custo x tempo útil (1 ponto por sessão)
+  const scatterData = useMemo(() => {
+    return rows.map((r) => ({
+      name: r.sessao,
+      tempoMin: r.tempo_util_segundos / 60,
+      custo: r.custo_usd,
+      calls: r.calls,
+    }));
   }, [rows]);
 
   // presets rápidos de data
@@ -107,7 +108,26 @@ export function SessionTimePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Tempo por Sessão</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold">Tempo por Sessão</h1>
+          <UITooltip>
+            <TooltipTrigger
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="O que é tempo útil"
+            >
+              <Info className="h-4 w-4" />
+            </TooltipTrigger>
+            <TooltipContent side="right" className="max-w-xs">
+              <div>
+                <p className="font-medium mb-1">Como o tempo útil é calculado</p>
+                <p className="text-xs opacity-80">
+                  Somamos os intervalos entre calls consecutivas da sessão, ignorando qualquer gap maior
+                  que o valor do slider. Ex: com gap=60min, se você ficar 2h sem rodar nada, esse período não conta.
+                </p>
+              </div>
+            </TooltipContent>
+          </UITooltip>
+        </div>
         <p className="text-sm text-muted-foreground mt-1">
           Tempo útil aproximado por sessão. Ajuste o gap máximo considerado como trabalho contínuo.
         </p>
@@ -192,6 +212,23 @@ export function SessionTimePage() {
               />
               <span className="text-xs text-muted-foreground tabular-nums w-12 text-right">500m</span>
             </div>
+            {/* Presets rápidos */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-muted-foreground">Presets:</span>
+              {[15, 30, 60, 90, 120, 180].map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setGap(v)}
+                  className={`px-2.5 py-0.5 text-xs rounded-md border transition-colors ${
+                    gap === v
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:border-muted-foreground/50"
+                  }`}
+                >
+                  {v >= 60 ? `${v / 60}h` : `${v}m`}
+                </button>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -267,75 +304,62 @@ export function SessionTimePage() {
             </Card>
           </div>
 
-          {/* Gráfico: tempo útil por sessão */}
+          {/* Scatter: custo vs tempo útil */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Tempo Útil por Sessão</CardTitle>
+              <CardTitle className="text-base">Custo × Tempo Útil</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">
+                Cada ponto é uma sessão. Pontos no canto superior direito são sessões caras e longas;
+                canto inferior esquerdo são quick wins.
+              </p>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={Math.max(200, chartByTime.length * 38)}>
-                <BarChart
-                  data={chartByTime}
-                  layout="vertical"
-                  margin={{ top: 0, right: 24, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
+              <ResponsiveContainer width="100%" height={400}>
+                <ScatterChart margin={{ top: 20, right: 24, left: 10, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis
                     type="number"
-                    tickFormatter={(v: number) => formatDuration(v)}
+                    dataKey="tempoMin"
+                    name="Tempo útil"
+                    tickFormatter={(v: number) => `${v.toFixed(0)}m`}
                     tick={{ fontSize: 11 }}
+                    label={{ value: "Tempo útil (minutos)", position: "insideBottom", offset: -10, fontSize: 11, fill: "#a0a0b8" }}
                   />
                   <YAxis
-                    type="category"
-                    dataKey="name"
-                    width={150}
-                    tick={{ fontSize: 11 }}
-                  />
-                  <Tooltip
-                    formatter={(v) => formatDuration(Number(v))}
-                    {...TOOLTIP_PROPS}
-                  />
-                  <Bar dataKey="tempo" name="tempo" radius={[0, 4, 4, 0]}>
-                    {chartByTime.map((_, i) => (
-                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Gráfico: custo por sessão */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Custo por Sessão</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={Math.max(200, chartByTime.length * 38)}>
-                <BarChart
-                  data={chartByTime}
-                  layout="vertical"
-                  margin={{ top: 0, right: 24, left: 0, bottom: 0 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-                  <XAxis
                     type="number"
+                    dataKey="custo"
+                    name="Custo"
                     tickFormatter={(v: number) => `$${v.toFixed(0)}`}
                     tick={{ fontSize: 11 }}
+                    label={{ value: "Custo (USD)", angle: -90, position: "insideLeft", fontSize: 11, fill: "#a0a0b8" }}
                   />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    width={150}
-                    tick={{ fontSize: 11 }}
+                  <ZAxis type="number" dataKey="calls" range={[60, 400]} name="calls" />
+                  <Tooltip
+                    {...TOOLTIP_PROPS}
+                    cursor={{ strokeDasharray: "3 3" }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const p = payload[0].payload;
+                        return (
+                          <div style={TOOLTIP_PROPS.contentStyle as any}>
+                            <p className="text-sm font-medium" style={TOOLTIP_PROPS.itemStyle as any}>{p.name}</p>
+                            <p className="text-xs" style={TOOLTIP_PROPS.labelStyle as any}>
+                              Tempo: {formatDuration(p.tempoMin * 60)}
+                            </p>
+                            <p className="text-xs" style={TOOLTIP_PROPS.labelStyle as any}>
+                              Custo: {formatUSD(p.custo)}
+                            </p>
+                            <p className="text-xs" style={TOOLTIP_PROPS.labelStyle as any}>
+                              Calls: {p.calls}
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
                   />
-                  <Tooltip formatter={(v) => formatUSD(Number(v))} {...TOOLTIP_PROPS} />
-                  <Bar dataKey="custo" name="custo" radius={[0, 4, 4, 0]}>
-                    {chartByTime.map((_, i) => (
-                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
+                  <Scatter data={scatterData} fill="#6366f1" fillOpacity={0.6} />
+                </ScatterChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
@@ -354,16 +378,28 @@ export function SessionTimePage() {
                     <TableHead className="text-right">Custo</TableHead>
                     <TableHead className="text-right">Calls</TableHead>
                     <TableHead className="text-right">Tempo Útil</TableHead>
-                    <TableHead className="text-right">Início</TableHead>
-                    <TableHead className="text-right pr-4">Fim</TableHead>
+                    <TableHead>Início</TableHead>
+                    <TableHead className="pr-4">Fim</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {rows.map((r) => (
                     <TableRow key={r.session_id}>
-                      <TableCell className="font-medium max-w-[240px] truncate pl-4">{r.sessao}</TableCell>
+                      <TableCell className="font-medium max-w-[240px] truncate pl-4">
+                        {r.session_db_id ? (
+                          <Link to={`/sessions/${r.session_db_id}`} className="hover:underline">
+                            {r.sessao}
+                          </Link>
+                        ) : (
+                          r.sessao
+                        )}
+                      </TableCell>
                       <TableCell>
-                        {r.project_name ? (
+                        {r.project_name && r.project_id ? (
+                          <Link to={`/projects/${r.project_id}`}>
+                            <Badge variant="secondary" className="text-xs hover:bg-secondary/80 transition-colors">{r.project_name}</Badge>
+                          </Link>
+                        ) : r.project_name ? (
                           <Badge variant="secondary" className="text-xs">{r.project_name}</Badge>
                         ) : (
                           <span className="text-xs text-muted-foreground">—</span>
@@ -372,8 +408,8 @@ export function SessionTimePage() {
                       <TableCell className="text-right tabular-nums font-medium">{formatUSD(r.custo_usd)}</TableCell>
                       <TableCell className="text-right tabular-nums">{formatNumber(r.calls)}</TableCell>
                       <TableCell className="text-right tabular-nums">{formatDuration(r.tempo_util_segundos)}</TableCell>
-                      <TableCell className="text-right text-sm text-muted-foreground whitespace-nowrap tabular-nums">{formatDate(r.inicio)}</TableCell>
-                      <TableCell className="text-right text-sm text-muted-foreground whitespace-nowrap tabular-nums pr-4">{formatDate(r.fim)}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap tabular-nums">{formatDate(r.inicio)}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap tabular-nums pr-4">{formatDate(r.fim)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

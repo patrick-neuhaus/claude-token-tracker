@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatUSD } from "@/lib/formatters";
 
 interface Badge {
@@ -185,8 +186,13 @@ export function AchievementsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Conquistas</h1>
-        <p className="text-muted-foreground">Carregando...</p>
+        <Skeleton className="h-10 w-40" />
+        <Skeleton className="h-4 w-full" />
+        <div className="space-y-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-48 rounded-xl" />
+          ))}
+        </div>
       </div>
     );
   }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   useProjectDetail,
   useUpdateProject,
@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowLeft,
   Pencil,
@@ -46,9 +47,18 @@ import {
   DollarSign,
   Users,
   Cpu,
+  FolderOpen,
 } from "lucide-react";
 import { toast } from "sonner";
 import { DateRangeFilter, presetToRange } from "@/components/shared/DateRangeFilter";
+import { EmptyState } from "@/components/shared/EmptyState";
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip as RechartsTooltip, PieChart, Pie, Cell, Legend,
+} from "recharts";
+import { MODEL_COLORS, normalizeModelFamily } from "@/lib/constants";
+import { TOOLTIP_PROPS } from "@/lib/chartConfig";
+import { formatShortDate } from "@/lib/formatters";
 
 const PERIOD_PRESETS = [
   { value: "all", label: "Tudo" },
@@ -59,6 +69,7 @@ const PERIOD_PRESETS = [
 
 export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [dateRange, setDateRange] = useState<{ preset?: string; from?: string; to?: string }>({ preset: "all" });
   const { from, to } = dateRange;
 
@@ -78,11 +89,16 @@ export function ProjectDetailPage() {
   );
 
   useEffect(() => {
-    if (project) {
+    if (project && !editingName) {
       setNameValue(project.name);
+    }
+  }, [project, editingName]);
+
+  useEffect(() => {
+    if (project && !editingDesc) {
       setDescValue(project.description || "");
     }
-  }, [project]);
+  }, [project, editingDesc]);
 
   function saveName() {
     if (!id || !nameValue.trim()) return;
@@ -154,7 +170,18 @@ export function ProjectDetailPage() {
   }
 
   if (isLoading) {
-    return <p className="text-muted-foreground">Carregando...</p>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-96" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-xl" />
+          ))}
+        </div>
+        <Skeleton className="h-64 rounded-xl" />
+        <Skeleton className="h-96 rounded-xl" />
+      </div>
+    );
   }
 
   if (!project) {
@@ -189,12 +216,13 @@ export function ProjectDetailPage() {
                 className="text-2xl font-bold h-auto py-1"
                 autoFocus
               />
-              <Button variant="ghost" size="icon" onClick={saveName}>
+              <Button variant="ghost" size="icon" onClick={saveName} aria-label="Salvar nome">
                 <Check className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label="Cancelar edição do nome"
                 onClick={() => {
                   setNameValue(project.name);
                   setEditingName(false);
@@ -209,7 +237,7 @@ export function ProjectDetailPage() {
               onClick={() => setEditingName(true)}
             >
               <h1 className="text-2xl font-bold">{project.name}</h1>
-              <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Pencil className="h-4 w-4 text-muted-foreground opacity-40 group-hover:opacity-100 transition-opacity" />
             </div>
           )}
 
@@ -229,12 +257,13 @@ export function ProjectDetailPage() {
                 className="text-sm h-auto py-1"
                 autoFocus
               />
-              <Button variant="ghost" size="icon" onClick={saveDesc}>
+              <Button variant="ghost" size="icon" onClick={saveDesc} aria-label="Salvar descrição">
                 <Check className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label="Cancelar edição da descrição"
                 onClick={() => {
                   setDescValue(project.description || "");
                   setEditingDesc(false);
@@ -304,6 +333,79 @@ export function ProjectDetailPage() {
         </Card>
       </div>
 
+      {/* Charts */}
+      {(project.daily && project.daily.length > 0) || (project.by_model && project.by_model.length > 0) ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {project.daily && project.daily.length > 0 && (
+            <Card className="lg:col-span-2">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Custo diário</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={240}>
+                  <AreaChart data={project.daily} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="day" tickFormatter={formatShortDate} tick={{ fontSize: 11 }} />
+                    <YAxis tickFormatter={(v: number) => `$${v.toFixed(0)}`} tick={{ fontSize: 11 }} width={56} />
+                    <RechartsTooltip
+                      formatter={(v) => formatUSD(Number(v))}
+                      labelFormatter={(v) => formatShortDate(String(v))}
+                      {...TOOLTIP_PROPS}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="cost_usd"
+                      name="Custo"
+                      stroke="#6366f1"
+                      fill="#6366f1"
+                      fillOpacity={0.2}
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+          {project.by_model && project.by_model.length > 0 && (() => {
+            const grouped = project.by_model.reduce<Record<string, number>>((acc: Record<string, number>, d: { model: string; cost_usd: number }) => {
+              const family = normalizeModelFamily(d.model);
+              acc[family] = (acc[family] || 0) + d.cost_usd;
+              return acc;
+            }, {});
+            const modelPie = Object.entries(grouped)
+              .map(([name, value]) => ({ name: name.charAt(0).toUpperCase() + name.slice(1), value }))
+              .sort((a, b) => b.value - a.value);
+            const modelTotal = modelPie.reduce((s, d) => s + d.value, 0);
+            return (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Por Modelo</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <PieChart>
+                      <Pie data={modelPie} dataKey="value" nameKey="name" innerRadius={40} outerRadius={80} paddingAngle={2}>
+                        {modelPie.map((d) => (
+                          <Cell key={d.name} fill={MODEL_COLORS[d.name.toLowerCase()] || MODEL_COLORS.outro} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip
+                        formatter={(value) => [
+                          `${formatUSD(Number(value))} (${modelTotal > 0 ? ((Number(value) / modelTotal) * 100).toFixed(1) : 0}%)`,
+                          "Custo",
+                        ]}
+                        {...TOOLTIP_PROPS}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            );
+          })()}
+        </div>
+      ) : null}
+
       {/* Sessions Table */}
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -332,14 +434,10 @@ export function ProjectDetailPage() {
         </div>
 
         {!project.sessions || project.sessions.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-muted-foreground">
-              Nenhuma sessão neste projeto
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Adicione sessões para ver custos
-            </p>
-          </div>
+          <EmptyState
+            icon={FolderOpen}
+            message="Nenhuma sessão neste projeto. Clique em 'Adicionar Sessão' pra começar a rastrear custos."
+          />
         ) : (
           <div className="rounded-md border">
             <Table>
@@ -355,7 +453,11 @@ export function ProjectDetailPage() {
               </TableHeader>
               <TableBody>
                 {project.sessions.map((session) => (
-                  <TableRow key={session.id}>
+                  <TableRow
+                    key={session.id}
+                    className="group cursor-pointer hover:bg-accent/50 transition-colors"
+                    onClick={() => navigate(`/sessions/${session.id}`)}
+                  >
                     <TableCell className="font-medium">
                       {session.custom_name || session.session_id.slice(0, 12)}
                     </TableCell>
@@ -365,13 +467,13 @@ export function ProjectDetailPage() {
                     <TableCell className="text-muted-foreground text-sm">
                       {formatDate(session.last_seen)}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right tabular-nums">
                       {session.entry_count}
                     </TableCell>
-                    <TableCell className="text-right font-medium">
+                    <TableCell className="text-right font-medium tabular-nums">
                       {formatUSD(session.total_cost_usd)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <Button
                         variant="ghost"
                         size="sm"

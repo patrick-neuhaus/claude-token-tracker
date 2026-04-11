@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -16,6 +17,7 @@ interface Entry {
   cost_usd: number;
   session_name: string | null;
   session_id: string | null;
+  session_db_id?: string | null;
 }
 
 interface Props {
@@ -63,8 +65,20 @@ export function EntriesTable({ entries }: Props) {
             <TableCell className="text-right text-sm">{formatNumber(e.cache_write)}</TableCell>
             <TableCell className="text-right text-sm">{formatNumber(e.total_tokens)}</TableCell>
             <TableCell className="text-right text-sm font-medium">{formatUSD(e.cost_usd)}</TableCell>
-            <TableCell className="text-sm text-muted-foreground max-w-[120px] truncate">
-              {e.session_name || (e.session_id ? `${e.session_id.slice(0, 8)}...` : "-")}
+            <TableCell className="text-sm max-w-[200px] truncate">
+              {e.session_db_id ? (
+                <Link
+                  to={`/sessions/${e.session_db_id}`}
+                  className="text-muted-foreground hover:text-foreground underline decoration-dotted underline-offset-2"
+                  title={e.session_name || e.session_id || ""}
+                >
+                  {e.session_name || (e.session_id ? `${e.session_id.slice(0, 8)}...` : "-")}
+                </Link>
+              ) : (
+                <span className="text-muted-foreground">
+                  {e.session_name || (e.session_id ? `${e.session_id.slice(0, 8)}...` : "-")}
+                </span>
+              )}
             </TableCell>
           </TableRow>
         ))}
