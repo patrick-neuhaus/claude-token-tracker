@@ -4,16 +4,19 @@ import { EntriesTable } from "@/components/entries/EntriesTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Download } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Download, Loader2 } from "lucide-react";
 import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Pagination } from "@/components/shared/Pagination";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { toast } from "sonner";
 
 async function downloadCsv(params: URLSearchParams) {
   const token = localStorage.getItem("token");
   const res = await fetch(`/api/entries/export?${params.toString()}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
+  if (!res.ok) throw new Error("Erro ao exportar CSV");
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -29,6 +32,7 @@ export function EntriesPage() {
   const [source, setSource] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
 
   const { data, isLoading } = useEntries({ page, model, source, from, to });
   const d = data;
@@ -48,12 +52,16 @@ export function EntriesPage() {
       <div className="flex flex-wrap items-end gap-4 rounded-lg border border-border p-4">
         <div className="space-y-1">
           <Label className="text-xs">Modelo</Label>
-          <Input
-            placeholder="opus, sonnet..."
+          <NativeSelect
+            sizing="default"
             value={model}
             onChange={(e) => { setModel(e.target.value); setPage(1); }}
-            className="w-40"
-          />
+          >
+            <option value="">Todos</option>
+            <option value="opus">opus</option>
+            <option value="sonnet">sonnet</option>
+            <option value="haiku">haiku</option>
+          </NativeSelect>
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Fonte</Label>
@@ -82,28 +90,46 @@ export function EntriesPage() {
           variant="outline"
           size="sm"
           className="gap-2"
-          onClick={() => {
+          disabled={isExporting}
+          onClick={async () => {
             const p = new URLSearchParams();
             if (model) p.set("model", model);
             if (source) p.set("source", source);
             if (from) p.set("from", from);
             if (to) p.set("to", to);
-            downloadCsv(p);
+            setIsExporting(true);
+            try {
+              await downloadCsv(p);
+              toast.success("CSV baixado");
+            } catch {
+              toast.error("Erro ao exportar CSV");
+            } finally {
+              setIsExporting(false);
+            }
           }}
         >
-          <Download className="h-4 w-4" />
-          Exportar CSV
+          {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          {isExporting ? "Exportando..." : "Exportar CSV"}
         </Button>
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground">Carregando...</p>
+        <div className="space-y-2">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full" />
+          ))}
+        </div>
       ) : d?.entries?.length ? (
         <>
           <div className="overflow-x-auto">
             <EntriesTable entries={d!.entries} />
           </div>
-          <Pagination page={page} pages={d!.pages} onPageChange={setPage} />
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <p className="text-xs text-muted-foreground">
+              Mostrando {d.entries.length} de {d.total.toLocaleString("pt-BR")} entradas
+            </p>
+            <Pagination page={page} pages={d!.pages} onPageChange={setPage} />
+          </div>
         </>
       ) : (
         <EmptyState message="Nenhuma entrada encontrada." />

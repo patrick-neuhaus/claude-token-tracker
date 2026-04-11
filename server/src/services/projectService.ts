@@ -45,7 +45,14 @@ export async function getProjectDetail(userId: string, projectId: string, from?:
   if (to) { sessionConditions.push(`s.last_seen <= $${sessionParams.length + 1}`); sessionParams.push(to); }
   const sessionWhere = sessionConditions.join(" AND ");
 
-  const [sessionsResult, statsResult] = await Promise.all([
+  // Entries filter: join sessions for the entry-level queries
+  const entryParams: unknown[] = [projectId, userId];
+  const entryConditions = ["s.project_id = $1", "s.user_id = $2", "te.user_id = $2"];
+  if (from) { entryConditions.push(`te.timestamp >= $${entryParams.length + 1}`); entryParams.push(from); }
+  if (to) { entryConditions.push(`te.timestamp <= $${entryParams.length + 1}`); entryParams.push(to); }
+  const entryWhere = entryConditions.join(" AND ");
+
+  const [sessionsResult, statsResult, dailyResult, byModelResult] = await Promise.all([
     query(
       `SELECT s.id, s.session_id, s.custom_name, s.source, s.first_seen, s.last_seen,
               s.total_cost_usd::float, s.total_input, s.total_output, s.entry_count
@@ -63,12 +70,37 @@ export async function getProjectDetail(userId: string, projectId: string, from?:
        WHERE ${sessionWhere}`,
       sessionParams
     ),
+    query(
+      `SELECT (te.timestamp AT TIME ZONE 'America/Sao_Paulo')::date AS day,
+              COALESCE(SUM(te.cost_usd), 0)::float AS cost_usd,
+              COUNT(*)::int AS entries
+       FROM token_entries te
+       JOIN sessions s ON s.session_id = te.session_id AND s.user_id = te.user_id
+       WHERE ${entryWhere}
+       GROUP BY day
+       ORDER BY day`,
+      entryParams
+    ),
+    query(
+      `SELECT te.model,
+              COALESCE(SUM(te.cost_usd), 0)::float AS cost_usd,
+              COALESCE(SUM(te.total_tokens), 0)::bigint AS total_tokens,
+              COUNT(*)::int AS entries
+       FROM token_entries te
+       JOIN sessions s ON s.session_id = te.session_id AND s.user_id = te.user_id
+       WHERE ${entryWhere}
+       GROUP BY te.model
+       ORDER BY cost_usd DESC`,
+      entryParams
+    ),
   ]);
 
   return {
     ...projectResult.rows[0],
     ...statsResult.rows[0],
     sessions: sessionsResult.rows,
+    daily: dailyResult.rows,
+    by_model: byModelResult.rows,
   };
 }
 

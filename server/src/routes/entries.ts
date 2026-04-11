@@ -41,7 +41,7 @@ router.get("/", async (req, res) => {
       `SELECT e.id, e.timestamp, e.source, e.model, e.input_tokens, e.output_tokens,
               e.cache_read, e.cache_write, e.total_tokens, e.cost_usd::float,
               e.session_id, e.conversation_url,
-              s.custom_name AS session_name
+              s.custom_name AS session_name, s.id AS session_db_id
        FROM token_entries e
        LEFT JOIN sessions s ON s.session_id = e.session_id AND s.user_id = e.user_id
        ${where}

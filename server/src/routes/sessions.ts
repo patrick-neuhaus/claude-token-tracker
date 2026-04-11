@@ -42,7 +42,7 @@ router.get("/", async (req, res) => {
     params.push(to);
   }
 
-  const [rows, countResult] = await Promise.all([
+  const [rows, countResult, aggResult] = await Promise.all([
     query(
       `SELECT s.id, s.session_id, s.custom_name, s.source, s.first_seen, s.last_seen,
               s.total_cost_usd::float, s.total_input, s.total_output, s.entry_count,
@@ -55,6 +55,15 @@ router.get("/", async (req, res) => {
       [...params, limit, offset]
     ),
     query(`SELECT COUNT(*)::int AS total FROM sessions s ${where}`, params),
+    query(
+      `SELECT
+         COALESCE(SUM(s.total_cost_usd), 0)::float AS total_cost_usd,
+         COALESCE(SUM(s.entry_count), 0)::int AS total_entries,
+         COALESCE(MAX(s.total_cost_usd), 0)::float AS max_session_cost,
+         COALESCE(AVG(s.total_cost_usd), 0)::float AS avg_session_cost
+       FROM sessions s ${where}`,
+      params
+    ),
   ]);
 
   res.json({
@@ -62,6 +71,97 @@ router.get("/", async (req, res) => {
     total: countResult.rows[0].total,
     page,
     pages: Math.ceil(countResult.rows[0].total / limit),
+    aggregates: aggResult.rows[0],
+  });
+});
+
+router.get("/:id/detail", async (req, res) => {
+  const userId = getUserId(req);
+  const sessionDbId = req.params.id;
+
+  // Header info
+  const sessionResult = await query(
+    `SELECT s.id, s.session_id, s.custom_name, s.source, s.first_seen, s.last_seen,
+            s.total_cost_usd::float, s.total_input, s.total_output, s.entry_count,
+            s.project_id, p.name AS project_name
+     FROM sessions s
+     LEFT JOIN projects p ON p.id = s.project_id
+     WHERE s.id = $1 AND s.user_id = $2`,
+    [sessionDbId, userId]
+  );
+
+  if (sessionResult.rows.length === 0) {
+    res.status(404).json({ status: "error", message: "Session not found" });
+    return;
+  }
+
+  const session = sessionResult.rows[0];
+
+  // Aggregates, timeline (cost por entry em ordem), breakdown por modelo, cache totals
+  const [aggregates, timeline, byModel, entries] = await Promise.all([
+    query(
+      `SELECT
+         COALESCE(SUM(cost_usd), 0)::float AS total_cost_usd,
+         COALESCE(SUM(input_tokens), 0)::bigint AS total_input,
+         COALESCE(SUM(output_tokens), 0)::bigint AS total_output,
+         COALESCE(SUM(cache_read), 0)::bigint AS total_cache_read,
+         COALESCE(SUM(cache_write), 0)::bigint AS total_cache_write,
+         COALESCE(SUM(total_tokens), 0)::bigint AS total_tokens,
+         COUNT(*)::int AS entry_count,
+         MIN(timestamp) AS first_ts,
+         MAX(timestamp) AS last_ts
+       FROM token_entries
+       WHERE user_id = $1 AND session_id = $2`,
+      [userId, session.session_id]
+    ),
+    query(
+      `SELECT timestamp, cost_usd::float AS cost_usd, model
+       FROM token_entries
+       WHERE user_id = $1 AND session_id = $2
+       ORDER BY timestamp ASC
+       LIMIT 5000`,
+      [userId, session.session_id]
+    ),
+    query(
+      `SELECT model,
+              COALESCE(SUM(cost_usd), 0)::float AS cost_usd,
+              COALESCE(SUM(total_tokens), 0)::bigint AS total_tokens,
+              COUNT(*)::int AS entries
+       FROM token_entries
+       WHERE user_id = $1 AND session_id = $2
+       GROUP BY model
+       ORDER BY cost_usd DESC`,
+      [userId, session.session_id]
+    ),
+    query(
+      `SELECT id, timestamp, source, model, input_tokens, output_tokens,
+              cache_read, cache_write, total_tokens, cost_usd::float, conversation_url
+       FROM token_entries
+       WHERE user_id = $1 AND session_id = $2
+       ORDER BY timestamp DESC
+       LIMIT 100`,
+      [userId, session.session_id]
+    ),
+  ]);
+
+  // Compute cumulative cost for timeline
+  let cumulative = 0;
+  const timelineCumulative = timeline.rows.map((row: any) => {
+    cumulative += Number(row.cost_usd);
+    return {
+      timestamp: row.timestamp,
+      cost_usd: Number(row.cost_usd),
+      cumulative_cost: cumulative,
+      model: row.model,
+    };
+  });
+
+  res.json({
+    session,
+    aggregates: aggregates.rows[0],
+    timeline: timelineCumulative,
+    by_model: byModel.rows,
+    entries: entries.rows,
   });
 });
 

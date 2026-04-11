@@ -4,11 +4,14 @@ import { useProjects } from "@/hooks/useProjects";
 import { SessionsTable } from "@/components/sessions/SessionsTable";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Search, X, DollarSign, Layers, TrendingUp, BarChart3 } from "lucide-react";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Pagination } from "@/components/shared/Pagination";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { formatUSD, formatNumber } from "@/lib/formatters";
 
 export function SessionsPage() {
   const [filters, setFilters] = useState<SessionFilters>({
@@ -97,16 +100,76 @@ export function SessionsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground">Carregando...</p>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 rounded-xl" />
+            ))}
+          </div>
+          <Skeleton className="h-96 rounded-xl" />
+        </div>
       ) : data?.sessions?.length ? (
         <>
+          {data.aggregates && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="flex items-center gap-3 p-4">
+                  <div className="rounded-lg bg-muted p-2 text-green-400">
+                    <DollarSign className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Custo Total</p>
+                    <p className="text-lg font-bold tabular-nums">{formatUSD(data.aggregates.total_cost_usd)}</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="flex items-center gap-3 p-4">
+                  <div className="rounded-lg bg-muted p-2 text-blue-400">
+                    <Layers className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Sessões</p>
+                    <p className="text-lg font-bold tabular-nums">{formatNumber(data.total)}</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="flex items-center gap-3 p-4">
+                  <div className="rounded-lg bg-muted p-2 text-amber-400">
+                    <TrendingUp className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Custo Médio</p>
+                    <p className="text-lg font-bold tabular-nums">{formatUSD(data.aggregates.avg_session_cost)}</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="flex items-center gap-3 p-4">
+                  <div className="rounded-lg bg-muted p-2 text-purple-400">
+                    <BarChart3 className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Mais Cara</p>
+                    <p className="text-lg font-bold tabular-nums">{formatUSD(data.aggregates.max_session_cost)}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
           <SessionsTable
             sessions={data!.sessions}
             sortBy={filters.sort_by}
             sortDir={filters.sort_dir}
             onSort={handleSort}
           />
-          <Pagination page={filters.page} pages={data!.pages} onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))} />
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <p className="text-xs text-muted-foreground">
+              Mostrando {data.sessions.length} de {formatNumber(data.total)} sessões
+            </p>
+            <Pagination page={filters.page} pages={data!.pages} onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))} />
+          </div>
         </>
       ) : (
         <EmptyState message="Nenhuma sessão encontrada." />

@@ -16,6 +16,7 @@ import { ProjectDetailPage } from "@/pages/ProjectDetailPage";
 import { AnalyticsPage } from "@/pages/AnalyticsPage";
 import { AchievementsPage } from "@/pages/AchievementsPage";
 import { SessionTimePage } from "@/pages/SessionTimePage";
+import { SessionDetailPage } from "@/pages/SessionDetailPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,6 +39,7 @@ export default function App() {
               <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/sessions" element={<SessionsPage />} />
+                <Route path="/sessions/:id" element={<SessionDetailPage />} />
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/projects/:id" element={<ProjectDetailPage />} />
                 <Route path="/entries" element={<EntriesPage />} />

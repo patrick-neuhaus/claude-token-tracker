@@ -43,7 +43,7 @@ export function SummaryCards({
   ];
 
   return (
-    <div className="grid grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       {cards.map((c) => (
         <Card key={c.label} className="transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5">
           <CardContent className="flex items-center gap-3 p-4">

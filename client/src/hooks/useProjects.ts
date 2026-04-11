@@ -28,6 +28,8 @@ interface ProjectDetail extends Project {
     total_output: number;
     entry_count: number;
   }>;
+  daily?: Array<{ day: string; cost_usd: number; entries: number }>;
+  by_model?: Array<{ model: string; cost_usd: number; total_tokens: string; entries: number }>;
 }
 
 interface UnassignedSession {

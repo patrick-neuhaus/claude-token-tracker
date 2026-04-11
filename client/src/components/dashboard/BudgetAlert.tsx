@@ -1,14 +1,46 @@
 import { AlertTriangle, AlertCircle, X } from "lucide-react";
 import { formatUSD } from "@/lib/formatters";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Props {
   todayCostUsd: number;
   dailyBudgetUsd: number | null | undefined;
 }
 
+function todayKey() {
+  const d = new Date();
+  return `dismissed_budget_alert_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export function BudgetAlert({ todayCostUsd, dailyBudgetUsd }: Props) {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(todayKey()) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    // Reset dismiss se a data mudou (abriu o app no dia seguinte)
+    const check = setInterval(() => {
+      try {
+        setDismissed(localStorage.getItem(todayKey()) === "1");
+      } catch {
+        /* noop */
+      }
+    }, 60_000);
+    return () => clearInterval(check);
+  }, []);
+
+  function handleDismiss() {
+    try {
+      localStorage.setItem(todayKey(), "1");
+    } catch {
+      /* noop */
+    }
+    setDismissed(true);
+  }
 
   if (!dailyBudgetUsd || dailyBudgetUsd <= 0 || dismissed) return null;
 
@@ -43,7 +75,7 @@ export function BudgetAlert({ todayCostUsd, dailyBudgetUsd }: Props) {
           </p>
         )}
       </div>
-      <button onClick={() => setDismissed(true)} className="opacity-60 hover:opacity-100 transition-opacity">
+      <button onClick={handleDismiss} className="opacity-60 hover:opacity-100 transition-opacity" aria-label="Dispensar alerta">
         <X className="h-4 w-4" />
       </button>
     </div>

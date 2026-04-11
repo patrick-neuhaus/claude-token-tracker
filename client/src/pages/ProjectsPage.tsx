@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { FolderOpen, Plus, LayoutGrid, List } from "lucide-react";
 import { toast } from "sonner";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function ProjectsPage() {
   const navigate = useNavigate();
@@ -32,7 +33,22 @@ export function ProjectsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [viewMode, setViewModeState] = useState<"grid" | "list">(() => {
+    try {
+      const saved = localStorage.getItem("projects_view_mode");
+      return saved === "grid" || saved === "list" ? saved : "list";
+    } catch {
+      return "list";
+    }
+  });
+  const setViewMode = (m: "grid" | "list") => {
+    setViewModeState(m);
+    try {
+      localStorage.setItem("projects_view_mode", m);
+    } catch {
+      /* noop */
+    }
+  };
 
   function handleCreate() {
     if (!name.trim()) {
@@ -56,7 +72,19 @@ export function ProjectsPage() {
   }
 
   if (isLoading) {
-    return <p className="text-muted-foreground">Carregando...</p>;
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-9 w-32" />
+        </div>
+        <div className="rounded-md border overflow-hidden">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   const projectList = projects;
@@ -71,12 +99,16 @@ export function ProjectsPage() {
             <div className="flex rounded-md border border-border overflow-hidden">
               <button
                 onClick={() => setViewMode("grid")}
+                aria-label="Visualização em grade"
+                aria-pressed={viewMode === "grid"}
                 className={`px-2.5 py-1.5 transition-colors ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
               >
                 <LayoutGrid className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setViewMode("list")}
+                aria-label="Visualização em lista"
+                aria-pressed={viewMode === "list"}
                 className={`px-2.5 py-1.5 transition-colors ${viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
               >
                 <List className="h-4 w-4" />

@@ -41,9 +41,64 @@ export interface ProjectComparisonData {
   daily: Array<{ project_id: string; project: string; day: string; cost_usd: number }>;
 }
 
+export interface SessionDetailResponse {
+  session: {
+    id: string;
+    session_id: string;
+    custom_name: string | null;
+    source: string;
+    first_seen: string;
+    last_seen: string;
+    total_cost_usd: number;
+    total_input: string;
+    total_output: string;
+    entry_count: number;
+    project_id: string | null;
+    project_name: string | null;
+  };
+  aggregates: {
+    total_cost_usd: number;
+    total_input: string;
+    total_output: string;
+    total_cache_read: string;
+    total_cache_write: string;
+    total_tokens: string;
+    entry_count: number;
+    first_ts: string | null;
+    last_ts: string | null;
+  };
+  timeline: Array<{
+    timestamp: string;
+    cost_usd: number;
+    cumulative_cost: number;
+    model: string;
+  }>;
+  by_model: Array<{
+    model: string;
+    cost_usd: number;
+    total_tokens: string;
+    entries: number;
+  }>;
+  entries: Array<{
+    id: string;
+    timestamp: string;
+    source: string;
+    model: string;
+    input_tokens: number;
+    output_tokens: number;
+    cache_read: number;
+    cache_write: number;
+    total_tokens: number;
+    cost_usd: number;
+    conversation_url: string | null;
+  }>;
+}
+
 export interface SessionTimeRow {
   session_id: string;
+  session_db_id: string | null;
   sessao: string;
+  project_id: string | null;
   project_name: string | null;
   custo_usd: number;
   total_tokens: string;
@@ -75,6 +130,12 @@ export interface SessionListResponse {
   total: number;
   page: number;
   pages: number;
+  aggregates: {
+    total_cost_usd: number;
+    total_entries: number;
+    max_session_cost: number;
+    avg_session_cost: number;
+  };
 }
 
 // === Entries ===
@@ -91,6 +152,7 @@ export interface EntryItem {
   total_tokens: number;
   cost_usd: number;
   session_id: string;
+  session_db_id: string | null;
   session_name: string | null;
   conversation_url: string | null;
 }

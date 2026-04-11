@@ -1,10 +1,10 @@
-import { Fragment, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ChevronRight, ChevronDown, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SessionNameEditor } from "./SessionNameEditor";
-import { useSessionEntries, useRenameSession } from "@/hooks/useSessions";
-import { formatDate, formatUSD, formatTokens } from "@/lib/formatters";
+import { useRenameSession } from "@/hooks/useSessions";
+import { formatDate, formatUSD } from "@/lib/formatters";
 import { toast } from "sonner";
 
 interface Session {
@@ -18,6 +18,7 @@ interface Session {
   total_input: number;
   total_output: number;
   entry_count: number;
+  project_id?: string | null;
   project_name?: string | null;
 }
 
@@ -35,9 +36,8 @@ function SortIcon({ col, sortBy, sortDir }: { col: string; sortBy?: string; sort
 }
 
 export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const navigate = useNavigate();
   const rename = useRenameSession();
-  const { data: entries } = useSessionEntries(expandedId);
 
   function sortableHead(col: string, label: string, className?: string) {
     return (
@@ -52,7 +52,7 @@ export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
       { id, custom_name: name },
       {
         onSuccess: () => toast.success("Nome atualizado"),
-        onError: () => toast.error("Erro ao renomear sessao"),
+        onError: () => toast.error("Erro ao renomear sessão"),
       },
     );
   }
@@ -61,86 +61,55 @@ export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-8"></TableHead>
           <TableHead>Nome</TableHead>
           <TableHead>Fonte</TableHead>
           <TableHead>Projeto</TableHead>
-          {sortableHead("first_seen", "Primeira")}
-          {sortableHead("last_seen", "Última")}
+          {sortableHead("first_seen", "Primeira entrada")}
+          {sortableHead("last_seen", "Última atividade")}
           {sortableHead("entry_count", "Entradas", "text-right")}
           {sortableHead("total_cost_usd", "Custo", "text-right")}
+          <TableHead className="w-8"></TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {sessions.map((s) => (
-          <Fragment key={s.id}>
-            <TableRow
-              className="cursor-pointer transition-colors hover:bg-accent/50"
-              onClick={() => setExpandedId(expandedId === s.id ? null : s.id)}
-            >
-              <TableCell className="w-8 px-2">
-                {expandedId === s.id ? (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                )}
-              </TableCell>
-              <TableCell onClick={(e) => e.stopPropagation()}>
-                <SessionNameEditor
-                  currentName={s.custom_name}
-                  sessionId={s.session_id}
-                  onSave={(name) => handleRename(s.id, name)}
-                  source={s.source}
-                  firstSeen={s.first_seen}
-                  entryCount={s.entry_count}
-                />
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline" className="text-xs">{s.source}</Badge>
-              </TableCell>
-              <TableCell>
-                {s.project_name ? (
-                  <Badge variant="secondary" className="text-xs">{s.project_name}</Badge>
-                ) : (
-                  <span className="text-xs text-muted-foreground">—</span>
-                )}
-              </TableCell>
-              <TableCell className="text-sm">{formatDate(s.first_seen)}</TableCell>
-              <TableCell className="text-sm">{formatDate(s.last_seen)}</TableCell>
-              <TableCell className="text-right">{s.entry_count}</TableCell>
-              <TableCell className="text-right">{formatUSD(s.total_cost_usd)}</TableCell>
-            </TableRow>
-            {expandedId === s.id && entries && (
-              <TableRow>
-                <TableCell colSpan={8} className="bg-muted/30 p-4">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Horario</TableHead>
-                        <TableHead>Modelo</TableHead>
-                        <TableHead className="text-right">Input</TableHead>
-                        <TableHead className="text-right">Output</TableHead>
-                        <TableHead className="text-right">Cache</TableHead>
-                        <TableHead className="text-right">Custo</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {entries.map((e) => (
-                        <TableRow key={e.id}>
-                          <TableCell className="text-sm">{formatDate(e.timestamp)}</TableCell>
-                          <TableCell>{e.model}</TableCell>
-                          <TableCell className="text-right">{formatTokens(e.input_tokens)}</TableCell>
-                          <TableCell className="text-right">{formatTokens(e.output_tokens)}</TableCell>
-                          <TableCell className="text-right">{formatTokens(Number(e.cache_read) + Number(e.cache_write))}</TableCell>
-                          <TableCell className="text-right">{formatUSD(e.cost_usd)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableCell>
-              </TableRow>
-            )}
-          </Fragment>
+          <TableRow
+            key={s.id}
+            className="cursor-pointer transition-colors hover:bg-accent/50 group"
+            onClick={() => navigate(`/sessions/${s.id}`)}
+          >
+            <TableCell onClick={(e) => e.stopPropagation()}>
+              <SessionNameEditor
+                currentName={s.custom_name}
+                sessionId={s.session_id}
+                onSave={(name) => handleRename(s.id, name)}
+                source={s.source}
+                firstSeen={s.first_seen}
+                entryCount={s.entry_count}
+              />
+            </TableCell>
+            <TableCell>
+              <Badge variant="outline" className="text-xs">{s.source}</Badge>
+            </TableCell>
+            <TableCell onClick={(e) => e.stopPropagation()}>
+              {s.project_name && s.project_id ? (
+                <Link to={`/projects/${s.project_id}`}>
+                  <Badge variant="secondary" className="text-xs hover:bg-secondary/80 transition-colors">{s.project_name}</Badge>
+                </Link>
+              ) : s.project_name ? (
+                <Badge variant="secondary" className="text-xs">{s.project_name}</Badge>
+              ) : (
+                <span className="text-xs text-muted-foreground">—</span>
+              )}
+            </TableCell>
+            <TableCell className="text-sm">{formatDate(s.first_seen)}</TableCell>
+            <TableCell className="text-sm">{formatDate(s.last_seen)}</TableCell>
+            <TableCell className="text-right tabular-nums">{s.entry_count}</TableCell>
+            <TableCell className="text-right tabular-nums font-medium">{formatUSD(s.total_cost_usd)}</TableCell>
+            <TableCell className="w-8 px-2">
+              <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            </TableCell>
+          </TableRow>
         ))}
       </TableBody>
     </Table>
