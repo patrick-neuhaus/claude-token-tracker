@@ -2,7 +2,7 @@
 REM Execute este script como Administrador para configurar o auto-start via Task Scheduler
 
 set "PATH=C:\Program Files\nodejs;%PATH%"
-set "BASE=D:\DOCUMENTOS\Github\claude-token-tracker"
+set "BASE=C:\Users\Patrick Neuhaus\Documents\Github\claude-token-tracker"
 
 echo Compilando TypeScript...
 cd /d "%BASE%\server"

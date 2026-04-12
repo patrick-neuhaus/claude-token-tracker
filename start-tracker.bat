@@ -1,6 +1,6 @@
 @echo off
 title Claude Token Tracker
-set "BASE=D:\DOCUMENTOS\Github\claude-token-tracker"
+set "BASE=C:\Users\Patrick Neuhaus\Documents\Github\claude-token-tracker"
 set "LOGFILE=%BASE%\tracker-autostart.log"
 set "PATH=C:\Program Files\nodejs;C:\Program Files\Docker\Docker\resources\bin;C:\ProgramData\DockerDesktop\version-bin;%PATH%"
 
