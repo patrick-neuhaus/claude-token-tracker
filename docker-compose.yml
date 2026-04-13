@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: claude_token_tracker
       POSTGRES_USER: tracker
-      POSTGRES_PASSWORD: tracker_local_2026
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tracker_dev}
     ports:
       - "127.0.0.1:5432:5432"
     volumes:

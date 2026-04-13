@@ -1,6 +1,6 @@
 # UX Audit + Refactor Spec — Claude Token Tracker
 
-Auditoria completa com padrões extraídos de Umami, Dub e OpenStatus. Findings validados pelo Patrick lendo cada arquivo citado. Spec organizada em 3 waves priorizadas.
+Auditoria completa com padrões extraídos de Umami, Dub e OpenStatus. Findings validados lendo cada arquivo citado. Spec organizada em 3 waves priorizadas.
 
 ---
 
@@ -80,7 +80,7 @@ monitors/[id]/layout.tsx
 
 **F5. Header `/session-time` mal alinhado**
 - Validado: `SessionTimePage.tsx:357-358` tem `text-right` em "Início" e "Fim" mas datas não deveriam ser right-aligned.
-- Impacto: confere com o print que o Patrick mandou.
+- Impacto: confere com o print reportado.
 
 **F6. Dois bar charts verticais idênticos em `/session-time`**
 - Validado: `SessionTimePage.tsx:270-341` — dois `BarChart layout="vertical"` com altura `chartByTime.length * 38`. Com 20 sessões = 1520px de gráfico.
@@ -253,7 +253,7 @@ Total: 3 sessões de trabalho focado.
 
 ## Pré-requisito antes de executar
 
-Patrick precisa confirmar:
+Confirmar antes de executar:
 1. **P0 primeiro isolado** (build + testar) antes de P1? Ou P0 + P1 na mesma wave?
 2. `/sessions/:id` usa padrão OpenStatus (rotas filhas) ou Umami (panels na mesma page)? Recomendo **Umami** porque é menos rotas pra criar e o app já é SPA simples.
 3. Alguma coisa pra remover/adicionar na spec antes de começar?

@@ -1,2 +1,5 @@
+Dim basePath
+basePath = Left(WScript.ScriptFullName, InStrRev(WScript.ScriptFullName, "\") - 1)
+
 Set WshShell = CreateObject("WScript.Shell")
-WshShell.Run """C:\Users\Patrick Neuhaus\Documents\Github\claude-token-tracker\start-tracker.bat""", 7, False
+WshShell.Run """" & basePath & "\start-tracker.bat""", 7, False

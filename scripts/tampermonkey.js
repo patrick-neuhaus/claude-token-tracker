@@ -18,7 +18,7 @@
     // URL DO SERVIDOR LOCAL
     // =============================================
     const WEBHOOK_URL = 'http://localhost:3001/api/webhook/track-tokens';
-    const WEBHOOK_TOKEN = '***REMOVED***';
+    const WEBHOOK_TOKEN = ''; // Cole seu webhook token aqui (encontre em Settings > Webhook Token)
     // =============================================
 
     if (!WEBHOOK_TOKEN) {
