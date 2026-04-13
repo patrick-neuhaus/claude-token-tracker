@@ -291,9 +291,9 @@ export async function getSessionTime(
      )
      SELECT
        session_id,
-       MAX(session_db_id) AS session_db_id,
+       MIN(session_db_id::text)::uuid AS session_db_id,
        sessao,
-       MAX(project_id::text) AS project_id,
+       MIN(project_id::text) AS project_id,
        MAX(project_name) AS project_name,
        SUM(cost_usd)::float AS custo_usd,
        SUM(total_tokens)::bigint AS total_tokens,

@@ -18,7 +18,7 @@
     // URL DO SERVIDOR LOCAL
     // =============================================
     const WEBHOOK_URL = 'http://localhost:3001/api/webhook/track-tokens';
-    const WEBHOOK_TOKEN = '1a51c48f-4892-4ce7-ac9f-793410593069';
+    const WEBHOOK_TOKEN = ''; // Cole seu webhook token aqui (encontre em Settings > Webhook Token)
     // =============================================
 
     if (!WEBHOOK_TOKEN) {
