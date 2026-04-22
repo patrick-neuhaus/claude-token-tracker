@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 # =============================================
 WEBHOOK_URL = os.environ.get(
     'TOKEN_TRACKER_WEBHOOK',
-    'http://localhost:3001/api/webhook/track-tokens'
+    'http://localhost:3002/api/webhook/track-tokens'
 )
 WEBHOOK_TOKEN = os.environ.get(
     'TOKEN_TRACKER_TOKEN',
@@ -101,6 +101,67 @@ def extract_auto_name(transcript_path):
     except Exception:
         pass
     return None
+
+
+def extract_session_name(session_id):
+    """
+    Tenta descobrir o 'funny name' da sessao (ex: fluffy-giggling-phoenix)
+    via plan files em ~/.claude/plans/. Retorna None se nao conseguir.
+    Falha silenciosamente — nunca quebra o envio de tokens.
+    """
+    try:
+        if not session_id:
+            return None
+        home = os.path.expanduser('~')
+        sessions_dir = os.path.join(home, '.claude', 'sessions')
+        plans_dir = os.path.join(home, '.claude', 'plans')
+
+        # 1. Acha startedAt da sessao atual em ~/.claude/sessions/<pid>.json
+        started_at_ms = None
+        if os.path.isdir(sessions_dir):
+            for fname in os.listdir(sessions_dir):
+                if not fname.endswith('.json'):
+                    continue
+                try:
+                    with open(os.path.join(sessions_dir, fname), 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    if data.get('sessionId') == session_id:
+                        started_at_ms = data.get('startedAt')
+                        break
+                except Exception:
+                    continue
+
+        if started_at_ms is None:
+            return None
+
+        started_at_s = started_at_ms / 1000.0
+
+        # 2. Acha plan files modificados durante a sessao (exclui agent variants)
+        if not os.path.isdir(plans_dir):
+            return None
+
+        candidates = []
+        for fname in os.listdir(plans_dir):
+            if not fname.endswith('.md'):
+                continue
+            if '-agent-' in fname:
+                continue
+            fpath = os.path.join(plans_dir, fname)
+            try:
+                mtime = os.path.getmtime(fpath)
+            except OSError:
+                continue
+            if mtime >= started_at_s:
+                candidates.append((mtime, fname[:-3]))
+
+        if not candidates:
+            return None
+
+        # 3. Mais recente = sessao atual
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        return candidates[0][1]
+    except Exception:
+        return None
 
 
 def extract_usage_entries(transcript_path, skip_lines=0):
@@ -218,6 +279,11 @@ def main():
     if skip_lines == 0:
         auto_name = extract_auto_name(transcript_path)
 
+    # Funny name (ex: fluffy-giggling-phoenix) — chamado a cada hook fire
+    # porque o plan file pode ser criado em qualquer momento da sessao.
+    # Backend so atualiza se session_name estiver NULL (COALESCE).
+    session_name = extract_session_name(session_id)
+
     now = datetime.now(timezone.utc).isoformat()
 
     for entry in entries:
@@ -234,6 +300,8 @@ def main():
         }
         if auto_name:
             payload['auto_name'] = auto_name
+        if session_name:
+            payload['session_name'] = session_name
         send_to_webhook(payload)
 
     save_last_sent_line(session_id, total_lines)

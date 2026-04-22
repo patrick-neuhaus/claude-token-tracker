@@ -8,7 +8,7 @@ import { env } from "./config/env.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
-app.use(cors({ origin: ["http://localhost:3001", "http://localhost:5173"] }));
+app.use(cors({ origin: ["http://localhost:3001", "http://localhost:3002", "http://localhost:5173"] }));
 app.use(express.json({ limit: "16kb" }));
 
 // Migrations idempotentes
@@ -20,6 +20,10 @@ await pool.query(`
     ADD COLUMN IF NOT EXISTS plan_start_date DATE,
     ADD COLUMN IF NOT EXISTS weekly_reset_dow INT DEFAULT 2,
     ADD COLUMN IF NOT EXISTS weekly_reset_hour INT DEFAULT 15
+`);
+await pool.query(`
+  ALTER TABLE sessions
+    ADD COLUMN IF NOT EXISTS session_name TEXT
 `);
 
 // Mount API routes

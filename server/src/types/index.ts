@@ -31,4 +31,6 @@ export interface TokenPayload {
   cost_usd: number;
   session_id?: string;
   conversation_url?: string;
+  auto_name?: string;
+  session_name?: string;
 }

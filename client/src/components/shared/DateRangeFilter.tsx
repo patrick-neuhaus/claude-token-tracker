@@ -48,17 +48,21 @@ export function DateRangeFilter({ value, onChange, presets = DEFAULT_PRESETS, cl
   }
 
   function handleFromChange(raw: string) {
-    const from = raw ? new Date(raw).toISOString() : undefined;
+    // Parse como LOCAL (raw é "YYYY-MM-DD"). new Date(raw) em JS é UTC midnight → bug de fuso.
+    let from: string | undefined;
+    if (raw) {
+      const [y, m, d] = raw.split("-").map(Number);
+      from = new Date(y, m - 1, d, 0, 0, 0, 0).toISOString();
+    }
     onChange({ from, to: value.to, preset: undefined });
   }
 
   function handleToChange(raw: string) {
-    // "to" como fim do dia
+    // "to" como fim do dia LOCAL
     let to: string | undefined;
     if (raw) {
-      const d = new Date(raw);
-      d.setHours(23, 59, 59, 999);
-      to = d.toISOString();
+      const [y, m, d] = raw.split("-").map(Number);
+      to = new Date(y, m - 1, d, 23, 59, 59, 999).toISOString();
     }
     onChange({ from: value.from, to, preset: undefined });
   }
