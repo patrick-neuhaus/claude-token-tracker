@@ -22,6 +22,7 @@ const payloadSchema = z.object({
   session_id: z.string().optional(),
   conversation_url: z.string().optional(),
   auto_name: z.string().max(120).optional(),
+  session_name: z.string().max(100).optional(),
 });
 
 router.post("/track-tokens", webhookAuth, async (req, res) => {
@@ -43,12 +44,25 @@ router.post("/track-tokens", webhookAuth, async (req, res) => {
     cache_read: data.cache_read || data.cache_read_tokens || 0,
     cache_write: data.cache_write || data.cache_write_tokens || 0,
     auto_name: data.auto_name,
+    session_name: data.session_name,
   };
 
   const webhookReq = req as WebhookRequest;
-  const result = await insertTokenEntry(webhookReq.webhookUser!.userId, normalizedPayload);
 
-  res.status(201).json({ status: "ok", cost_usd: result.cost_usd });
+  try {
+    const result = await insertTokenEntry(webhookReq.webhookUser!.userId, normalizedPayload);
+
+    if (result.duplicate) {
+      res.status(200).json({ status: "ok", duplicate: true, cost_usd: 0 });
+      return;
+    }
+
+    res.status(201).json({ status: "ok", cost_usd: result.cost_usd });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("[ERROR]", message);
+    res.status(500).json({ status: "error", message });
+  }
 });
 
 export default router;
