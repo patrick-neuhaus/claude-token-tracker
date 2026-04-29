@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/Section";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, ChevronDown, ChevronRight } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -36,11 +36,8 @@ export function WebhookInfo({ webhookToken }: Props) {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Webhook</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <Section title="Webhook">
+        <div className="space-y-4">
           <div>
             <p className="text-sm text-muted-foreground mb-1">URL do Webhook</p>
             <div className="flex items-center gap-2">
@@ -160,14 +157,10 @@ export function WebhookInfo({ webhookToken }: Props) {
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </Section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Referência de Preços por Modelo</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <Section title="Referência de Preços por Modelo">
           <Table>
             <TableHeader>
               <TableRow>
@@ -202,8 +195,7 @@ export function WebhookInfo({ webhookToken }: Props) {
               </TableRow>
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+      </Section>
     </>
   );
 }

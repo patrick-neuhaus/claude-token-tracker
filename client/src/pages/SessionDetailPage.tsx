@@ -1,7 +1,8 @@
 import { useParams, Link } from "react-router-dom";
 import { useSessionDetail } from "@/hooks/useSessionDetail";
 import { useRenameSession } from "@/hooks/useSessions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/Section";
+import { StatCard } from "@/components/shared/StatCard";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -148,60 +149,16 @@ export function SessionDetailPage() {
       </div>
 
       {/* Metrics bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-muted p-2 text-green-400">
-              <DollarSign className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Custo Total</p>
-              <p className="text-lg font-bold tabular-nums">{formatUSD(aggregates.total_cost_usd)}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-muted p-2 text-blue-400">
-              <Hash className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Total Tokens</p>
-              <p className="text-lg font-bold tabular-nums">{formatTokens(aggregates.total_tokens)}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-muted p-2 text-amber-400">
-              <Clock className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Duração</p>
-              <p className="text-lg font-bold tabular-nums">{formatDuration(duration)}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="rounded-lg bg-muted p-2 text-purple-400">
-              <Activity className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Entradas</p>
-              <p className="text-lg font-bold tabular-nums">{formatNumber(aggregates.entry_count)}</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard icon={DollarSign} iconColor="text-success" label="Custo Total" value={formatUSD(aggregates.total_cost_usd)} />
+        <StatCard icon={Hash} iconColor="text-info" label="Total Tokens" value={formatTokens(aggregates.total_tokens)} />
+        <StatCard icon={Clock} iconColor="text-warning" label="Duração" value={formatDuration(duration)} />
+        <StatCard icon={Activity} iconColor="text-chart-4" label="Entradas" value={formatNumber(aggregates.entry_count)} />
       </div>
 
       {/* Chart: cumulative cost */}
       {timeline.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Custo acumulado</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Section title="Custo acumulado">
             <ResponsiveContainer width="100%" height={260}>
               <AreaChart data={timeline} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -231,17 +188,12 @@ export function SessionDetailPage() {
                 />
               </AreaChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        </Section>
       )}
 
       {/* Grid 2-col: modelos + composição de tokens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Custo por Modelo</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Section title="Custo por Modelo">
             {modelPie.length === 0 ? (
               <EmptyState icon={Activity} message="Sem dados" />
             ) : (
@@ -270,14 +222,9 @@ export function SessionDetailPage() {
                 </PieChart>
               </ResponsiveContainer>
             )}
-          </CardContent>
-        </Card>
+        </Section>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Composição de Tokens</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Section title="Composição de Tokens">
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={tokenBreakdown} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -287,16 +234,11 @@ export function SessionDetailPage() {
                 <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        </Section>
       </div>
 
       {/* Entries */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Entradas recentes</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
+      <Section title="Entradas recentes" flush>
           {entries.length === 0 ? (
             <EmptyState icon={Activity} message="Nenhuma entrada" />
           ) : (
@@ -329,8 +271,7 @@ export function SessionDetailPage() {
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
+      </Section>
     </div>
   );
 }

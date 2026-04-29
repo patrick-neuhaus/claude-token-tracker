@@ -12,12 +12,9 @@ import {
   formatDate,
   formatTokens,
 } from "@/lib/formatters";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { surface } from "@/lib/surface";
+import { Section } from "@/components/shared/Section";
+import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -286,62 +283,30 @@ export function ProjectDetailPage() {
       <Separator />
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Custo Total
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatUSD(project.total_cost_usd)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Sessões
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{project.session_count}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {project.session_count === 1 ? "sessão ativa" : "sessões ativas"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Tokens
-            </CardTitle>
-            <Cpu className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatTokens(totalTokens)}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatTokens(project.total_input)} entrada /{" "}
-              {formatTokens(project.total_output)} saída
-            </p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <StatCard icon={DollarSign} iconColor="text-success" label="Custo Total" value={formatUSD(project.total_cost_usd)} />
+        <StatCard
+          icon={Users}
+          iconColor="text-info"
+          label="Sessões"
+          value={project.session_count}
+          hint={<span className="text-xs text-muted-foreground">{project.session_count === 1 ? "sessão ativa" : "sessões ativas"}</span>}
+        />
+        <StatCard
+          icon={Cpu}
+          iconColor="text-chart-4"
+          label="Tokens"
+          value={formatTokens(totalTokens)}
+          hint={<span className="text-xs text-muted-foreground">{formatTokens(project.total_input)} entrada / {formatTokens(project.total_output)} saída</span>}
+        />
       </div>
 
       {/* Charts */}
       {(project.daily && project.daily.length > 0) || (project.by_model && project.by_model.length > 0) ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {project.daily && project.daily.length > 0 && (
-            <Card className="lg:col-span-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Custo diário</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <div className={`${surface.section} lg:col-span-2 px-5 py-4`}>
+              <h3 className="text-sm font-semibold tracking-tight mb-3">Custo diário</h3>
                 <ResponsiveContainer width="100%" height={240}>
                   <AreaChart data={project.daily} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -363,8 +328,7 @@ export function ProjectDetailPage() {
                     />
                   </AreaChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
+            </div>
           )}
           {project.by_model && project.by_model.length > 0 && (() => {
             const grouped = project.by_model.reduce<Record<string, number>>((acc: Record<string, number>, d: { model: string; cost_usd: number }) => {
@@ -377,11 +341,7 @@ export function ProjectDetailPage() {
               .sort((a, b) => b.value - a.value);
             const modelTotal = modelPie.reduce((s, d) => s + d.value, 0);
             return (
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Por Modelo</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <Section title="Por Modelo">
                   <ResponsiveContainer width="100%" height={240}>
                     <PieChart>
                       <Pie data={modelPie} dataKey="value" nameKey="name" innerRadius={40} outerRadius={80} paddingAngle={2}>
@@ -399,8 +359,7 @@ export function ProjectDetailPage() {
                       <Legend />
                     </PieChart>
                   </ResponsiveContainer>
-                </CardContent>
-              </Card>
+              </Section>
             );
           })()}
         </div>

@@ -2,8 +2,10 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSessionTime } from "@/hooks/useSessionTime";
 import { formatUSD, formatNumber, formatDate } from "@/lib/formatters";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard } from "@/components/shared/StatCard";
+import { Section } from "@/components/shared/Section";
+import { surface } from "@/lib/surface";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -134,8 +136,7 @@ export function SessionTimePage() {
       </div>
 
       {/* Controles */}
-      <Card>
-        <CardContent className="p-4 space-y-4">
+      <div className={`${surface.section} px-5 py-4 space-y-4`}>
           {/* Presets + datas */}
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex rounded-md border border-border overflow-hidden">
@@ -230,8 +231,7 @@ export function SessionTimePage() {
               ))}
             </div>
           </div>
-        </CardContent>
-      </Card>
+      </div>
 
       {/* Loading / error */}
       {isLoading && (
@@ -257,63 +257,18 @@ export function SessionTimePage() {
       {!isLoading && rows.length > 0 && (
         <>
           {/* Resumo */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="flex items-center gap-3 p-4">
-                <div className="rounded-lg bg-muted p-2 text-green-400">
-                  <DollarSign className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Custo Total</p>
-                  <p className="text-lg font-bold tabular-nums">{formatUSD(totals.custo)}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex items-center gap-3 p-4">
-                <div className="rounded-lg bg-muted p-2 text-blue-400">
-                  <Clock className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Tempo Útil</p>
-                  <p className="text-lg font-bold tabular-nums">{formatDuration(totals.tempo)}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex items-center gap-3 p-4">
-                <div className="rounded-lg bg-muted p-2 text-amber-400">
-                  <Layers className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Sessões</p>
-                  <p className="text-lg font-bold tabular-nums">{formatNumber(totals.sessoes)}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex items-center gap-3 p-4">
-                <div className="rounded-lg bg-muted p-2 text-purple-400">
-                  <Activity className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Calls</p>
-                  <p className="text-lg font-bold tabular-nums">{formatNumber(totals.calls)}</p>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatCard icon={DollarSign} iconColor="text-success" label="Custo Total" value={formatUSD(totals.custo)} />
+            <StatCard icon={Clock} iconColor="text-info" label="Tempo Útil" value={formatDuration(totals.tempo)} />
+            <StatCard icon={Layers} iconColor="text-warning" label="Sessões" value={formatNumber(totals.sessoes)} />
+            <StatCard icon={Activity} iconColor="text-chart-4" label="Calls" value={formatNumber(totals.calls)} />
           </div>
 
           {/* Scatter: custo vs tempo útil */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Custo × Tempo Útil</CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">
-                Cada ponto é uma sessão. Pontos no canto superior direito são sessões caras e longas;
-                canto inferior esquerdo são quick wins.
-              </p>
-            </CardHeader>
-            <CardContent>
+          <Section
+            title="Custo × Tempo Útil"
+            description="Cada ponto é uma sessão. Pontos no canto superior direito são sessões caras e longas; canto inferior esquerdo são quick wins."
+          >
               <ResponsiveContainer width="100%" height={400}>
                 <ScatterChart margin={{ top: 20, right: 24, left: 10, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -361,15 +316,10 @@ export function SessionTimePage() {
                   <Scatter data={scatterData} fill="#6366f1" fillOpacity={0.6} />
                 </ScatterChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          </Section>
 
           {/* Tabela detalhada */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Detalhamento</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
+          <Section title="Detalhamento" flush>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -414,8 +364,7 @@ export function SessionTimePage() {
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
+          </Section>
         </>
       )}
     </div>

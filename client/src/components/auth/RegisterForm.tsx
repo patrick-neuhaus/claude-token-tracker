@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { surface } from "@/lib/surface";
 
 interface Props {
   onSwitch: () => void;
@@ -23,7 +23,7 @@ export function RegisterForm({ onSwitch }: Props) {
     setError("");
 
     if (password !== confirm) {
-      setError("Senhas nao conferem");
+      setError("Senhas não conferem");
       return;
     }
     if (password.length < 8) {
@@ -44,65 +44,57 @@ export function RegisterForm({ onSwitch }: Props) {
 
   if (isPendingApproval) {
     return (
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle>Aguardando aprovacao</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <p className="text-muted-foreground">
-            Sua conta foi criada mas ainda precisa ser aprovada por um administrador.
-          </p>
-          <Button variant="outline" onClick={() => setIsPendingApproval(false)}>
-            Voltar
-          </Button>
-        </CardContent>
-      </Card>
+      <div className={`${surface.primary} w-full max-w-md px-6 py-6 text-center space-y-4`}>
+        <h2 className="text-lg font-semibold tracking-tight">Aguardando aprovação</h2>
+        <p className="text-sm text-muted-foreground">
+          Sua conta foi criada mas ainda precisa ser aprovada por um administrador.
+        </p>
+        <Button variant="outline" onClick={() => setIsPendingApproval(false)}>
+          Voltar
+        </Button>
+      </div>
     );
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <CardTitle>Criar conta</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="reg-email">Email</Label>
-            <Input id="reg-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="reg-password">Senha</Label>
-            <Input
-              id="reg-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="reg-confirm">Confirmar senha</Label>
-            <Input
-              id="reg-confirm"
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              required
-            />
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Criando..." : "Criar conta"}
-          </Button>
-          <p className="text-center text-sm text-muted-foreground">
-            Ja tem conta?{" "}
-            <button type="button" onClick={onSwitch} className="text-primary underline">
-              Entrar
-            </button>
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+    <div className={`${surface.primary} w-full max-w-md px-6 py-6`}>
+      <h2 className="text-lg font-semibold tracking-tight text-center mb-4">Criar conta</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="reg-email">Email</Label>
+          <Input id="reg-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="reg-password">Senha</Label>
+          <Input
+            id="reg-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="reg-confirm">Confirmar senha</Label>
+          <Input
+            id="reg-confirm"
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            required
+          />
+        </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <Button type="submit" className="w-full" disabled={pending}>
+          {pending ? "Criando..." : "Criar conta"}
+        </Button>
+        <p className="text-center text-sm text-muted-foreground">
+          Já tem conta?{" "}
+          <button type="button" onClick={onSwitch} className="text-info underline">
+            Entrar
+          </button>
+        </p>
+      </form>
+    </div>
   );
 }

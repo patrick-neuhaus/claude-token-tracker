@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/Section";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -61,12 +61,8 @@ export function SettingsForm({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Configurações</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+    <Section title="Configurações">
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
           <div className="space-y-2">
             <Label>Taxa USD → BRL</Label>
             <Input type="number" step="0.01" value={rate} onChange={(e) => setRate(e.target.value)} />
@@ -158,8 +154,7 @@ export function SettingsForm({
           <Button type="submit" disabled={update.isPending}>
             {update.isPending ? "Salvando..." : "Salvar"}
           </Button>
-        </form>
-      </CardContent>
-    </Card>
+      </form>
+    </Section>
   );
 }

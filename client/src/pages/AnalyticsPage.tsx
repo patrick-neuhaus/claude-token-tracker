@@ -4,8 +4,9 @@ import { formatUSD, formatTokens, formatNumber, formatShortDate, formatFullDate 
 import { useProjects } from "@/hooks/useProjects";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Section } from "@/components/shared/Section";
+import { surface } from "@/lib/surface";
 import {
   ResponsiveContainer, LineChart, Line, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, Cell,
@@ -50,6 +51,30 @@ function EmptyChart({ message }: { message: string }) {
   return <EmptyState icon={BarChart2} message={message} className="h-40 py-0" />;
 }
 
+interface KpiBoxProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  suffix?: string;
+  hint?: React.ReactNode;
+}
+
+function KpiBox({ icon, label, value, suffix, hint }: KpiBoxProps) {
+  return (
+    <div className={`${surface.section} px-5 py-4`}>
+      <div className="flex items-center gap-2 mb-1">
+        {icon}
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      </div>
+      <div className="text-2xl font-semibold tabular-nums">
+        {value}
+        {suffix && <span className="text-sm font-normal text-muted-foreground ml-1">{suffix}</span>}
+      </div>
+      {hint && <p className="text-xs text-muted-foreground mt-1 truncate">{hint}</p>}
+    </div>
+  );
+}
+
 
 
 // Componente de comparação de projetos
@@ -92,12 +117,8 @@ function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: str
   if (projects.length < 2) return null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Comparação de Projetos</CardTitle>
-        <p className="text-xs text-muted-foreground">Selecione até 3 projetos para comparar</p>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Section title="Comparação de Projetos" description="Selecione até 3 projetos para comparar">
+      <div className="space-y-4">
         {/* Seleção */}
         <div className="flex flex-wrap gap-2">
           {projects.map((p) => (
@@ -167,8 +188,8 @@ function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: str
             )}
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }
 
@@ -265,131 +286,46 @@ export function AnalyticsPage() {
             metricType: "neutral" as const,
           },
         ].map(({ label, current, last, fmt, metricType }) => (
-          <Card key={label}>
-            <CardHeader className="pb-1">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold tabular-nums">{fmt(current)}</div>
-              <div className="mt-1">
-                <DeltaBadge current={current} last={last} metricType={metricType} />
-              </div>
-              <div className="text-xs text-muted-foreground mt-0.5">Mês anterior: {fmt(last)}</div>
-            </CardContent>
-          </Card>
+          <div key={label} className={`${surface.section} px-5 py-4`}>
+            <p className="text-xs font-medium text-muted-foreground">{label}</p>
+            <div className="text-2xl font-semibold tabular-nums mt-1">{fmt(current)}</div>
+            <div className="mt-1">
+              <DeltaBadge current={current} last={last} metricType={metricType} />
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">Mês anterior: {fmt(last)}</p>
+          </div>
         ))}
       </div>
 
       {/* Gamification — Streaks */}
       {streaks && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="pb-1 flex flex-row items-center gap-2">
-              <Flame className="h-4 w-4 text-orange-400" />
-              <CardTitle className="text-sm font-medium text-muted-foreground">Streak Atual</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold tabular-nums">
-                {streaks.current_streak ?? 0}
-                <span className="text-sm font-normal text-muted-foreground ml-1">dias</span>
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                Recorde: {streaks.record_streak ?? 0} dias · {streaks.active_days_total ?? 0} dias ativos total
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-1 flex flex-row items-center gap-2">
-              <Trophy className="h-4 w-4 text-yellow-400" />
-              <CardTitle className="text-sm font-medium text-muted-foreground">Dia mais Caro</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold tabular-nums">{formatUSD(streaks.most_expensive_day_cost ?? 0)}</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {streaks.most_expensive_day ? formatFullDate(streaks.most_expensive_day) : "—"}
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <KpiBox icon={<Flame className="h-4 w-4 text-warning" />} label="Streak Atual" value={`${streaks.current_streak ?? 0}`} suffix="dias" hint={`Recorde: ${streaks.record_streak ?? 0} dias · ${streaks.active_days_total ?? 0} dias ativos total`} />
+          <KpiBox icon={<Trophy className="h-4 w-4 text-warning" />} label="Dia mais Caro" value={formatUSD(streaks.most_expensive_day_cost ?? 0)} hint={streaks.most_expensive_day ? formatFullDate(streaks.most_expensive_day) : "—"} />
           {hourly && (
-            <Card>
-              <CardHeader className="pb-1 flex flex-row items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <CardTitle className="text-sm font-medium text-muted-foreground">Custo/Hora Ativa</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold tabular-nums">
-                  {formatUSD(hourly.cost_per_active_hour)}
-                  <span className="text-sm font-normal text-muted-foreground">/h</span>
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {hourly.active_hours} horas ativas · hoje: {formatUSD(hourly.cost_today)}
-                </div>
-              </CardContent>
-            </Card>
+            <KpiBox icon={<Clock className="h-4 w-4 text-muted-foreground" />} label="Custo/Hora Ativa" value={formatUSD(hourly.cost_per_active_hour)} suffix="/h" hint={`${hourly.active_hours} horas ativas · hoje: ${formatUSD(hourly.cost_today)}`} />
           )}
           {!hourly && (
-            <Card>
-              <CardHeader className="pb-1 flex flex-row items-center gap-2">
-                <Zap className="h-4 w-4 text-blue-400" />
-                <CardTitle className="text-sm font-medium text-muted-foreground">Sessão Mais Cara</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold tabular-nums">{formatUSD(top_sessions?.[0]?.total_cost_usd ?? 0)}</div>
-                <div className="text-xs text-muted-foreground mt-1 truncate">
-                  {top_sessions?.[0]?.custom_name || top_sessions?.[0]?.session_id?.slice(0, 12) || "—"}
-                </div>
-              </CardContent>
-            </Card>
+            <KpiBox icon={<Zap className="h-4 w-4 text-info" />} label="Sessão Mais Cara" value={formatUSD(top_sessions?.[0]?.total_cost_usd ?? 0)} hint={top_sessions?.[0]?.custom_name || top_sessions?.[0]?.session_id?.slice(0, 12) || "—"} />
           )}
         </div>
       )}
 
       {/* Custo por hora ativa (se não tem streaks) */}
       {hourly && !streaks && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card>
-            <CardHeader className="pb-1 flex flex-row items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-sm font-medium text-muted-foreground">Custo por Hora Ativa</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold tabular-nums">{formatUSD(hourly.cost_per_active_hour)}<span className="text-sm font-normal text-muted-foreground">/hora</span></div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {hourly.active_hours} horas ativas no período
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-1 flex flex-row items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-sm font-medium text-muted-foreground">Hoje</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold tabular-nums">{formatUSD(hourly.cost_today)}</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {hourly.active_hours_today} horas ativas hoje
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <KpiBox icon={<Clock className="h-4 w-4 text-muted-foreground" />} label="Custo por Hora Ativa" value={formatUSD(hourly.cost_per_active_hour)} suffix="/hora" hint={`${hourly.active_hours} horas ativas no período`} />
+          <KpiBox icon={<Clock className="h-4 w-4 text-muted-foreground" />} label="Hoje" value={formatUSD(hourly.cost_today)} hint={`${hourly.active_hours_today} horas ativas hoje`} />
         </div>
       )}
 
       {/* Atividade + Padrão de uso — dados globais */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Atividade por Dia</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ContributionGraph data={daily_cost || []} />
-          </CardContent>
-        </Card>
+        <Section title="Atividade por Dia">
+          <ContributionGraph data={daily_cost || []} />
+        </Section>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{heatmapLabel}</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Section title={heatmapLabel}><>
             {!heatmap?.length ? (
               <EmptyChart message="Nenhum dado de uso encontrado" />
             ) : (
@@ -429,8 +365,7 @@ export function AnalyticsPage() {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </></Section>
       </div>
 
       {/* === FILTRO — divide estático de filtrável === */}
@@ -449,11 +384,7 @@ export function AnalyticsPage() {
       </div>
 
       {/* Custo por Projeto */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Custo por Projeto</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <Section title="Custo por Projeto">
           {projectNames.length === 0 ? (
             <EmptyChart message="Nenhum projeto com sessões vinculadas ainda" />
           ) : (
@@ -470,18 +401,13 @@ export function AnalyticsPage() {
               </LineChart>
             </ResponsiveContainer>
           )}
-        </CardContent>
-      </Card>
+      </Section>
 
       {/* Comparação de projetos (Wave 2C) */}
       <ProjectComparison dateRange={dateRange} />
 
       {/* Tendência de modelos */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Custo por Modelo (por semana)</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <Section title="Custo por Modelo (por semana)">
           {modelNames.length === 0 ? (
             <EmptyChart message="Nenhum dado de modelo encontrado" />
           ) : (
@@ -498,15 +424,10 @@ export function AnalyticsPage() {
               </AreaChart>
             </ResponsiveContainer>
           )}
-        </CardContent>
-      </Card>
+      </Section>
 
       {/* Top 10 sessões mais caras */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Top 10 Sessões mais Caras</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <Section title="Top 10 Sessões mais Caras">
           {!top_sessions?.length ? (
             <EmptyChart message="Nenhuma sessão encontrada" />
           ) : (
@@ -531,8 +452,7 @@ export function AnalyticsPage() {
               </BarChart>
             </ResponsiveContainer>
           )}
-        </CardContent>
-      </Card>
+      </Section>
 
     </div>
   );

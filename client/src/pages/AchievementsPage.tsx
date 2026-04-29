@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/Section";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatUSD } from "@/lib/formatters";
@@ -231,18 +231,12 @@ export function AchievementsPage() {
         const catUnlocked = catBadges.filter((b) => b.unlocked).length;
 
         return (
-          <Card key={cat.key}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <span>{cat.icon}</span>
-                {cat.label}
-                <span className="text-xs font-normal text-muted-foreground ml-auto tabular-nums">
-                  {catUnlocked}/{catBadges.length}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          <Section
+            key={cat.key}
+            title={<span className="flex items-center gap-2">{cat.icon} {cat.label}</span>}
+            actions={<span className="text-xs text-muted-foreground tabular-nums">{catUnlocked}/{catBadges.length}</span>}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {catBadges.map((b) => (
                   <div
                     key={b.id}
@@ -272,9 +266,8 @@ export function AchievementsPage() {
                     )}
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </Section>
         );
       })}
     </div>

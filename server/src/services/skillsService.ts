@@ -109,26 +109,77 @@ async function parseLockedSkills(): Promise<Map<string, string>> {
   return map;
 }
 
-function inferCategory(name: string): string | null {
-  const map: Record<string, string> = {
-    maestro: "meta", "skill-builder": "meta", "prompt-engineer": "meta", "context-tree": "meta",
-    "geo-optimizer": "optimization", "cli-skill-wrapper": "optimization",
-    trident: "code-review", "react-patterns": "code-review", "security-audit": "code-review",
-    "architecture-guard": "guard", "code-dedup-scanner": "guard", "context-guardian": "guard",
-    sdd: "implementation", "component-architect": "implementation", "supabase-db-architect": "implementation",
-    "n8n-architect": "implementation", "lovable-router": "implementation", "lovable-knowledge": "implementation",
-    "ui-design-system": "design", "design-system-audit": "design", "ux-audit": "design",
-    "product-discovery-prd": "design", "test-lab-architect": "design", seo: "design",
-    "reference-finder": "knowledge", "pattern-importer": "knowledge",
-    pdf: "content", docx: "content", pptx: "content", xlsx: "content",
-    "vps-infra-audit": "infra",
-    "tech-lead-pm": "people", "comunicacao-clientes": "people",
-    "meeting-sync": "meeting", schedule: "workflow",
-    copy: "marketing", "product-marketing-context": "marketing", "ai-seo": "marketing",
-    "site-architecture": "marketing", "competitor-alternatives": "marketing",
-    "sales-enablement": "marketing", "free-tool-strategy": "marketing", "launch-strategy": "marketing",
-  };
-  return map[name] || null;
+/** Hard-coded category map. Covers skillforge + OMC + built-in plugins. */
+const CATEGORY_MAP: Record<string, string> = {
+  // === Skillforge — meta ===
+  maestro: "meta", "skill-builder": "meta", "prompt-engineer": "meta", "context-tree": "meta",
+  // === Skillforge — optimization ===
+  "geo-optimizer": "optimization", "cli-skill-wrapper": "optimization",
+  // === Skillforge — code-review ===
+  trident: "code-review", "react-patterns": "code-review", "security-audit": "code-review",
+  // === Skillforge — guard ===
+  "architecture-guard": "guard", "code-dedup-scanner": "guard", "context-guardian": "guard",
+  // === Skillforge — implementation ===
+  sdd: "implementation", "component-architect": "implementation", "supabase-db-architect": "implementation",
+  "n8n-architect": "implementation", "lovable-router": "implementation", "lovable-knowledge": "implementation",
+  // === Skillforge — design ===
+  "ui-design-system": "design", "design-system-audit": "design", "ux-audit": "design",
+  "product-discovery-prd": "design", "test-lab-architect": "design", seo: "design",
+  // === Skillforge — knowledge ===
+  "reference-finder": "knowledge", "pattern-importer": "knowledge",
+  // === Built-in Anthropic — content ===
+  pdf: "content", docx: "content", pptx: "content", xlsx: "content",
+  // === Skillforge — infra/people/meeting/workflow ===
+  "vps-infra-audit": "infra",
+  "tech-lead-pm": "people", "comunicacao-clientes": "people",
+  "meeting-sync": "meeting", schedule: "workflow",
+  // === Skillforge — marketing ===
+  copy: "marketing", "product-marketing-context": "marketing", "ai-seo": "marketing",
+  "site-architecture": "marketing", "competitor-alternatives": "marketing",
+  "sales-enablement": "marketing", "free-tool-strategy": "marketing", "launch-strategy": "marketing",
+  // === OMC — workflow (loops, autopilots, orchestration) ===
+  autopilot: "workflow", ralph: "workflow", ralplan: "workflow", "deepinit": "workflow",
+  ccg: "workflow", "omc-teams": "workflow", "deep-interview": "workflow",
+  // === OMC — meta (skill management, self-improve) ===
+  skill: "meta", skillify: "meta", "self-improve": "meta", remember: "meta",
+  "project-session-manager": "meta", "external-context": "meta",
+  // === OMC — code-review / guard ===
+  "ai-slop-cleaner": "guard", "omc-doctor": "guard",
+  // === OMC — knowledge / interactive ===
+  ask: "knowledge", "deep-dive": "knowledge", learner: "knowledge", "omc-reference": "knowledge",
+  sciomc: "knowledge",
+  // === OMC — implementation ===
+  debug: "implementation", plan: "implementation", release: "implementation",
+  // === OMC — workflow control ===
+  cancel: "workflow", "configure-notifications": "workflow", hud: "workflow",
+  setup: "workflow", "omc-setup": "workflow", "mcp-setup": "workflow",
+  // === Caveman built-in ===
+  caveman: "meta", "caveman-commit": "implementation", "caveman-help": "knowledge",
+  "caveman-review": "code-review", "caveman-compress": "optimization", compress: "optimization",
+};
+
+/** Keyword heuristic fallback when name not in map. Scans description. */
+const CATEGORY_KEYWORDS: Array<[RegExp, string]> = [
+  [/(skill|prompt|context.window|orchestrat|router)/i, "meta"],
+  [/(review|audit|lint|security|vulnerab)/i, "code-review"],
+  [/(implement|architect|build|design.system|component|database|schema|n8n)/i, "implementation"],
+  [/(workflow|automat|loop|pipeline|autonomous|orchestr)/i, "workflow"],
+  [/(market|copy|seo|launch|sales|landing|pitch)/i, "marketing"],
+  [/(meeting|transcript|standup|daily)/i, "meeting"],
+  [/(reference|knowledge|research|find|catalog|pattern)/i, "knowledge"],
+  [/(communicat|whatsapp|telegram|email)/i, "people"],
+  [/(vps|server|deploy|docker|infra)/i, "infra"],
+  [/(pdf|docx|pptx|xlsx|document|spreadsheet|presentation)/i, "content"],
+];
+
+function inferCategory(name: string, description?: string): string | null {
+  if (CATEGORY_MAP[name]) return CATEGORY_MAP[name];
+  if (description) {
+    for (const [re, cat] of CATEGORY_KEYWORDS) {
+      if (re.test(description)) return cat;
+    }
+  }
+  return null;
 }
 
 async function countFilesRecursive(dir: string): Promise<number> {
@@ -234,7 +285,7 @@ async function buildSummaryFromEntry(
       description: meta.description || "",
       lockedAt: locked.get(entry.dirName) || null,
       fileCount,
-      category: inferCategory(entry.dirName),
+      category: inferCategory(entry.dirName, meta.description),
       source: entry.source,
     };
   } catch {
