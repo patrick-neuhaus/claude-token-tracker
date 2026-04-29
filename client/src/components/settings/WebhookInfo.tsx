@@ -160,7 +160,10 @@ export function WebhookInfo({ webhookToken }: Props) {
         </div>
       </Section>
 
-      <Section title="Referência de Preços por Modelo">
+      <Section
+        title="Referência de Preços por Modelo"
+        description={<span>Atualizado 2026-04-29 · fonte: <a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noopener" className="text-info hover:underline">platform.claude.com/pricing</a></span>}
+      >
           <Table>
             <TableHeader>
               <TableRow>
@@ -168,30 +171,53 @@ export function WebhookInfo({ webhookToken }: Props) {
                 <TableHead className="text-right">Input/1M</TableHead>
                 <TableHead className="text-right">Output/1M</TableHead>
                 <TableHead className="text-right">Cache Read/1M</TableHead>
-                <TableHead className="text-right">Cache Write/1M</TableHead>
+                <TableHead className="text-right">Cache Write 5m/1M</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
+              {/* Current generation */}
               <TableRow>
-                <TableCell className="font-medium">claude-opus-4-6</TableCell>
-                <TableCell className="text-right">$15.00</TableCell>
-                <TableCell className="text-right">$75.00</TableCell>
-                <TableCell className="text-right">$1.50</TableCell>
-                <TableCell className="text-right">$18.75</TableCell>
+                <TableCell className="font-mono text-xs">claude-opus-4-7 <span className="text-muted-foreground">(atual)</span></TableCell>
+                <TableCell className="text-right tabular-nums">$5.00</TableCell>
+                <TableCell className="text-right tabular-nums">$25.00</TableCell>
+                <TableCell className="text-right tabular-nums">$0.50</TableCell>
+                <TableCell className="text-right tabular-nums">$6.25</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="font-medium">claude-sonnet-4-6</TableCell>
-                <TableCell className="text-right">$3.00</TableCell>
-                <TableCell className="text-right">$15.00</TableCell>
-                <TableCell className="text-right">$0.30</TableCell>
-                <TableCell className="text-right">$3.75</TableCell>
+                <TableCell className="font-mono text-xs">claude-sonnet-4-6 <span className="text-muted-foreground">(atual)</span></TableCell>
+                <TableCell className="text-right tabular-nums">$3.00</TableCell>
+                <TableCell className="text-right tabular-nums">$15.00</TableCell>
+                <TableCell className="text-right tabular-nums">$0.30</TableCell>
+                <TableCell className="text-right tabular-nums">$3.75</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell className="font-medium">claude-haiku-4-5</TableCell>
-                <TableCell className="text-right">$0.80</TableCell>
-                <TableCell className="text-right">$4.00</TableCell>
-                <TableCell className="text-right">$0.08</TableCell>
-                <TableCell className="text-right">$1.00</TableCell>
+                <TableCell className="font-mono text-xs">claude-haiku-4-5 <span className="text-muted-foreground">(atual)</span></TableCell>
+                <TableCell className="text-right tabular-nums">$1.00</TableCell>
+                <TableCell className="text-right tabular-nums">$5.00</TableCell>
+                <TableCell className="text-right tabular-nums">$0.10</TableCell>
+                <TableCell className="text-right tabular-nums">$1.25</TableCell>
+              </TableRow>
+              {/* Legacy still supported */}
+              <TableRow>
+                <TableCell className="font-mono text-xs text-muted-foreground">claude-opus-4-6</TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">$5.00</TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">$25.00</TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">$0.50</TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">$6.25</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono text-xs text-muted-foreground">claude-opus-4-1 <span className="text-warning">(legacy)</span></TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">$15.00</TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">$75.00</TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">$1.50</TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">$18.75</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono text-xs text-muted-foreground">claude-haiku-3-5 <span className="text-warning">(legacy)</span></TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">$0.80</TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">$4.00</TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">$0.08</TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">$1.00</TableCell>
               </TableRow>
             </TableBody>
           </Table>
