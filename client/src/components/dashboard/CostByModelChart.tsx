@@ -1,8 +1,8 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { normalizeModelFamily, MODEL_COLORS } from "@/lib/constants";
 import { formatUSD } from "@/lib/formatters";
 import { TOOLTIP_PROPS } from "@/lib/chartConfig";
+import { surface, surfaceHeader, surfaceContent } from "@/lib/surface";
 
 interface ModelData {
   model: string;
@@ -27,11 +27,11 @@ export function CostByModelChart({ data }: Props) {
   const total = chartData.reduce((s, d) => s + d.value, 0);
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium">Custo por Modelo</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className={surface.section}>
+      <div className={surfaceHeader}>
+        <h3 className="text-sm font-medium">Custo por Modelo</h3>
+      </div>
+      <div className={surfaceContent}>
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
             <Pie
@@ -56,7 +56,7 @@ export function CostByModelChart({ data }: Props) {
             <Legend />
           </PieChart>
         </ResponsiveContainer>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

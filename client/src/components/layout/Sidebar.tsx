@@ -1,18 +1,26 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, MessageSquare, FolderOpen, List, Settings, Shield, LogOut, TrendingUp, TrendingDown, BarChart2, Trophy, Clock } from "lucide-react";
+import {
+  LayoutDashboard, MessageSquare, FolderOpen, List, Settings, Shield,
+  LogOut, TrendingUp, TrendingDown, BarChart2, Trophy, FileCode,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlanStatus } from "@/hooks/usePlanStatus";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { formatUSD } from "@/lib/formatters";
 
+// Primary nav (consolidated from 8 → 6 — Delta 6 do DS audit)
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/skills", icon: FileCode, label: "Skills" },
   { to: "/sessions", icon: MessageSquare, label: "Sessões" },
   { to: "/projects", icon: FolderOpen, label: "Projetos" },
   { to: "/entries", icon: List, label: "Entradas" },
   { to: "/analytics", icon: BarChart2, label: "Analytics" },
-  { to: "/session-time", icon: Clock, label: "Tempo por Sessão" },
+];
+
+// Footer nav — items raros ou auxiliares
+const footerItems = [
   { to: "/achievements", icon: Trophy, label: "Conquistas" },
   { to: "/settings", icon: Settings, label: "Configurações" },
 ];
@@ -35,14 +43,16 @@ function PlanCountdown() {
   if (!data || totalCost === 0) return null;
 
   return (
-    <div className={`mx-3 my-2 rounded-md px-3 py-2 text-center text-xs font-medium transition-all ${
-      above
-        ? "bg-green-500/10 text-green-400 shadow-[0_0_8px_rgba(34,197,94,0.15)]"
-        : "bg-yellow-500/10 text-yellow-400"
-    }`}>
+    <div
+      className={`mx-3 my-2 rounded-md px-3 py-2 text-center text-xs font-medium ${
+        above
+          ? "bg-success/10 text-success border border-success/30"
+          : "bg-warning/10 text-warning border border-warning/30"
+      }`}
+    >
       <div className="flex items-center justify-center gap-1.5">
         {above ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-        <span>
+        <span className="tabular-nums">
           {above ? `+${formatUSD(diff)} acima do plano` : `Falta ${formatUSD(Math.abs(diff))} pro breakeven`}
         </span>
       </div>
@@ -54,13 +64,15 @@ export function Sidebar() {
   const { user, logout } = useAuth();
 
   return (
-    <aside className="flex h-screen w-60 flex-col border-r border-border bg-sidebar text-sidebar-foreground">
-      <div className="p-4">
-        <h1 className="text-lg font-bold">Claude Token Tracker</h1>
-        <p className="text-xs text-muted-foreground">{user?.email}</p>
+    <aside className="flex h-screen w-60 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+      <div className="px-4 py-4">
+        <h2 className="text-base font-semibold tracking-tight">Claude Token Tracker</h2>
+        <p className="text-xs text-muted-foreground mt-0.5">{user?.email}</p>
       </div>
       <PlanCountdown />
-      <Separator />
+      <Separator className="bg-sidebar-border" />
+
+      {/* Primary nav */}
       <nav className="flex-1 space-y-1 p-2">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink key={to} to={to} className={navLinkClass}>
@@ -75,9 +87,22 @@ export function Sidebar() {
           </NavLink>
         )}
       </nav>
-      <Separator />
-      <div className="p-2">
-        <Button variant="ghost" className="w-full justify-start gap-3 text-muted-foreground" onClick={logout}>
+
+      <Separator className="bg-sidebar-border" />
+
+      {/* Footer nav — items raros */}
+      <div className="p-2 space-y-1">
+        {footerItems.map(({ to, icon: Icon, label }) => (
+          <NavLink key={to} to={to} className={navLinkClass}>
+            <Icon className="h-4 w-4" />
+            {label}
+          </NavLink>
+        ))}
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-3 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          onClick={logout}
+        >
           <LogOut className="h-4 w-4" />
           Sair
         </Button>

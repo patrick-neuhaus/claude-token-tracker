@@ -38,6 +38,7 @@ const routeMap = [
   ["/api/admin", "./routes/admin.js"],
   ["/api/import", "./routes/import.js"],
   ["/api/analytics", "./routes/analytics.js"],
+  ["/api/skills", "./routes/skills.js"],
 ] as const;
 
 for (const [prefix, modulePath] of routeMap) {

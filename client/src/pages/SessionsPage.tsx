@@ -45,7 +45,7 @@ export function SessionsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Sessões</h1>
+        <h2 className="text-xl font-semibold tracking-tight">Sessões</h2>
         <div className="relative w-64">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input

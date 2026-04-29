@@ -1,4 +1,3 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 import { formatUSD } from "@/lib/formatters";
 import { normalizeModelFamily } from "@/lib/constants";
@@ -66,13 +65,11 @@ export function MonthNarrative({
   if (parts.length <= 1) return null;
 
   return (
-    <Card className="border-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-green-500/10">
-      <CardContent className="flex items-start gap-3 p-4">
-        <Sparkles className="h-5 w-5 text-purple-400 mt-0.5 shrink-0" />
-        <p className="text-sm leading-relaxed text-foreground/90">
-          {parts.join(" ")}
-        </p>
-      </CardContent>
-    </Card>
+    <div className="rounded-lg border border-info/30 bg-gradient-to-r from-info/10 via-chart-4/10 to-success/10 px-5 py-4 flex items-start gap-3">
+      <Sparkles className="h-5 w-5 text-info mt-0.5 shrink-0" />
+      <p className="text-sm leading-relaxed text-foreground/90">
+        {parts.join(" ")}
+      </p>
+    </div>
   );
 }

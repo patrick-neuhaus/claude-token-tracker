@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatUSD } from "@/lib/formatters";
 import { VALUE_COLORS } from "@/lib/constants";
 import { CalendarClock, CreditCard } from "lucide-react";
+import { surface, surfaceHeader, surfaceContent } from "@/lib/surface";
 
 const DOW_NAMES = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 
@@ -60,11 +60,11 @@ export function PlanIndicator({ totalCostUsd, planCostUsd, weeklyResetDow = 2, w
   const billing = planStartDate ? getBillingInfo(planStartDate, plan) : null;
 
   return (
-    <Card className="transition-all duration-200 hover:shadow-lg hover:shadow-primary/5">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium">Valor do Plano</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <div className={surface.section}>
+      <div className={surfaceHeader}>
+        <h3 className="text-sm font-medium">Valor do Plano</h3>
+      </div>
+      <div className={`${surfaceContent} space-y-3`}>
         <div className="flex justify-between text-sm gap-4">
           <span className="text-muted-foreground shrink-0">Uso API-equivalent</span>
           <span className="text-right tabular-nums font-medium">
@@ -132,7 +132,7 @@ export function PlanIndicator({ totalCostUsd, planCostUsd, weeklyResetDow = 2, w
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

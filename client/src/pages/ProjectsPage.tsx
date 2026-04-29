@@ -92,7 +92,7 @@ export function ProjectsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Projetos</h1>
+        <h2 className="text-xl font-semibold tracking-tight">Projetos</h2>
         <div className="flex items-center gap-2">
           {/* Toggle view */}
           {projectList && projectList.length > 0 && (

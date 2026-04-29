@@ -109,7 +109,7 @@ export function SessionTimePage() {
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold">Tempo por Sessão</h1>
+          <h2 className="text-xl font-semibold tracking-tight">Tempo por Sessão</h2>
           <UITooltip>
             <TooltipTrigger
               className="text-muted-foreground hover:text-foreground transition-colors"

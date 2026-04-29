@@ -1,6 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { DollarSign, Hash, FileText, MessageSquare, Zap } from "lucide-react";
 import { formatUSD, formatTokens } from "@/lib/formatters";
+import { surface } from "@/lib/surface";
 
 interface Props {
   totalCostUsd: number;
@@ -28,35 +28,36 @@ export function SummaryCards({
       value: formatUSD(totalCostUsd),
       sub: cacheSavingsUsd > 0 ? `Sem cache: ${formatUSD(withoutCache)}` : undefined,
       icon: DollarSign,
-      color: "text-green-400",
+      color: "text-success",
     },
-    { label: "Total Tokens", value: formatTokens(totalTokens), icon: Hash, color: "text-blue-400" },
-    { label: "Entradas", value: Number(entryCount).toLocaleString("pt-BR"), icon: FileText, color: "text-purple-400" },
-    { label: "Sessões", value: Number(sessionCount).toLocaleString("pt-BR"), icon: MessageSquare, color: "text-amber-400" },
+    { label: "Total Tokens", value: formatTokens(totalTokens), icon: Hash, color: "text-info" },
+    { label: "Entradas", value: Number(entryCount).toLocaleString("pt-BR"), icon: FileText, color: "text-chart-4" },
+    { label: "Sessões", value: Number(sessionCount).toLocaleString("pt-BR"), icon: MessageSquare, color: "text-warning" },
     {
       label: "Cache Hit Rate",
       value: `${cacheRate.toFixed(1)}%`,
       sub: cacheRate > 50 ? "Ótimo aproveitamento" : "Cache pode melhorar",
       icon: Zap,
-      color: cacheRate > 50 ? "text-green-400" : "text-yellow-400",
+      color: cacheRate > 50 ? "text-success" : "text-warning",
     },
   ];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       {cards.map((c) => (
-        <Card key={c.label} className="transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className={`rounded-lg bg-muted p-2 ${c.color}`}>
-              <c.icon className="h-5 w-5" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">{c.label}</p>
-              <p className="text-lg font-bold">{c.value}</p>
-              {c.sub && <p className="text-xs text-muted-foreground truncate">{c.sub}</p>}
-            </div>
-          </CardContent>
-        </Card>
+        <div
+          key={c.label}
+          className={`${surface.primary} flex items-center gap-3 px-4 py-3 transition-colors hover:bg-card/80`}
+        >
+          <div className={`rounded-md bg-muted p-2 ${c.color}`}>
+            <c.icon className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground">{c.label}</p>
+            <p className="text-lg font-semibold tabular-nums">{c.value}</p>
+            {c.sub && <p className="text-xs text-muted-foreground truncate">{c.sub}</p>}
+          </div>
+        </div>
       ))}
     </div>
   );

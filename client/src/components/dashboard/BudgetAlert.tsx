@@ -52,10 +52,10 @@ export function BudgetAlert({ todayCostUsd, dailyBudgetUsd }: Props) {
 
   return (
     <div
-      className={`flex items-start gap-3 rounded-lg border p-4 ${
+      className={`flex items-start gap-3 rounded-lg border px-5 py-4 ${
         exceeded
-          ? "border-red-500/50 bg-red-500/10 text-red-400"
-          : "border-yellow-500/50 bg-yellow-500/10 text-yellow-400"
+          ? "border-destructive/50 bg-destructive/10 text-destructive"
+          : "border-warning/50 bg-warning/10 text-warning"
       }`}
     >
       {exceeded ? (

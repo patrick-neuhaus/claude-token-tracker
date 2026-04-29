@@ -10,7 +10,7 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Configurações</h1>
+      <h2 className="text-xl font-semibold tracking-tight">Configurações</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Coluna esquerda: Configurações + Referência de preços */}
         <div className="space-y-6">

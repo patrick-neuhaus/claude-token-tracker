@@ -17,6 +17,8 @@ import { AnalyticsPage } from "@/pages/AnalyticsPage";
 import { AchievementsPage } from "@/pages/AchievementsPage";
 import { SessionTimePage } from "@/pages/SessionTimePage";
 import { SessionDetailPage } from "@/pages/SessionDetailPage";
+import { SkillsPage } from "@/pages/SkillsPage";
+import { SkillDetailPage } from "@/pages/SkillDetailPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,6 +40,8 @@ export default function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/skills" element={<SkillsPage />} />
+                <Route path="/skills/:name" element={<SkillDetailPage />} />
                 <Route path="/sessions" element={<SessionsPage />} />
                 <Route path="/sessions/:id" element={<SessionDetailPage />} />
                 <Route path="/projects" element={<ProjectsPage />} />
