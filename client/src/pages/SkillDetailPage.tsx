@@ -1,39 +1,31 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { ArrowLeft, Lock, FileText, FolderTree, Search, AlertTriangle } from "lucide-react";
-import { useSkillDetail, useSkillFile } from "@/hooks/useSkills";
+import { ArrowLeft, Lock, FileText, FolderTree, Search, AlertTriangle, Code2, Eye } from "lucide-react";
+import { useSkillDetail, useSkillFile, type SkillSource } from "@/hooks/useSkills";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { SkillFileTree } from "@/components/skills/SkillFileTree";
 import { SkillSearch } from "@/components/skills/SkillSearch";
+import { MarkdownView } from "@/components/markdown/MarkdownView";
 
-function MarkdownView({ content }: { content: string }) {
-  return (
-    <div className="prose prose-sm prose-invert max-w-none
-                    prose-headings:font-semibold prose-headings:tracking-tight
-                    prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-h4:text-sm
-                    prose-p:text-sm prose-p:leading-relaxed
-                    prose-li:text-sm prose-li:my-0.5
-                    prose-code:text-info prose-code:bg-muted/40 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
-                    prose-pre:bg-muted/40 prose-pre:border prose-pre:border-border prose-pre:text-xs
-                    prose-strong:text-foreground prose-strong:font-semibold
-                    prose-a:text-info prose-a:no-underline hover:prose-a:underline
-                    prose-table:text-sm prose-th:text-foreground prose-th:font-semibold
-                    prose-blockquote:border-l-info prose-blockquote:text-muted-foreground
-                    prose-hr:border-border">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-    </div>
-  );
-}
+const SOURCE_COLOR: Record<SkillSource, string> = {
+  skillforge: "border-info/40 bg-info/10 text-info",
+  omc: "border-chart-4/40 bg-chart-4/10 text-chart-4",
+  builtin: "border-border bg-muted/30 text-muted-foreground",
+};
 
 export function SkillDetailPage() {
   const { name } = useParams<{ name: string }>();
-  const { data: skill, isLoading, isError, refetch } = useSkillDetail(name);
+  const [searchParams] = useSearchParams();
+  const sourceParam = searchParams.get("source");
+  const source: SkillSource | undefined =
+    sourceParam === "skillforge" || sourceParam === "omc" || sourceParam === "builtin" ? sourceParam : undefined;
+  const { data: skill, isLoading, isError, refetch } = useSkillDetail(name, source);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const { data: fileContent } = useSkillFile(name, selectedFile);
+  const { data: fileContent } = useSkillFile(name, selectedFile, source);
+  const [viewMode, setViewMode] = useState<"rendered" | "raw">("rendered");
 
   if (isLoading) {
     return (
@@ -65,8 +57,11 @@ export function SkillDetailPage() {
             <ArrowLeft className="h-3 w-3" />
             Skills
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <h2 className="text-xl font-semibold tracking-tight font-mono">{skill.name}</h2>
+            <Badge variant="outline" className={`text-[10px] ${SOURCE_COLOR[skill.source]}`}>
+              {skill.source}
+            </Badge>
             {skill.lockedAt && (
               <span
                 className="inline-flex items-center gap-1 text-xs text-warning border border-warning/40 bg-warning/10 px-2 py-0.5 rounded-sm"
@@ -79,6 +74,14 @@ export function SkillDetailPage() {
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">{skill.description}</p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setViewMode(viewMode === "rendered" ? "raw" : "rendered")}
+          className="gap-1.5"
+        >
+          {viewMode === "rendered" ? <><Code2 className="h-3.5 w-3.5" /> Raw</> : <><Eye className="h-3.5 w-3.5" /> Render</>}
+        </Button>
       </div>
 
       {/* Tabs */}
@@ -100,7 +103,7 @@ export function SkillDetailPage() {
 
         <TabsContent value="skill" className="mt-4">
           <div className="bg-card border border-border rounded-md px-6 py-5">
-            <MarkdownView content={skill.body} />
+            <MarkdownView content={skill.body} mode={viewMode} />
           </div>
         </TabsContent>
 
@@ -121,7 +124,7 @@ export function SkillDetailPage() {
                     {fileContent === undefined ? (
                       <Skeleton className="h-32" />
                     ) : selectedFile.endsWith(".md") ? (
-                      <MarkdownView content={fileContent} />
+                      <MarkdownView content={fileContent} mode={viewMode} />
                     ) : (
                       <pre className="text-xs font-mono whitespace-pre-wrap overflow-x-auto text-foreground">{fileContent}</pre>
                     )}

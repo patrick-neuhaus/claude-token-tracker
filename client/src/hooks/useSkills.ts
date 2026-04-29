@@ -1,12 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
+export type SkillSource = "skillforge" | "omc" | "builtin";
+
 export interface SkillSummary {
   name: string;
   description: string;
   lockedAt: string | null;
   fileCount: number;
   category: string | null;
+  source: SkillSource;
 }
 
 export interface SkillFile {
@@ -21,6 +24,7 @@ export interface SkillDetail {
   body: string;
   lockedAt: string | null;
   files: SkillFile[];
+  source: SkillSource;
 }
 
 export function useSkillsList() {
@@ -31,23 +35,25 @@ export function useSkillsList() {
   });
 }
 
-export function useSkillDetail(name: string | undefined) {
+export function useSkillDetail(name: string | undefined, source?: SkillSource) {
   return useQuery<SkillDetail>({
-    queryKey: ["skills", "detail", name],
-    queryFn: () => api.get(`/skills/${name}`),
+    queryKey: ["skills", "detail", name, source ?? "auto"],
+    queryFn: () => api.get(`/skills/${name}${source ? `?source=${source}` : ""}`),
     staleTime: 60_000,
     enabled: !!name,
   });
 }
 
 /** Loads a raw text file inside the skill folder (e.g. references/foo.md). */
-export function useSkillFile(name: string | undefined, filePath: string | null) {
+export function useSkillFile(name: string | undefined, filePath: string | null, source?: SkillSource) {
   return useQuery<string>({
-    queryKey: ["skills", "file", name, filePath],
+    queryKey: ["skills", "file", name, filePath, source ?? "auto"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
+      const qs = new URLSearchParams({ path: filePath! });
+      if (source) qs.set("source", source);
       const res = await fetch(
-        `/api/skills/${name}/file?path=${encodeURIComponent(filePath!)}`,
+        `/api/skills/${name}/file?${qs.toString()}`,
         { headers: token ? { Authorization: `Bearer ${token}` } : {} },
       );
       if (!res.ok) throw new Error(`Failed to load ${filePath}`);

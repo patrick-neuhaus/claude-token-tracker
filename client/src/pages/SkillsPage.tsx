@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Fuse from "fuse.js";
-import { useSkillsList, type SkillSummary } from "@/hooks/useSkills";
+import { useSkillsList, type SkillSummary, type SkillSource } from "@/hooks/useSkills";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,20 @@ const CATEGORIES = [
   "all", "meta", "code-review", "guard", "implementation", "design",
   "knowledge", "content", "infra", "people", "marketing", "workflow", "meeting", "optimization",
 ];
+
+const SOURCES: ("all" | SkillSource)[] = ["all", "skillforge", "omc", "builtin"];
+
+const SOURCE_COLOR: Record<SkillSource, string> = {
+  skillforge: "border-info/40 bg-info/10 text-info",
+  omc: "border-chart-4/40 bg-chart-4/10 text-chart-4",
+  builtin: "border-border bg-muted/30 text-muted-foreground",
+};
+
+const SOURCE_LABEL: Record<SkillSource, string> = {
+  skillforge: "skillforge",
+  omc: "omc",
+  builtin: "built-in",
+};
 
 const CATEGORY_COLOR: Record<string, string> = {
   meta: "border-chart-4/40 bg-chart-4/10 text-chart-4",
@@ -29,14 +43,15 @@ const CATEGORY_COLOR: Record<string, string> = {
   marketing: "border-chart-5/40 bg-chart-5/10 text-chart-5",
 };
 
-type SortCol = "name" | "category" | "fileCount" | "lockedAt";
+type SortCol = "name" | "source" | "category" | "fileCount" | "lockedAt";
 
-const COLS = "minmax(160px,1.2fr) minmax(280px,3fr) 130px 90px 110px 32px";
+const COLS = "minmax(140px,1.1fr) 100px minmax(260px,3fr) 120px 80px 100px 32px";
 
 export function SkillsPage() {
   const { data: skills, isLoading, isError, refetch } = useSkillsList();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("all");
+  const [source, setSource] = useState<"all" | SkillSource>("all");
   const [lockedOnly, setLockedOnly] = useState(false);
   const [sortBy, setSortBy] = useState<SortCol>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -59,21 +74,24 @@ export function SkillsPage() {
     if (category !== "all") {
       list = list.filter((s) => s.category === category);
     }
+    if (source !== "all") {
+      list = list.filter((s) => s.source === source);
+    }
     if (lockedOnly) {
       list = list.filter((s) => !!s.lockedAt);
     }
-    // Sort
     list = [...list].sort((a, b) => {
       const dir = sortDir === "asc" ? 1 : -1;
       switch (sortBy) {
         case "name": return a.name.localeCompare(b.name) * dir;
+        case "source": return a.source.localeCompare(b.source) * dir;
         case "category": return ((a.category || "zzz").localeCompare(b.category || "zzz")) * dir;
         case "fileCount": return (a.fileCount - b.fileCount) * dir;
         case "lockedAt": return ((a.lockedAt || "").localeCompare(b.lockedAt || "")) * dir;
       }
     });
     return list;
-  }, [skills, search, category, lockedOnly, fuse, sortBy, sortDir]);
+  }, [skills, search, category, source, lockedOnly, fuse, sortBy, sortDir]);
 
   function toggleSort(col: SortCol) {
     if (sortBy === col) {
@@ -120,11 +138,17 @@ export function SkillsPage() {
         <AlertTriangle className="h-12 w-12 text-destructive" />
         <p className="text-lg font-medium">Erro ao carregar skills</p>
         <p className="text-sm text-muted-foreground max-w-md text-center">
-          Verifica se o skillforge-arsenal está em <code className="font-mono text-xs">~/Documents/Github/skillforge-arsenal</code>
+          Verifica se as fontes estão acessíveis (skillforge-arsenal, oh-my-claudecode, ~/.claude/plugins/cache).
         </p>
         <Button variant="outline" onClick={() => refetch()}>Tentar novamente</Button>
       </div>
     );
+  }
+
+  // Source counts pra mostrar nos chips
+  const sourceCounts: Record<string, number> = { all: skills?.length ?? 0 };
+  for (const s of skills ?? []) {
+    sourceCounts[s.source] = (sourceCounts[s.source] || 0) + 1;
   }
 
   return (
@@ -133,7 +157,13 @@ export function SkillsPage() {
         <div>
           <h2 className="text-xl font-semibold tracking-tight">Skills</h2>
           <p className="text-sm text-muted-foreground mt-1 tabular-nums">
-            {filtered.length} de {skills?.length ?? 0} skills do skillforge-arsenal
+            {filtered.length} de {skills?.length ?? 0} skills
+            {" · "}
+            <span className="text-info">{sourceCounts.skillforge || 0} skillforge</span>
+            {" · "}
+            <span className="text-chart-4">{sourceCounts.omc || 0} omc</span>
+            {" · "}
+            <span>{sourceCounts.builtin || 0} built-in</span>
           </p>
         </div>
       </div>
@@ -162,8 +192,27 @@ export function SkillsPage() {
         </button>
       </div>
 
+      {/* Source chips */}
+      <div className="flex items-center gap-1 flex-wrap">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">source:</span>
+        {SOURCES.map((src) => (
+          <button
+            key={src}
+            onClick={() => setSource(src)}
+            className={`px-2.5 py-1 text-xs rounded-sm border transition-colors tabular-nums ${
+              source === src
+                ? "bg-info/15 border-info/40 text-info"
+                : "border-border text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+            }`}
+          >
+            {src === "all" ? "all" : SOURCE_LABEL[src]} ({sourceCounts[src] || 0})
+          </button>
+        ))}
+      </div>
+
       {/* Category chips */}
       <div className="flex items-center gap-1 flex-wrap">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">categoria:</span>
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
@@ -192,9 +241,10 @@ export function SkillsPage() {
             style={{ gridTemplateColumns: COLS }}
           >
             {sortHead("name", "Nome")}
+            {sortHead("source", "Source")}
             <span className="text-xs font-medium text-muted-foreground">Descrição</span>
             {sortHead("category", "Categoria")}
-            {sortHead("fileCount", "Arquivos", "right")}
+            {sortHead("fileCount", "Arq", "right")}
             {sortHead("lockedAt", "Lock-in")}
             <span></span>
           </div>
@@ -208,13 +258,18 @@ export function SkillsPage() {
               const catClass = s.category ? (CATEGORY_COLOR[s.category] || "border-border bg-muted/30 text-muted-foreground") : "";
               return (
                 <Link
-                  key={s.name}
-                  to={`/skills/${s.name}`}
+                  key={`${s.source}:${s.name}`}
+                  to={`/skills/${s.name}?source=${s.source}`}
                   className="grid gap-3 px-5 py-2.5 hover:bg-muted/40 transition-colors items-center group"
                   style={{ gridTemplateColumns: COLS }}
                 >
                   <span className="font-mono text-sm text-foreground group-hover:text-info transition-colors truncate">
                     {s.name}
+                  </span>
+                  <span>
+                    <Badge variant="outline" className={`text-[10px] ${SOURCE_COLOR[s.source]}`}>
+                      {SOURCE_LABEL[s.source]}
+                    </Badge>
                   </span>
                   <span className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{trim}</span>
                   <span>

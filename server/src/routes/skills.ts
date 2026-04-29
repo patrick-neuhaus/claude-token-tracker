@@ -1,9 +1,14 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.js";
-import { listSkills, getSkill, getSkillFile } from "../services/skillsService.js";
+import { listSkills, getSkill, getSkillFile, type SkillSource } from "../services/skillsService.js";
 
 const router = Router();
 router.use(authMiddleware);
+
+function parseSource(raw: unknown): SkillSource | undefined {
+  if (raw === "skillforge" || raw === "omc" || raw === "builtin") return raw;
+  return undefined;
+}
 
 router.get("/", async (_req, res) => {
   try {
@@ -17,7 +22,8 @@ router.get("/", async (_req, res) => {
 
 router.get("/:name", async (req, res) => {
   try {
-    const skill = await getSkill(req.params.name);
+    const source = parseSource(req.query.source);
+    const skill = await getSkill(req.params.name, source);
     if (!skill) {
       res.status(404).json({ status: "error", message: "Skill not found" });
       return;
@@ -36,7 +42,8 @@ router.get("/:name/file", async (req, res) => {
     return;
   }
   try {
-    const content = await getSkillFile(req.params.name, filePath);
+    const source = parseSource(req.query.source);
+    const content = await getSkillFile(req.params.name, filePath, source);
     if (content === null) {
       res.status(404).json({ status: "error", message: "File not found" });
       return;
