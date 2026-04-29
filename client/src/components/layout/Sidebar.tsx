@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, MessageSquare, FolderOpen, List, Settings, Shield,
-  LogOut, TrendingUp, TrendingDown, BarChart2, Trophy, FileCode,
+  LogOut, TrendingUp, TrendingDown, BarChart2, Trophy, FileCode, ScrollText,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlanStatus } from "@/hooks/usePlanStatus";
@@ -21,6 +21,7 @@ const navItems = [
 
 // Footer nav — items raros ou auxiliares
 const footerItems = [
+  { to: "/system-prompts", icon: ScrollText, label: "System Prompts" },
   { to: "/achievements", icon: Trophy, label: "Conquistas" },
   { to: "/settings", icon: Settings, label: "Configurações" },
 ];
