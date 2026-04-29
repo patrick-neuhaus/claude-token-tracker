@@ -179,7 +179,7 @@ export function AnalyticsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Analytics</h1>
+        <h2 className="text-xl font-semibold tracking-tight">Analytics</h2>
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-72 w-full rounded-xl" />
         ))}
@@ -236,7 +236,7 @@ export function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Analytics</h1>
+      <h2 className="text-xl font-semibold tracking-tight">Analytics</h2>
 
       {/* === BLOCO ESTÁTICO — não muda com filtros === */}
 

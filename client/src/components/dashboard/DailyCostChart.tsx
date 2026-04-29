@@ -1,8 +1,8 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { normalizeModelFamily, MODEL_COLORS } from "@/lib/constants";
 import { formatUSD, formatShortDate } from "@/lib/formatters";
 import { TOOLTIP_PROPS } from "@/lib/chartConfig";
+import { surface, surfaceHeader, surfaceContent } from "@/lib/surface";
 
 interface DailyData {
   day: string;
@@ -34,11 +34,11 @@ export function DailyCostChart({ data }: Props) {
   const families = [...new Set(data.map((d) => normalizeModelFamily(d.model)))];
 
   return (
-    <Card className="col-span-2">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium">Custo Diário</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className={`${surface.section} col-span-2`}>
+      <div className={surfaceHeader}>
+        <h3 className="text-sm font-medium">Custo Diário</h3>
+      </div>
+      <div className={surfaceContent}>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#333" />
@@ -61,7 +61,7 @@ export function DailyCostChart({ data }: Props) {
             ))}
           </AreaChart>
         </ResponsiveContainer>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -88,7 +88,7 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h2 className="text-xl font-semibold tracking-tight">Dashboard</h2>
       </div>
       <SummaryCards
         totalCostUsd={s.total_cost_usd}

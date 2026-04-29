@@ -47,7 +47,7 @@ export function EntriesPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Entradas</h1>
+      <h2 className="text-xl font-semibold tracking-tight">Entradas</h2>
 
       <div className="flex flex-wrap items-end gap-4 rounded-lg border border-border p-4">
         <div className="space-y-1">

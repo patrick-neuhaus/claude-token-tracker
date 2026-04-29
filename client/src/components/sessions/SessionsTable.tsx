@@ -1,5 +1,4 @@
 import { useNavigate, Link } from "react-router-dom";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { SessionNameEditor } from "./SessionNameEditor";
@@ -35,15 +34,25 @@ function SortIcon({ col, sortBy, sortDir }: { col: string; sortBy?: string; sort
   return <ArrowDown className="inline ml-1 h-3.5 w-3.5" />;
 }
 
+// Grid columns: name | source | project | first | last | entries | cost | arrow
+const COLS = "minmax(220px,2fr) 100px minmax(140px,1.5fr) 150px 150px 90px 110px 32px";
+
 export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
   const navigate = useNavigate();
   const rename = useRenameSession();
 
-  function sortableHead(col: string, label: string, className?: string) {
+  function sortHead(col: string, label: string, align: "left" | "right" = "left") {
     return (
-      <TableHead className={`cursor-pointer select-none hover:text-foreground ${className ?? ""}`} onClick={() => onSort?.(col)}>
-        {label}<SortIcon col={col} sortBy={sortBy} sortDir={sortDir} />
-      </TableHead>
+      <button
+        type="button"
+        onClick={() => onSort?.(col)}
+        className={`flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors ${
+          align === "right" ? "justify-end" : ""
+        }`}
+      >
+        {label}
+        <SortIcon col={col} sortBy={sortBy} sortDir={sortDir} />
+      </button>
     );
   }
 
@@ -58,27 +67,32 @@ export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Nome</TableHead>
-          <TableHead>Fonte</TableHead>
-          <TableHead>Projeto</TableHead>
-          {sortableHead("first_seen", "Primeira entrada")}
-          {sortableHead("last_seen", "Última atividade")}
-          {sortableHead("entry_count", "Entradas", "text-right")}
-          {sortableHead("total_cost_usd", "Custo", "text-right")}
-          <TableHead className="w-8"></TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <div className="bg-card border border-border rounded-md overflow-hidden">
+      {/* Header */}
+      <div
+        className="grid gap-3 px-5 py-3 border-b border-border bg-muted/30"
+        style={{ gridTemplateColumns: COLS }}
+      >
+        <span className="text-xs font-medium text-muted-foreground">Nome</span>
+        <span className="text-xs font-medium text-muted-foreground">Fonte</span>
+        <span className="text-xs font-medium text-muted-foreground">Projeto</span>
+        {sortHead("first_seen", "Primeira entrada")}
+        {sortHead("last_seen", "Última atividade")}
+        {sortHead("entry_count", "Entradas", "right")}
+        {sortHead("total_cost_usd", "Custo", "right")}
+        <span></span>
+      </div>
+
+      {/* Rows */}
+      <div className="divide-y divide-border">
         {sessions.map((s) => (
-          <TableRow
+          <div
             key={s.id}
-            className="cursor-pointer transition-colors hover:bg-accent/50 group"
+            className="grid gap-3 px-5 py-3 cursor-pointer hover:bg-muted/40 transition-colors group items-center"
+            style={{ gridTemplateColumns: COLS }}
             onClick={() => navigate(`/sessions/${s.id}`)}
           >
-            <TableCell onClick={(e) => e.stopPropagation()}>
+            <div onClick={(e) => e.stopPropagation()} className="min-w-0">
               <SessionNameEditor
                 currentName={s.custom_name}
                 sessionId={s.session_id}
@@ -87,31 +101,27 @@ export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
                 firstSeen={s.first_seen}
                 entryCount={s.entry_count}
               />
-            </TableCell>
-            <TableCell>
-              <Badge variant="outline" className="text-xs">{s.source}</Badge>
-            </TableCell>
-            <TableCell onClick={(e) => e.stopPropagation()}>
+            </div>
+            <Badge variant="outline" className="text-xs w-fit">{s.source}</Badge>
+            <div onClick={(e) => e.stopPropagation()} className="min-w-0">
               {s.project_name && s.project_id ? (
                 <Link to={`/projects/${s.project_id}`}>
-                  <Badge variant="secondary" className="text-xs hover:bg-secondary/80 transition-colors">{s.project_name}</Badge>
+                  <Badge variant="secondary" className="text-xs hover:bg-secondary/80 transition-colors w-fit">{s.project_name}</Badge>
                 </Link>
               ) : s.project_name ? (
-                <Badge variant="secondary" className="text-xs">{s.project_name}</Badge>
+                <Badge variant="secondary" className="text-xs w-fit">{s.project_name}</Badge>
               ) : (
                 <span className="text-xs text-muted-foreground">—</span>
               )}
-            </TableCell>
-            <TableCell className="text-sm">{formatDate(s.first_seen)}</TableCell>
-            <TableCell className="text-sm">{formatDate(s.last_seen)}</TableCell>
-            <TableCell className="text-right tabular-nums">{s.entry_count}</TableCell>
-            <TableCell className="text-right tabular-nums font-medium">{formatUSD(s.total_cost_usd)}</TableCell>
-            <TableCell className="w-8 px-2">
-              <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-            </TableCell>
-          </TableRow>
+            </div>
+            <span className="text-sm text-muted-foreground tabular-nums">{formatDate(s.first_seen)}</span>
+            <span className="text-sm text-muted-foreground tabular-nums">{formatDate(s.last_seen)}</span>
+            <span className="text-sm text-right tabular-nums">{s.entry_count}</span>
+            <span className="text-sm text-right tabular-nums font-medium">{formatUSD(s.total_cost_usd)}</span>
+            <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity justify-self-end" />
+          </div>
         ))}
-      </TableBody>
-    </Table>
+      </div>
+    </div>
   );
 }

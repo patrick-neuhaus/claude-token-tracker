@@ -236,7 +236,7 @@ export function ProjectDetailPage() {
               className="flex items-center gap-2 group cursor-pointer"
               onClick={() => setEditingName(true)}
             >
-              <h1 className="text-2xl font-bold">{project.name}</h1>
+              <h2 className="text-xl font-semibold tracking-tight">{project.name}</h2>
               <Pencil className="h-4 w-4 text-muted-foreground opacity-40 group-hover:opacity-100 transition-opacity" />
             </div>
           )}

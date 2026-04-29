@@ -7,7 +7,7 @@ export function AdminPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Gerenciamento de Usuarios</h1>
+      <h2 className="text-xl font-semibold tracking-tight">Gerenciamento de Usuarios</h2>
       {isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (

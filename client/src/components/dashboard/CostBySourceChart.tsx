@@ -1,8 +1,8 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SOURCE_COLORS } from "@/lib/constants";
 import { formatUSD } from "@/lib/formatters";
 import { TOOLTIP_PROPS } from "@/lib/chartConfig";
+import { surface, surfaceHeader, surfaceContent } from "@/lib/surface";
 
 interface SourceData {
   source: string;
@@ -17,11 +17,11 @@ export function CostBySourceChart({ data }: Props) {
   const total = data.reduce((s, d) => s + d.cost_usd, 0);
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium">Custo por Fonte</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className={surface.section}>
+      <div className={surfaceHeader}>
+        <h3 className="text-sm font-medium">Custo por Fonte</h3>
+      </div>
+      <div className={surfaceContent}>
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
             <Pie data={data} dataKey="cost_usd" nameKey="source" innerRadius={50} outerRadius={90} paddingAngle={2}>
@@ -39,7 +39,7 @@ export function CostBySourceChart({ data }: Props) {
             <Legend />
           </PieChart>
         </ResponsiveContainer>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
