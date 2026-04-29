@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { surface } from "@/lib/surface";
 
 interface Props {
   onSwitch: () => void;
@@ -33,55 +33,47 @@ export function LoginForm({ onSwitch }: Props) {
 
   if (isPendingApproval) {
     return (
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle>Aguardando aprovacao</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <p className="text-muted-foreground">
-            Sua conta foi criada mas ainda precisa ser aprovada por um administrador.
-          </p>
-          <Button variant="outline" onClick={() => setIsPendingApproval(false)}>
-            Voltar
-          </Button>
-        </CardContent>
-      </Card>
+      <div className={`${surface.primary} w-full max-w-md px-6 py-6 text-center space-y-4`}>
+        <h2 className="text-lg font-semibold tracking-tight">Aguardando aprovação</h2>
+        <p className="text-sm text-muted-foreground">
+          Sua conta foi criada mas ainda precisa ser aprovada por um administrador.
+        </p>
+        <Button variant="outline" onClick={() => setIsPendingApproval(false)}>
+          Voltar
+        </Button>
+      </div>
     );
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <CardTitle>Entrar</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Entrando..." : "Entrar"}
-          </Button>
-          <p className="text-center text-sm text-muted-foreground">
-            Nao tem conta?{" "}
-            <button type="button" onClick={onSwitch} className="text-primary underline">
-              Criar conta
-            </button>
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+    <div className={`${surface.primary} w-full max-w-md px-6 py-6`}>
+      <h2 className="text-lg font-semibold tracking-tight text-center mb-4">Entrar</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">Senha</Label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <Button type="submit" className="w-full" disabled={pending}>
+          {pending ? "Entrando..." : "Entrar"}
+        </Button>
+        <p className="text-center text-sm text-muted-foreground">
+          Não tem conta?{" "}
+          <button type="button" onClick={onSwitch} className="text-info underline">
+            Criar conta
+          </button>
+        </p>
+      </form>
+    </div>
   );
 }

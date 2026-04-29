@@ -2,13 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProjects, useCreateProject } from "@/hooks/useProjects";
 import { formatUSD, formatDate } from "@/lib/formatters";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { surface } from "@/lib/surface";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -137,51 +131,42 @@ export function ProjectsPage() {
           </Button>
         </div>
       ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {projectList.map((project) => (
-            <Card
+            <button
               key={project.id}
-              className="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5"
+              type="button"
               onClick={() => navigate(`/projects/${project.id}`)}
+              className={`${surface.section} px-5 py-4 text-left cursor-pointer transition-colors hover:bg-muted/40 group`}
             >
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg">{project.name}</CardTitle>
-                  <Badge variant="secondary">
-                    {project.session_count} {project.session_count === 1 ? "sessão" : "sessões"}
-                  </Badge>
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-base font-semibold tracking-tight group-hover:text-info transition-colors truncate">{project.name}</h3>
+                <Badge variant="secondary" className="shrink-0">
+                  {project.session_count} {project.session_count === 1 ? "sessão" : "sessões"}
+                </Badge>
+              </div>
+              {project.description && (
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{project.description}</p>
+              )}
+              <div className="flex items-center justify-between text-sm mt-3 mb-1">
+                <div>
+                  <span className="text-muted-foreground">Custo: </span>
+                  <span className="font-medium tabular-nums">{formatUSD(project.total_cost_usd)}</span>
                 </div>
-                {project.description && (
-                  <CardDescription className="line-clamp-2">
-                    {project.description}
-                  </CardDescription>
+                {project.last_activity && (
+                  <span className="text-muted-foreground text-xs">{formatDate(project.last_activity)}</span>
                 )}
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <div>
-                    <span className="text-muted-foreground">Custo: </span>
-                    <span className="font-medium tabular-nums">
-                      {formatUSD(project.total_cost_usd)}
-                    </span>
-                  </div>
-                  {project.last_activity && (
-                    <span className="text-muted-foreground text-xs">
-                      {formatDate(project.last_activity)}
-                    </span>
-                  )}
+              </div>
+              {project.sparkline?.length ? (
+                <div className="h-10 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={project.sparkline} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                      <Area type="monotone" dataKey="cost" stroke="hsl(var(--info))" fill="hsl(var(--info))" fillOpacity={0.15} strokeWidth={1.5} dot={false} />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
-                {project.sparkline?.length && (
-                  <div className="h-10 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={project.sparkline} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                        <Area type="monotone" dataKey="cost" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} strokeWidth={1.5} dot={false} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+              ) : null}
+            </button>
           ))}
         </div>
       ) : (

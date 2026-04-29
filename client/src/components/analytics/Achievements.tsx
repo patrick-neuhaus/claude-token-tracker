@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/Section";
 
 interface Badge {
   id: string;
@@ -217,16 +217,10 @@ export function Achievements() {
   const locked = badges.filter((b) => !b.unlocked);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          Conquistas
-          <span className="text-xs font-normal text-muted-foreground">
-            {unlocked.length}/{badges.length} desbloqueadas
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Section
+      title="Conquistas"
+      actions={<span className="text-xs text-muted-foreground tabular-nums">{unlocked.length}/{badges.length}</span>}
+    >
         {/* Desbloqueadas */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
           {unlocked.map((b) => (
@@ -266,7 +260,6 @@ export function Achievements() {
             </div>
           </>
         )}
-      </CardContent>
-    </Card>
+    </Section>
   );
 }

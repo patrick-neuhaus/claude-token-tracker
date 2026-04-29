@@ -4,13 +4,13 @@ import { useProjects } from "@/hooks/useProjects";
 import { SessionsTable } from "@/components/sessions/SessionsTable";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, X, DollarSign, Layers, TrendingUp, BarChart3 } from "lucide-react";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Pagination } from "@/components/shared/Pagination";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { StatCard } from "@/components/shared/StatCard";
 import { formatUSD, formatNumber } from "@/lib/formatters";
 
 export function SessionsPage() {
@@ -111,51 +111,11 @@ export function SessionsPage() {
       ) : data?.sessions?.length ? (
         <>
           {data.aggregates && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="flex items-center gap-3 p-4">
-                  <div className="rounded-lg bg-muted p-2 text-green-400">
-                    <DollarSign className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Custo Total</p>
-                    <p className="text-lg font-bold tabular-nums">{formatUSD(data.aggregates.total_cost_usd)}</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="flex items-center gap-3 p-4">
-                  <div className="rounded-lg bg-muted p-2 text-blue-400">
-                    <Layers className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Sessões</p>
-                    <p className="text-lg font-bold tabular-nums">{formatNumber(data.total)}</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="flex items-center gap-3 p-4">
-                  <div className="rounded-lg bg-muted p-2 text-amber-400">
-                    <TrendingUp className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Custo Médio</p>
-                    <p className="text-lg font-bold tabular-nums">{formatUSD(data.aggregates.avg_session_cost)}</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="flex items-center gap-3 p-4">
-                  <div className="rounded-lg bg-muted p-2 text-purple-400">
-                    <BarChart3 className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Mais Cara</p>
-                    <p className="text-lg font-bold tabular-nums">{formatUSD(data.aggregates.max_session_cost)}</p>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <StatCard icon={DollarSign} iconColor="text-success" label="Custo Total" value={formatUSD(data.aggregates.total_cost_usd)} />
+              <StatCard icon={Layers} iconColor="text-info" label="Sessões" value={formatNumber(data.total)} />
+              <StatCard icon={TrendingUp} iconColor="text-warning" label="Custo Médio" value={formatUSD(data.aggregates.avg_session_cost)} />
+              <StatCard icon={BarChart3} iconColor="text-chart-4" label="Mais Cara" value={formatUSD(data.aggregates.max_session_cost)} />
             </div>
           )}
           <SessionsTable

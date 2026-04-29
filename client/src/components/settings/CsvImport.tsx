@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, type DragEvent } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Section } from "@/components/shared/Section";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -135,16 +135,10 @@ export function CsvImport() {
   const result = importMutation.data;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Upload className="h-5 w-5" />
-          Importar CSV
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Section title={<span className="flex items-center gap-2"><Upload className="h-5 w-5" /> Importar CSV</span>}>
+      <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Importe dados historicos de uso a partir de um arquivo CSV exportado do Google Sheets.
+          Importe dados históricos de uso a partir de um arquivo CSV exportado do Google Sheets.
         </p>
 
         {/* Drop zone */}
@@ -305,7 +299,7 @@ export function CsvImport() {
             </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </Section>
   );
 }
