@@ -28,6 +28,48 @@ interface Props {
   weeklyResetHour?: number;
 }
 
+type FieldErrors = Partial<Record<
+  "rate" | "plan" | "daily" | "session" | "resetHour" | "startDate",
+  string
+>>;
+
+function validate(args: {
+  rate: string;
+  plan: string;
+  daily: string;
+  session: string;
+  resetHour: string;
+}): FieldErrors {
+  const errors: FieldErrors = {};
+
+  const rateNum = parseFloat(args.rate);
+  if (!args.rate || Number.isNaN(rateNum) || rateNum <= 0) {
+    errors.rate = "Taxa precisa ser número maior que 0";
+  }
+
+  const planNum = parseFloat(args.plan);
+  if (!args.plan || Number.isNaN(planNum) || planNum <= 0) {
+    errors.plan = "Custo do plano precisa ser número maior que 0";
+  }
+
+  if (args.daily) {
+    const n = parseFloat(args.daily);
+    if (Number.isNaN(n) || n < 0) errors.daily = "Limite diário precisa ser número ≥ 0";
+  }
+
+  if (args.session) {
+    const n = parseFloat(args.session);
+    if (Number.isNaN(n) || n < 0) errors.session = "Limite por sessão precisa ser número ≥ 0";
+  }
+
+  const hourNum = parseInt(args.resetHour);
+  if (Number.isNaN(hourNum) || hourNum < 0 || hourNum > 23) {
+    errors.resetHour = "Hora precisa estar entre 0 e 23";
+  }
+
+  return errors;
+}
+
 export function SettingsForm({
   brlRate, planCostUsd, dailyBudgetUsd, sessionBudgetUsd,
   planStartDate, weeklyResetDow = 2, weeklyResetHour = 15,
@@ -39,10 +81,17 @@ export function SettingsForm({
   const [startDate, setStartDate] = useState(planStartDate?.slice(0, 10) || "");
   const [resetDow, setResetDow] = useState(weeklyResetDow);
   const [resetHour, setResetHour] = useState(String(weeklyResetHour));
+  const [errors, setErrors] = useState<FieldErrors>({});
   const update = useUpdateSettings();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    const v = validate({ rate, plan, daily, session, resetHour });
+    setErrors(v);
+    if (Object.keys(v).length > 0) {
+      toast.error("Corrija os campos destacados");
+      return;
+    }
     update.mutate(
       {
         brl_rate: parseFloat(rate),
@@ -54,24 +103,61 @@ export function SettingsForm({
         weekly_reset_hour: parseInt(resetHour) || 15,
       },
       {
-        onSuccess: () => toast.success("Configurações salvas!"),
-        onError: () => toast.error("Erro ao salvar"),
+        onSuccess: () => {
+          setErrors({});
+          toast.success("Configurações salvas!");
+        },
+        onError: (err: Error & { message?: string }) => {
+          toast.error(err?.message || "Erro ao salvar");
+        },
       },
     );
   }
 
   return (
     <Section title="Configurações">
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-md" noValidate>
           <div className="space-y-2">
-            <Label>Taxa USD → BRL</Label>
-            <Input type="number" step="0.01" value={rate} onChange={(e) => setRate(e.target.value)} />
-            <p className="text-xs text-muted-foreground">Usado para calcular valores em BRL no dashboard</p>
+            <Label htmlFor="settings-rate">Taxa USD → BRL</Label>
+            <Input
+              id="settings-rate"
+              type="number"
+              step="0.01"
+              min={0}
+              value={rate}
+              onChange={(e) => {
+                setRate(e.target.value);
+                if (errors.rate) setErrors((p) => ({ ...p, rate: undefined }));
+              }}
+              aria-invalid={errors.rate ? true : undefined}
+              aria-describedby={errors.rate ? "settings-rate-err" : "settings-rate-hint"}
+            />
+            {errors.rate ? (
+              <p id="settings-rate-err" className="text-xs text-destructive">{errors.rate}</p>
+            ) : (
+              <p id="settings-rate-hint" className="text-xs text-muted-foreground">Usado para calcular valores em BRL no dashboard</p>
+            )}
           </div>
           <div className="space-y-2">
-            <Label>Custo mensal do plano (USD)</Label>
-            <Input type="number" step="0.01" value={plan} onChange={(e) => setPlan(e.target.value)} />
-            <p className="text-xs text-muted-foreground">Usado para calcular o indicador de valor do plano</p>
+            <Label htmlFor="settings-plan">Custo mensal do plano (USD)</Label>
+            <Input
+              id="settings-plan"
+              type="number"
+              step="0.01"
+              min={0}
+              value={plan}
+              onChange={(e) => {
+                setPlan(e.target.value);
+                if (errors.plan) setErrors((p) => ({ ...p, plan: undefined }));
+              }}
+              aria-invalid={errors.plan ? true : undefined}
+              aria-describedby={errors.plan ? "settings-plan-err" : "settings-plan-hint"}
+            />
+            {errors.plan ? (
+              <p id="settings-plan-err" className="text-xs text-destructive">{errors.plan}</p>
+            ) : (
+              <p id="settings-plan-hint" className="text-xs text-muted-foreground">Usado para calcular o indicador de valor do plano</p>
+            )}
           </div>
 
           {/* Billing info */}
@@ -82,8 +168,9 @@ export function SettingsForm({
             </div>
             <div className="space-y-3">
               <div className="space-y-2">
-                <Label>Data de início do plano</Label>
+                <Label htmlFor="settings-startdate">Data de início do plano</Label>
                 <Input
+                  id="settings-startdate"
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
@@ -92,8 +179,9 @@ export function SettingsForm({
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label>Reset semanal — dia</Label>
+                  <Label htmlFor="settings-resetdow">Reset semanal — dia</Label>
                   <NativeSelect
+                    id="settings-resetdow"
                     sizing="default"
                     value={resetDow}
                     onChange={(e) => setResetDow(parseInt(e.target.value))}
@@ -105,14 +193,24 @@ export function SettingsForm({
                   </NativeSelect>
                 </div>
                 <div className="space-y-2">
-                  <Label>Reset semanal — hora (BRT)</Label>
+                  <Label htmlFor="settings-resethour">Reset semanal — hora (BRT)</Label>
                   <Input
+                    id="settings-resethour"
                     type="number"
                     min={0}
                     max={23}
+                    step={1}
                     value={resetHour}
-                    onChange={(e) => setResetHour(e.target.value)}
+                    onChange={(e) => {
+                      setResetHour(e.target.value);
+                      if (errors.resetHour) setErrors((p) => ({ ...p, resetHour: undefined }));
+                    }}
+                    aria-invalid={errors.resetHour ? true : undefined}
+                    aria-describedby={errors.resetHour ? "settings-resethour-err" : undefined}
                   />
+                  {errors.resetHour && (
+                    <p id="settings-resethour-err" className="text-xs text-destructive">{errors.resetHour}</p>
+                  )}
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
@@ -129,24 +227,44 @@ export function SettingsForm({
             </div>
             <div className="space-y-3">
               <div className="space-y-2">
-                <Label>Limite diário (USD)</Label>
+                <Label htmlFor="settings-daily">Limite diário (USD)</Label>
                 <Input
+                  id="settings-daily"
                   type="number"
                   step="0.01"
+                  min={0}
                   placeholder="Ex: 50.00 (deixe vazio para desativar)"
                   value={daily}
-                  onChange={(e) => setDaily(e.target.value)}
+                  onChange={(e) => {
+                    setDaily(e.target.value);
+                    if (errors.daily) setErrors((p) => ({ ...p, daily: undefined }));
+                  }}
+                  aria-invalid={errors.daily ? true : undefined}
+                  aria-describedby={errors.daily ? "settings-daily-err" : undefined}
                 />
+                {errors.daily && (
+                  <p id="settings-daily-err" className="text-xs text-destructive">{errors.daily}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label>Limite por sessão (USD)</Label>
+                <Label htmlFor="settings-session">Limite por sessão (USD)</Label>
                 <Input
+                  id="settings-session"
                   type="number"
                   step="0.01"
+                  min={0}
                   placeholder="Ex: 10.00 (deixe vazio para desativar)"
                   value={session}
-                  onChange={(e) => setSession(e.target.value)}
+                  onChange={(e) => {
+                    setSession(e.target.value);
+                    if (errors.session) setErrors((p) => ({ ...p, session: undefined }));
+                  }}
+                  aria-invalid={errors.session ? true : undefined}
+                  aria-describedby={errors.session ? "settings-session-err" : undefined}
                 />
+                {errors.session && (
+                  <p id="settings-session-err" className="text-xs text-destructive">{errors.session}</p>
+                )}
               </div>
             </div>
           </div>
