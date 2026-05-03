@@ -19,3 +19,27 @@ for (const key of required) {
     process.exit(1);
   }
 }
+
+// SECURITY: reject placeholder JWT_SECRET (BUG-01).
+// .env.example ships "change-me-to-a-random-string-at-least-32-chars" — if anyone
+// deploys without rotating, attackers reading the public repo can forge any token.
+const PLACEHOLDER_PATTERNS = [
+  /^change-me/i,
+  /^your-secret/i,
+  /^secret$/i,
+  /^changeme$/i,
+];
+
+if (env.JWT_SECRET.length < 32) {
+  console.error(
+    `[security] JWT_SECRET too short (${env.JWT_SECRET.length} chars). Minimum 32. Generate via: node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"`
+  );
+  process.exit(1);
+}
+
+if (PLACEHOLDER_PATTERNS.some((re) => re.test(env.JWT_SECRET))) {
+  console.error(
+    `[security] JWT_SECRET still set to .env.example placeholder. Rotate before starting. Generate via: node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"`
+  );
+  process.exit(1);
+}

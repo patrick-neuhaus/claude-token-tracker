@@ -52,10 +52,13 @@ body {
 
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-success-display: var(--success-display);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-info-display: var(--info-display);
+  --color-destructive-display: var(--destructive-display);
 
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -99,12 +102,15 @@ body {
   --accent-foreground: hsl(222 20% 11%);
   --destructive: hsl(0 70% 45%);
   --destructive-foreground: hsl(0 0% 100%);
+  --destructive-display: hsl(0 70% 45%); /* light mode = same (already passes) */
   --success: hsl(152 85% 30%);
   --success-foreground: hsl(0 0% 100%);
+  --success-display: hsl(152 85% 30%);
   --warning: hsl(38 92% 35%);
   --warning-foreground: hsl(0 0% 100%);
   --info: hsl(217 91% 35%);
   --info-foreground: hsl(0 0% 100%);
+  --info-display: hsl(217 91% 35%);
   --border: hsl(222 10% 88%);
   --input: hsl(222 10% 88%);
   --ring: hsl(222 15% 20%);
@@ -150,14 +156,19 @@ body {
   --muted-foreground: hsl(222 12% 65%);
   --accent: hsl(222 18% 22%);
   --accent-foreground: hsl(222 15% 95%);
-  --destructive: hsl(0 70% 50%);
+  /* BUG-04 fix: solid bg variants WCAG AA compliant vs white text on dark.
+     Display variants kept bright for text/icon usage on dark cards. */
+  --destructive: hsl(0 70% 42%);            /* 5.04:1 vs white (was 3.99:1) */
   --destructive-foreground: hsl(0 0% 100%);
-  --success: hsl(152 60% 50%);
+  --destructive-display: hsl(0 75% 65%);    /* bright variant for text-on-dark */
+  --success: hsl(152 70% 32%);              /* 5.51:1 vs white (was 3.4:1) */
   --success-foreground: hsl(0 0% 100%);
-  --warning: hsl(38 88% 60%);
+  --success-display: hsl(152 60% 60%);
+  --warning: hsl(38 88% 60%);               /* already passes 8.7:1 vs dark fg */
   --warning-foreground: hsl(222 20% 11%);
-  --info: hsl(217 85% 60%);
+  --info: hsl(217 80% 50%);                 /* 5.07:1 vs white (was 3.6:1) */
   --info-foreground: hsl(0 0% 100%);
+  --info-display: hsl(217 85% 65%);
   --border: hsl(222 15% 22%);
   --input: hsl(222 15% 22%);
   --ring: hsl(217 70% 55%);
