@@ -3,6 +3,7 @@ import { api } from "@/lib/api";
 import { Section } from "@/components/shared/Section";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { formatUSD } from "@/lib/formatters";
 
 interface Badge {
@@ -188,11 +189,7 @@ export function AchievementsPage() {
       <div className="space-y-6">
         <Skeleton className="h-10 w-40" />
         <Skeleton className="h-4 w-full" />
-        <div className="space-y-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-48 rounded-xl" />
-          ))}
-        </div>
+        <SkeletonGrid count={4} cols={1} itemHeight="h-48" />
       </div>
     );
   }

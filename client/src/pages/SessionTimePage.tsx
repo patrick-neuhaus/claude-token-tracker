@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useSessionTime } from "@/hooks/useSessionTime";
 import { formatUSD, formatNumber, formatDate } from "@/lib/formatters";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { StatCard } from "@/components/shared/StatCard";
 import { Section } from "@/components/shared/Section";
 import { surface } from "@/lib/surface";
@@ -237,11 +238,7 @@ export function SessionTimePage() {
       {/* Loading / error */}
       {isLoading && (
         <div className="space-y-4">
-          <div className="grid grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 rounded-xl" />
-            ))}
-          </div>
+          <SkeletonGrid count={4} />
           <Skeleton className="h-72 rounded-xl" />
           <Skeleton className="h-80 rounded-xl" />
         </div>

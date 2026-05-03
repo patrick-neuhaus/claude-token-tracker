@@ -15,6 +15,7 @@ import { BarChart3, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 
 function DashboardSkeleton() {
   return (
@@ -24,11 +25,7 @@ function DashboardSkeleton() {
         <Skeleton className="h-9 w-64" />
       </div>
       <Skeleton className="h-40 w-full rounded-xl" />
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 rounded-xl" />
-        ))}
-      </div>
+      <SkeletonGrid count={5} cols={5} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Skeleton className="h-72 rounded-xl" />
         <Skeleton className="h-72 rounded-xl" />

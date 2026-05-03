@@ -5,6 +5,7 @@ import { Section } from "@/components/shared/Section";
 import { StatCard } from "@/components/shared/StatCard";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { Button } from "@/components/ui/button";
 import { NavBreadcrumb } from "@/components/shared/NavBreadcrumb";
 import { SessionNameEditor } from "@/components/sessions/SessionNameEditor";
@@ -40,11 +41,7 @@ function Skeletons() {
   return (
     <div className="space-y-6">
       <Skeleton className="h-8 w-96" />
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 rounded-xl" />
-        ))}
-      </div>
+      <SkeletonGrid count={4} />
       <Skeleton className="h-72 rounded-xl" />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Skeleton className="h-64 rounded-xl" />

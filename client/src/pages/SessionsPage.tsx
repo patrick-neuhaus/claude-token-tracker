@@ -5,6 +5,7 @@ import { SessionsTable } from "@/components/sessions/SessionsTable";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { Search, X, DollarSign, Layers, TrendingUp, BarChart3 } from "lucide-react";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { NativeSelect } from "@/components/shared/NativeSelect";
@@ -101,11 +102,7 @@ export function SessionsPage() {
 
       {isLoading ? (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 rounded-xl" />
-            ))}
-          </div>
+          <SkeletonGrid count={4} />
           <Skeleton className="h-96 rounded-xl" />
         </div>
       ) : data?.sessions?.length ? (
