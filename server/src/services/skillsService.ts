@@ -1,11 +1,12 @@
 import fs from "fs/promises";
 import path from "path";
+import { env } from "../config/env.js";
 
-// Hard-coded — Patrick é único user; edit trivial se mudar.
-const SKILLFORGE_DIR = "C:/Users/Patrick Neuhaus/Documents/Github/skillforge-arsenal/skills";
-const OMC_DIR = "C:/Users/Patrick Neuhaus/Documents/Github/oh-my-claudecode/skills";
-const BUILTIN_CACHE = "C:/Users/Patrick Neuhaus/.claude/plugins/cache";
-const FIXES_FILE = "C:/Users/Patrick Neuhaus/Documents/Github/skillforge-arsenal/FIXES-APLICADOS.md";
+// Source dirs come from env (defaults in env.ts match Patrick's machine).
+const SKILLFORGE_DIR = env.SKILLFORGE_DIR;
+const OMC_DIR = env.OMC_DIR;
+const BUILTIN_CACHE = env.BUILTIN_CACHE;
+const FIXES_FILE = env.FIXES_FILE;
 
 export type SkillSource = "skillforge" | "omc" | "builtin";
 

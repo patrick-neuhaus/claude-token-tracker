@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+import { env } from "../config/env.js";
 
 interface FixedSource {
   kind: "file";
@@ -18,36 +19,37 @@ interface GlobSource {
 
 type Source = FixedSource | GlobSource;
 
+// Source list driven by env (defaults in env.ts match Patrick's machine).
 const SOURCES: Source[] = [
   {
     kind: "file",
     id: "github-root",
     label: "Github root CLAUDE.md",
-    path: "C:/Users/Patrick Neuhaus/Documents/Github/CLAUDE.md",
+    path: env.GITHUB_ROOT_CLAUDE_MD,
   },
   {
     kind: "file",
     id: "skillforge-claude",
     label: "Skillforge CLAUDE.md",
-    path: "C:/Users/Patrick Neuhaus/Documents/Github/skillforge-arsenal/CLAUDE.md",
+    path: env.SKILLFORGE_CLAUDE_MD,
   },
   {
     kind: "file",
     id: "omc-claude",
     label: "OMC CLAUDE.md",
-    path: "C:/Users/Patrick Neuhaus/Documents/Github/oh-my-claudecode/CLAUDE.md",
+    path: env.OMC_CLAUDE_MD,
   },
   {
     kind: "file",
     id: "claude-token-tracker-claude",
     label: "Claude Token Tracker CLAUDE.md",
-    path: "C:/Users/Patrick Neuhaus/Documents/Github/claude-token-tracker/CLAUDE.md",
+    path: env.TOKEN_TRACKER_CLAUDE_MD,
   },
   {
     kind: "glob",
     idPrefix: "rules-",
     labelPrefix: "Rules: ",
-    dir: "C:/Users/Patrick Neuhaus/.claude/rules",
+    dir: env.CLAUDE_RULES_DIR,
     pattern: /\.md$/i,
   },
 ];
