@@ -1,11 +1,12 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useState } from "react";
-import { ArrowLeft, Code2, Eye, ScrollText } from "lucide-react";
+import { Code2, Eye, ScrollText } from "lucide-react";
 import { useSystemPromptDetail } from "@/hooks/useSystemPrompts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { MarkdownDocPanel } from "@/components/shared/MarkdownDocPanel";
 import { ViewModeToggle } from "@/components/shared/ViewModeToggle";
+import { DetailHeader } from "@/components/shared/DetailHeader";
 
 export function SystemPromptDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -34,32 +35,30 @@ export function SystemPromptDetailPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="space-y-2 flex-1 min-w-0">
-          <Link to="/system-prompts" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-3 w-3" />
-            System Prompts
-          </Link>
-          <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="text-xl font-semibold tracking-tight flex items-center gap-2">
-              <ScrollText className="h-5 w-5 text-muted-foreground" />
-              {prompt.label}
-            </h2>
-          </div>
-          <p className="text-xs font-mono text-muted-foreground break-all">{prompt.path}</p>
-          <p className="text-xs text-muted-foreground tabular-nums">
-            {prompt.lineCount} linhas · {(prompt.bytes / 1024).toFixed(1)}KB
-          </p>
-        </div>
-        <ViewModeToggle
-          options={[
-            { value: "rendered", icon: Eye, label: "Render" },
-            { value: "raw", icon: Code2, label: "Raw" },
-          ]}
-          value={viewMode}
-          onChange={setViewMode}
-        />
-      </div>
+      <DetailHeader
+        backTo="/system-prompts"
+        backLabel="System Prompts"
+        title={prompt.label}
+        icon={ScrollText}
+        subtitle={
+          <>
+            <p className="text-xs font-mono text-muted-foreground break-all">{prompt.path}</p>
+            <p className="text-xs text-muted-foreground tabular-nums mt-1">
+              {prompt.lineCount} linhas · {(prompt.bytes / 1024).toFixed(1)}KB
+            </p>
+          </>
+        }
+        actions={
+          <ViewModeToggle
+            options={[
+              { value: "rendered", icon: Eye, label: "Render" },
+              { value: "raw", icon: Code2, label: "Raw" },
+            ]}
+            value={viewMode}
+            onChange={setViewMode}
+          />
+        }
+      />
 
       <MarkdownDocPanel content={prompt.body} mode={viewMode} />
     </div>
