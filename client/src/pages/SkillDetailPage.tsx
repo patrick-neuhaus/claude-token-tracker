@@ -1,10 +1,11 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useState } from "react";
-import { Lock, FileText, FolderTree, Search, Code2, Eye } from "lucide-react";
+import { Lock, FileText, FolderTree, Search, Code2, Eye, Copy } from "lucide-react";
 import { useSkillDetail, useSkillFile, type SkillSource } from "@/hooks/useSkills";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { SkillFileTree } from "@/components/skills/SkillFileTree";
 import { SkillSearch } from "@/components/skills/SkillSearch";
 import { MarkdownView } from "@/components/markdown/MarkdownView";
@@ -12,6 +13,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { MarkdownDocPanel } from "@/components/shared/MarkdownDocPanel";
 import { ViewModeToggle } from "@/components/shared/ViewModeToggle";
 import { DetailHeader } from "@/components/shared/DetailHeader";
+import { toast } from "sonner";
 
 const SOURCE_COLOR: Record<SkillSource, string> = {
   skillforge: "border-info/40 bg-info/10 text-info",
@@ -76,14 +78,33 @@ export function SkillDetailPage() {
           <p className="text-sm text-muted-foreground leading-relaxed">{skill.description}</p>
         }
         actions={
-          <ViewModeToggle
-            options={[
-              { value: "rendered", icon: Eye, label: "Render" },
-              { value: "raw", icon: Code2, label: "Raw" },
-            ]}
-            value={viewMode}
-            onChange={setViewMode}
-          />
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Copiar conteúdo"
+              className="gap-1.5"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(skill.body);
+                  toast.success("Copiado");
+                } catch {
+                  toast.error("Erro ao copiar");
+                }
+              }}
+            >
+              <Copy className="h-3.5 w-3.5" />
+              Copiar
+            </Button>
+            <ViewModeToggle
+              options={[
+                { value: "rendered", icon: Eye, label: "Render" },
+                { value: "raw", icon: Code2, label: "Raw" },
+              ]}
+              value={viewMode}
+              onChange={setViewMode}
+            />
+          </>
         }
       />
 
