@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { requireRole } from "../middleware/requireRole.js";
 import { listUsers, updateUserRole } from "../services/settingsService.js";
+import { isSuperAdmin } from "../services/usersService.js";
 
 const router = Router();
 
@@ -20,12 +21,7 @@ router.patch("/users/:id", async (req, res) => {
   }
 
   // Protect super_admin from demotion
-  const { query: dbQuery } = await import("../config/database.js");
-  const target = await dbQuery(
-    "SELECT role FROM user_settings WHERE user_id = $1",
-    [req.params.id]
-  );
-  if (target.rows[0]?.role === "super_admin") {
+  if (await isSuperAdmin(req.params.id)) {
     res.status(403).json({ status: "error", message: "Cannot change super_admin role" });
     return;
   }
