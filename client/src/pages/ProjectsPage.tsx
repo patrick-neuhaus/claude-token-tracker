@@ -18,6 +18,7 @@ import { FolderOpen, Plus, LayoutGrid, List } from "lucide-react";
 import { toast } from "sonner";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonRows } from "@/components/shared/SkeletonGrid";
 
 export function ProjectsPage() {
   const navigate = useNavigate();
@@ -73,9 +74,7 @@ export function ProjectsPage() {
           <Skeleton className="h-9 w-32" />
         </div>
         <div className="rounded-md border overflow-hidden">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full" />
-          ))}
+          <SkeletonRows count={6} className="space-y-0" />
         </div>
       </div>
     );

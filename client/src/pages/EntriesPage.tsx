@@ -4,7 +4,7 @@ import { EntriesTable } from "@/components/entries/EntriesTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonRows } from "@/components/shared/SkeletonGrid";
 import { Download, Loader2 } from "lucide-react";
 import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Pagination } from "@/components/shared/Pagination";
@@ -114,11 +114,7 @@ export function EntriesPage() {
       </div>
 
       {isLoading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
-          ))}
-        </div>
+        <SkeletonRows count={8} itemHeight="h-12" />
       ) : d?.entries?.length ? (
         <>
           <div className="overflow-x-auto">

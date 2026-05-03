@@ -4,7 +4,7 @@ import { formatUSD, formatTokens, formatNumber, formatShortDate, formatFullDate 
 import { useProjects } from "@/hooks/useProjects";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { Section } from "@/components/shared/Section";
 import { surface } from "@/lib/surface";
 import {
@@ -201,9 +201,7 @@ export function AnalyticsPage() {
     return (
       <div className="space-y-6">
         <h2 className="text-xl font-semibold tracking-tight">Analytics</h2>
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-72 w-full rounded-xl" />
-        ))}
+        <SkeletonGrid count={4} cols={1} itemHeight="h-72" />
       </div>
     );
   }
