@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request } from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { getSummary, getCharts, type DashboardFilters } from "../services/dashboardService.js";
 import { getUserId, getDateRange, parsePeriod } from "../utils/routeHelpers.js";
@@ -8,7 +8,7 @@ const router = Router();
 
 router.use(authMiddleware);
 
-function extractFilters(req: any): DashboardFilters {
+function extractFilters(req: Request): DashboardFilters {
   const { from, to } = getDateRange(req);
   const period = parsePeriod(req.query.period as string | undefined, from, to);
   const filters: DashboardFilters = { period };

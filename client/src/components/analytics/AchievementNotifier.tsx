@@ -18,7 +18,7 @@ function saveSeen(ids: Set<string>) {
 }
 
 /**
- * AchievementNotifier — Wave B4.1 V001
+ * AchievementNotifier — Wave B4.1 V001 + B7.6 (BUG-15 setTimeout cleanup)
  *
  * Consumes server-authoritative useAchievements hook. Detects newly unlocked
  * badges (vs localStorage history) and fires toast notifications.
@@ -26,11 +26,14 @@ function saveSeen(ids: Set<string>) {
  * Note (P2.8 react-patterns): notified.current is REMOVED. Previously this
  * caused a one-shot effect that wouldn't re-notify on subsequent unlocks
  * during a session. Now relies on `seen` set deduplication only.
+ *
+ * Note (B7.6 BUG-15): timer ids tracked in ref + cleanup in useEffect return.
+ * Previously, unmount before timers fired left stray toasts queued.
  */
 export function AchievementNotifier() {
   const { user } = useAuth();
   const { data } = useAchievements();
-  const lastSeenSize = useRef<number>(-1);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
     if (!user || !data) return;
@@ -43,16 +46,15 @@ export function AchievementNotifier() {
     // First-time bootstrap — seed without spamming toasts
     if (seen.size === 0 && currentIds.length > 0) {
       saveSeen(new Set(currentIds));
-      lastSeenSize.current = currentIds.length;
       return;
     }
 
     if (newBadges.length === 0) return;
 
-    // Show toast per new badge (max 5)
+    // Show toast per new badge (max 5) — track timer ids for cleanup
     const toShow = newBadges.slice(0, 5);
     toShow.forEach((badge, i) => {
-      setTimeout(() => {
+      const timerId = setTimeout(() => {
         toast(`${badge.icon} Conquista desbloqueada!`, {
           description: badge.label,
           duration: Infinity,
@@ -62,10 +64,11 @@ export function AchievementNotifier() {
           },
         });
       }, i * 800);
+      timersRef.current.push(timerId);
     });
 
     if (newBadges.length > 5) {
-      setTimeout(() => {
+      const overflowTimer = setTimeout(() => {
         toast(`...e mais ${newBadges.length - 5} conquistas!`, {
           duration: Infinity,
           action: {
@@ -74,12 +77,18 @@ export function AchievementNotifier() {
           },
         });
       }, 5 * 800);
+      timersRef.current.push(overflowTimer);
     }
 
     // Save all current as seen
     const allSeen = new Set([...seen, ...currentIds]);
     saveSeen(allSeen);
-    lastSeenSize.current = allSeen.size;
+
+    // Cleanup: clear pending timers on unmount or effect re-run
+    return () => {
+      timersRef.current.forEach(clearTimeout);
+      timersRef.current = [];
+    };
   }, [data, user]);
 
   return null;

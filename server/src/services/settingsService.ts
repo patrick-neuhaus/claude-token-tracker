@@ -18,7 +18,7 @@ export async function updateSettings(
   updates: { brl_rate?: number; plan_cost_usd?: number; daily_budget_usd?: number | null; session_budget_usd?: number | null; plan_start_date?: string | null; weekly_reset_dow?: number; weekly_reset_hour?: number }
 ) {
   const sets: string[] = [];
-  const vals: any[] = [];
+  const vals: unknown[] = [];
   let idx = 2;
 
   if (updates.brl_rate !== undefined) {

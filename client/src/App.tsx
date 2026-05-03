@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { LoginPage } from "@/pages/LoginPage";
 import { DashboardPage } from "@/pages/DashboardPage";
@@ -41,21 +42,21 @@ export default function App() {
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route element={<AppLayout />}>
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/skills" element={<SkillsPage />} />
-                <Route path="/skills/:name" element={<SkillDetailPage />} />
-                <Route path="/system-prompts" element={<SystemPromptsPage />} />
-                <Route path="/system-prompts/:id" element={<SystemPromptDetailPage />} />
-                <Route path="/sessions" element={<SessionsPage />} />
-                <Route path="/sessions/:id" element={<SessionDetailPage />} />
-                <Route path="/projects" element={<ProjectsPage />} />
-                <Route path="/projects/:id" element={<ProjectDetailPage />} />
-                <Route path="/entries" element={<EntriesPage />} />
-                <Route path="/analytics" element={<AnalyticsPage />} />
-                <Route path="/session-time" element={<SessionTimePage />} />
-                <Route path="/achievements" element={<AchievementsPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/dashboard" element={<RouteErrorBoundary routeName="Dashboard"><DashboardPage /></RouteErrorBoundary>} />
+                <Route path="/skills" element={<RouteErrorBoundary routeName="Skills"><SkillsPage /></RouteErrorBoundary>} />
+                <Route path="/skills/:name" element={<RouteErrorBoundary routeName="Skill Detail"><SkillDetailPage /></RouteErrorBoundary>} />
+                <Route path="/system-prompts" element={<RouteErrorBoundary routeName="System Prompts"><SystemPromptsPage /></RouteErrorBoundary>} />
+                <Route path="/system-prompts/:id" element={<RouteErrorBoundary routeName="System Prompt Detail"><SystemPromptDetailPage /></RouteErrorBoundary>} />
+                <Route path="/sessions" element={<RouteErrorBoundary routeName="Sessions"><SessionsPage /></RouteErrorBoundary>} />
+                <Route path="/sessions/:id" element={<RouteErrorBoundary routeName="Session Detail"><SessionDetailPage /></RouteErrorBoundary>} />
+                <Route path="/projects" element={<RouteErrorBoundary routeName="Projects"><ProjectsPage /></RouteErrorBoundary>} />
+                <Route path="/projects/:id" element={<RouteErrorBoundary routeName="Project Detail"><ProjectDetailPage /></RouteErrorBoundary>} />
+                <Route path="/entries" element={<RouteErrorBoundary routeName="Entries"><EntriesPage /></RouteErrorBoundary>} />
+                <Route path="/analytics" element={<RouteErrorBoundary routeName="Analytics"><AnalyticsPage /></RouteErrorBoundary>} />
+                <Route path="/session-time" element={<RouteErrorBoundary routeName="Session Time"><SessionTimePage /></RouteErrorBoundary>} />
+                <Route path="/achievements" element={<RouteErrorBoundary routeName="Achievements"><AchievementsPage /></RouteErrorBoundary>} />
+                <Route path="/settings" element={<RouteErrorBoundary routeName="Settings"><SettingsPage /></RouteErrorBoundary>} />
+                <Route path="/admin" element={<RouteErrorBoundary routeName="Admin"><AdminPage /></RouteErrorBoundary>} />
               </Route>
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
