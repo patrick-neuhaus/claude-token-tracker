@@ -10,6 +10,35 @@ export const env = {
   JWT_SECRET: process.env.JWT_SECRET!,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
   PORT: parseInt(process.env.PORT || "3001", 10),
+  // Filesystem paths for skills + system-prompts services.
+  // Defaults match Patrick's machine; override via .env on other deployments.
+  SKILLFORGE_DIR:
+    process.env.SKILLFORGE_DIR ||
+    "C:/Users/Patrick Neuhaus/Documents/Github/skillforge-arsenal/skills",
+  OMC_DIR:
+    process.env.OMC_DIR ||
+    "C:/Users/Patrick Neuhaus/Documents/Github/oh-my-claudecode/skills",
+  BUILTIN_CACHE:
+    process.env.BUILTIN_CACHE ||
+    "C:/Users/Patrick Neuhaus/.claude/plugins/cache",
+  FIXES_FILE:
+    process.env.FIXES_FILE ||
+    "C:/Users/Patrick Neuhaus/Documents/Github/skillforge-arsenal/FIXES-APLICADOS.md",
+  GITHUB_ROOT_CLAUDE_MD:
+    process.env.GITHUB_ROOT_CLAUDE_MD ||
+    "C:/Users/Patrick Neuhaus/Documents/Github/CLAUDE.md",
+  SKILLFORGE_CLAUDE_MD:
+    process.env.SKILLFORGE_CLAUDE_MD ||
+    "C:/Users/Patrick Neuhaus/Documents/Github/skillforge-arsenal/CLAUDE.md",
+  OMC_CLAUDE_MD:
+    process.env.OMC_CLAUDE_MD ||
+    "C:/Users/Patrick Neuhaus/Documents/Github/oh-my-claudecode/CLAUDE.md",
+  TOKEN_TRACKER_CLAUDE_MD:
+    process.env.TOKEN_TRACKER_CLAUDE_MD ||
+    "C:/Users/Patrick Neuhaus/Documents/Github/claude-token-tracker/CLAUDE.md",
+  CLAUDE_RULES_DIR:
+    process.env.CLAUDE_RULES_DIR ||
+    "C:/Users/Patrick Neuhaus/.claude/rules",
 };
 
 const required = ["DATABASE_URL", "JWT_SECRET"] as const;
