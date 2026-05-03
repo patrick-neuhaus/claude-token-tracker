@@ -17,7 +17,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
       return (
         <div className="flex h-screen items-center justify-center">
           <div className="max-w-lg space-y-4 rounded-lg border border-red-500/30 bg-red-500/10 p-6">
-            <h2 className="text-lg font-bold text-red-400">Erro na aplicacao</h2>
+            <h2 className="text-lg font-bold text-red-400">Erro na aplicação</h2>
             <pre className="whitespace-pre-wrap text-sm text-red-300">
               {this.state.error?.message}
             </pre>
