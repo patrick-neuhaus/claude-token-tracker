@@ -1,4 +1,5 @@
 import { query } from "../config/database.js";
+import { buildSessionFilters } from "../utils/filterBuilders.js";
 
 const ALLOWED_SORT = [
   "last_seen",
@@ -29,36 +30,9 @@ export function normalizeSortDir(raw: unknown): "ASC" | "DESC" {
   return raw === "asc" ? "ASC" : "DESC";
 }
 
-function buildSessionWhere(
-  userId: string,
-  filters: Pick<ListSessionsFilters, "search" | "projectId" | "from" | "to">,
-): { where: string; params: any[] } {
-  let where = "WHERE s.user_id = $1";
-  const params: any[] = [userId];
-
-  if (filters.search) {
-    where += ` AND (s.custom_name ILIKE $${params.length + 1} OR s.session_id ILIKE $${params.length + 1})`;
-    params.push(`%${filters.search}%`);
-  }
-  if (filters.projectId) {
-    where += ` AND s.project_id = $${params.length + 1}::uuid`;
-    params.push(filters.projectId);
-  }
-  if (filters.from) {
-    where += ` AND s.last_seen >= $${params.length + 1}`;
-    params.push(filters.from);
-  }
-  if (filters.to) {
-    where += ` AND s.last_seen <= $${params.length + 1}`;
-    params.push(filters.to);
-  }
-
-  return { where, params };
-}
-
 export async function listSessions(userId: string, filters: ListSessionsFilters) {
   const offset = (filters.page - 1) * filters.limit;
-  const { where, params } = buildSessionWhere(userId, filters);
+  const { where, params, nextIdx } = buildSessionFilters(userId, filters);
 
   const [rows, countResult, aggResult] = await Promise.all([
     query(
@@ -69,7 +43,7 @@ export async function listSessions(userId: string, filters: ListSessionsFilters)
        LEFT JOIN projects p ON p.id = s.project_id
        ${where}
        ORDER BY s.${filters.sortBy} ${filters.sortDir}
-       LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+       LIMIT $${nextIdx} OFFSET $${nextIdx + 1}`,
       [...params, filters.limit, offset],
     ),
     query(`SELECT COUNT(*)::int AS total FROM sessions s ${where}`, params),
