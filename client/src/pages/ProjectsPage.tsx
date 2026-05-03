@@ -89,6 +89,11 @@ export function ProjectsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Projetos"
+        subtitle={
+          projectList && projectList.length > 0
+            ? `${projectList.length} projetos · ${formatUSD(projectList.reduce((acc, p) => acc + Number(p.total_cost_usd || 0), 0))} no total`
+            : undefined
+        }
         actions={
           <>
             {/* Toggle view */}

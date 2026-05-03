@@ -70,12 +70,27 @@ export function SessionsPage() {
     [rename],
   );
 
-  const hasActiveFilters = !!(filters.project_id);
+  const hasActiveFilters = !!(filters.project_id || filters.search || dateRange.from || dateRange.to);
+
+  function clearAllFilters() {
+    setSearchInput("");
+    setDateRange({});
+    setFilters((f) => ({ ...f, project_id: undefined, search: "", page: 1 }));
+  }
 
   return (
     <div className="space-y-4">
       <PageHeader
         title="Sessões"
+        subtitle={
+          data && data.aggregates ? (
+            <>
+              {formatNumber(data.total)} sessões · {formatUSD(data.aggregates.total_cost_usd)} no período
+            </>
+          ) : data ? (
+            <>{formatNumber(data.total)} sessões</>
+          ) : undefined
+        }
         actions={
           <div className="relative w-64">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -160,8 +175,21 @@ export function SessionsPage() {
             <Pagination page={filters.page} pages={data!.pages} onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))} />
           </div>
         </>
+      ) : hasActiveFilters ? (
+        <EmptyState
+          message="Nenhuma sessão com esses filtros"
+          description="Tente remover ou ajustar os filtros aplicados."
+          action={
+            <Button variant="outline" size="sm" className="mt-2" onClick={clearAllFilters}>
+              Limpar filtros
+            </Button>
+          }
+        />
       ) : (
-        <EmptyState message="Nenhuma sessão encontrada." />
+        <EmptyState
+          message="Nenhuma sessão registrada"
+          description="Configure o webhook nos seus scripts ou importe um CSV em Configurações para começar."
+        />
       )}
     </div>
   );

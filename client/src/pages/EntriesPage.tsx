@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useEntries } from "@/hooks/useEntries";
 import { EntriesTable } from "@/components/entries/EntriesTable";
 import { Button } from "@/components/ui/button";
@@ -46,9 +47,14 @@ export function EntriesPage() {
     setPage(1);
   }
 
+  const hasActiveFilters = !!(model || source || from || to);
+
   return (
     <div className="space-y-4">
-      <PageHeader title="Entradas" />
+      <PageHeader
+        title="Entradas"
+        subtitle={d ? `${d.total.toLocaleString("pt-BR")} entradas no total` : undefined}
+      />
 
       <div className="flex flex-wrap items-end gap-4 rounded-lg border border-border p-4">
         <div className="space-y-1">
@@ -128,8 +134,26 @@ export function EntriesPage() {
             <Pagination page={page} pages={d!.pages} onPageChange={setPage} />
           </div>
         </>
+      ) : hasActiveFilters ? (
+        <EmptyState
+          message="Nenhuma entrada com esses filtros"
+          description="Tente remover ou ajustar os filtros aplicados."
+          action={
+            <Button variant="outline" size="sm" className="mt-2" onClick={clearFilters}>
+              Limpar filtros
+            </Button>
+          }
+        />
       ) : (
-        <EmptyState message="Nenhuma entrada encontrada." />
+        <EmptyState
+          message="Nenhuma entrada registrada"
+          description="Configure o webhook ou importe um CSV em Configurações pra começar."
+          action={
+            <Link to="/settings">
+              <Button variant="outline" size="sm" className="mt-2">Ir para Configurações</Button>
+            </Link>
+          }
+        />
       )}
     </div>
   );

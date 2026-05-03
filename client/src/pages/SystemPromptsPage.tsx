@@ -4,7 +4,9 @@ import { useSystemPromptsList, type SystemPromptSummary } from "@/hooks/useSyste
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, ArrowRight, ScrollText } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { SortableTableHeader } from "@/components/shared/SortableTableHeader";
 import { PageHeader } from "@/components/shared/PageHeader";
 
@@ -95,9 +97,19 @@ export function SystemPromptsPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground text-sm border border-border rounded-md bg-card">
-          Nenhum system prompt encontrado.
-        </div>
+        search ? (
+          <EmptyState
+            message="Nenhum system prompt com esse filtro"
+            description="Tente buscar por outro termo ou limpe a busca."
+            action={
+              <Button variant="outline" size="sm" className="mt-2" onClick={() => setSearch("")}>
+                Limpar filtros
+              </Button>
+            }
+          />
+        ) : (
+          <EmptyState message="Nenhum system prompt encontrado" />
+        )
       ) : (
         <div className="bg-card border border-border rounded-md overflow-hidden">
           <div

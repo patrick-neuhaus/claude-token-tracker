@@ -10,6 +10,7 @@ import { DailyCostChart } from "@/components/dashboard/DailyCostChart";
 // PeriodTable removido — dados redundantes com SummaryCards
 import { DashboardFilters as DashboardFiltersBar } from "@/components/dashboard/DashboardFilters";
 import { BudgetAlert } from "@/components/dashboard/BudgetAlert";
+import { DailyBudgetProgress } from "@/components/dashboard/DailyBudgetProgress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart3, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { Link } from "react-router-dom";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { formatUSD, formatNumber } from "@/lib/formatters";
 
 function DashboardSkeleton() {
   return (
@@ -81,9 +83,26 @@ export function DashboardPage() {
     );
   }
 
+  const periodLabel = filters.period === "month"
+    ? "Mês atual"
+    : filters.period === "today"
+      ? "Hoje"
+      : filters.period === "7d"
+        ? "Últimos 7 dias"
+        : filters.period === "30d"
+          ? "Últimos 30 dias"
+          : "Período";
+
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard" />
+      <PageHeader
+        title="Dashboard"
+        subtitle={
+          <>
+            {periodLabel} · {formatNumber(s.session_count)} sessões · {formatUSD(s.total_cost_usd)}
+          </>
+        }
+      />
       <SummaryCards
         totalCostUsd={s.total_cost_usd}
         totalTokens={Number(s.total_tokens)}
@@ -93,6 +112,8 @@ export function DashboardPage() {
         totalInput={Number(s.total_input)}
         cacheSavingsUsd={s.cache_savings_usd}
       />
+
+      <DailyBudgetProgress todayCostUsd={s?.today_cost_usd ?? 0} dailyBudgetUsd={dailyBudget} />
 
       <DashboardFiltersBar filters={filters} onChange={setFilters} />
 
