@@ -22,15 +22,26 @@ export function BudgetAlert({ todayCostUsd, dailyBudgetUsd }: Props) {
   });
 
   useEffect(() => {
-    // Reset dismiss se a data mudou (abriu o app no dia seguinte)
-    const check = setInterval(() => {
+    // Reset dismiss se a data mudou (abriu o app no dia seguinte).
+    // Trocamos setInterval(60s) por visibilitychange + focus listener — só
+    // recheca quando a aba volta a ficar ativa (P2.1 react-patterns: evita
+    // timer rodando em background, recalcula só on-demand).
+    function recheck() {
       try {
         setDismissed(localStorage.getItem(todayKey()) === "1");
       } catch {
         /* noop */
       }
-    }, 60_000);
-    return () => clearInterval(check);
+    }
+    function onVisibility() {
+      if (document.visibilityState === "visible") recheck();
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", recheck);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", recheck);
+    };
   }, []);
 
   function handleDismiss() {
