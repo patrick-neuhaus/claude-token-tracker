@@ -61,15 +61,19 @@ interface AchievementsRaw {
   max_session_entries?: number;
   max_session_cost?: number;
   cache_savings_usd?: number;
+  total_cache_read?: number | string;
+  total_input?: number | string;
 }
 
 /**
- * computeBadges — derives 80 achievement badges from raw API stats.
+ * computeBadges — derives 93 achievement badges from raw API stats.
  *
- * NOTE (Wave B3.4): kept client-side temporarily. Wave B4 V001 will move this
- * to the server (achievement catalog), and the page will just render the
- * server-computed list. For now, only data + UI components were extracted —
- * this function still runs in the client.
+ * @deprecated Wave B4.1 V001 — server is now source of truth. AchievementsPage
+ * + AchievementNotifier consume `useAchievements` hook (calls /api/achievements).
+ * This function is kept as a fallback but will be deleted in Wave B7.
+ *
+ * Server equivalent: `server/src/services/achievementsService.ts` BADGE_DEFINITIONS.
+ * TODO B7: consolidate with server source by deleting this file.
  */
 export function computeBadges(data: AchievementsRaw | undefined | null): Badge[] {
   if (!data) return [];
@@ -84,6 +88,10 @@ export function computeBadges(data: AchievementsRaw | undefined | null): Badge[]
   const maxSessionEntries = data.max_session_entries || 0;
   const maxSessionCost = data.max_session_cost || 0;
   const cacheSavings = data.cache_savings_usd || 0;
+  const cacheRead = Number(data.total_cache_read || 0);
+  const totalInput = Number(data.total_input || 0);
+  const cacheRate = (cacheRead + totalInput) > 0 ? (cacheRead / (cacheRead + totalInput)) * 100 : 0;
+  const hasCacheData = totalInput > 0;
 
   // Helper pra label de tokens
   const tl = (v: number) => {
@@ -177,6 +185,10 @@ export function computeBadges(data: AchievementsRaw | undefined | null): Badge[]
     { id: "cache-50k", icon: "👑", label: "Rei do Cache", description: "Economizou $50K em cache", unlocked: cacheSavings >= 5e4, progress: p(cacheSavings, 5e4), progressLabel: `${formatUSD(cacheSavings)}/$50K`, tier: "diamond", category: "cache" },
     { id: "cache-100k", icon: "🗝️", label: "Chave do Cofre", description: "Economizou $100K em cache", unlocked: cacheSavings >= 1e5, progress: p(cacheSavings, 1e5), progressLabel: `${formatUSD(cacheSavings)}/$100K`, tier: "diamond", category: "cache" },
     { id: "cache-1m", icon: "🌟", label: "El Dorado", description: "Economizou $1M em cache", unlocked: cacheSavings >= 1e6, progress: p(cacheSavings, 1e6), progressLabel: `${formatUSD(cacheSavings)}/$1M`, tier: "diamond", category: "cache" },
+
+    // === CACHE HIT RATE (eficiência) ===
+    { id: "cache-rate-50", icon: "🎯", label: "Cache Master", description: "Cache hit rate acima de 50%", unlocked: hasCacheData && cacheRate >= 50, progress: hasCacheData ? p(cacheRate, 50) : 0, progressLabel: hasCacheData ? `${cacheRate.toFixed(0)}%` : "sem dados", tier: "silver", category: "cache" },
+    { id: "cache-rate-80", icon: "🏆", label: "Cache God", description: "Cache hit rate acima de 80%", unlocked: hasCacheData && cacheRate >= 80, progress: hasCacheData ? p(cacheRate, 80) : 0, progressLabel: hasCacheData ? `${cacheRate.toFixed(0)}%` : "sem dados", tier: "gold", category: "cache" },
 
     // === DIVERSIDADE ===
     { id: "models-2", icon: "🎨", label: "Bicampeão", description: "Usou 2+ modelos", unlocked: modelsUsed >= 2, progress: p(modelsUsed, 2), progressLabel: `${modelsUsed}/2`, tier: "bronze", category: "org" },

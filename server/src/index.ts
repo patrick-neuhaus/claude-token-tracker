@@ -26,6 +26,7 @@ const routeMap = [
   ["/api/admin", "./routes/admin.js"],
   ["/api/import", "./routes/import.js"],
   ["/api/analytics", "./routes/analytics.js"],
+  ["/api/achievements", "./routes/achievements.js"],
   ["/api/skills", "./routes/skills.js"],
   ["/api/system-prompts", "./routes/systemPrompts.js"],
 ] as const;
