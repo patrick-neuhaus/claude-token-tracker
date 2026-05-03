@@ -1,12 +1,14 @@
 import { useParams } from "react-router-dom";
 import { useState } from "react";
-import { Code2, Eye, ScrollText } from "lucide-react";
+import { Code2, Eye, ScrollText, Copy } from "lucide-react";
 import { useSystemPromptDetail } from "@/hooks/useSystemPrompts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { MarkdownDocPanel } from "@/components/shared/MarkdownDocPanel";
 import { ViewModeToggle } from "@/components/shared/ViewModeToggle";
 import { DetailHeader } from "@/components/shared/DetailHeader";
+import { toast } from "sonner";
 
 export function SystemPromptDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -49,14 +51,33 @@ export function SystemPromptDetailPage() {
           </>
         }
         actions={
-          <ViewModeToggle
-            options={[
-              { value: "rendered", icon: Eye, label: "Render" },
-              { value: "raw", icon: Code2, label: "Raw" },
-            ]}
-            value={viewMode}
-            onChange={setViewMode}
-          />
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Copiar conteúdo"
+              className="gap-1.5"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(prompt.body);
+                  toast.success("Copiado");
+                } catch {
+                  toast.error("Erro ao copiar");
+                }
+              }}
+            >
+              <Copy className="h-3.5 w-3.5" />
+              Copiar
+            </Button>
+            <ViewModeToggle
+              options={[
+                { value: "rendered", icon: Eye, label: "Render" },
+                { value: "raw", icon: Code2, label: "Raw" },
+              ]}
+              value={viewMode}
+              onChange={setViewMode}
+            />
+          </>
         }
       />
 
