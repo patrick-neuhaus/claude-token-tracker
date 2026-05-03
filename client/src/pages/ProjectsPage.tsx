@@ -20,6 +20,7 @@ import { ResponsiveContainer, AreaChart, Area } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonRows } from "@/components/shared/SkeletonGrid";
 import { ViewModeToggle } from "@/components/shared/ViewModeToggle";
+import { ClickableRow, handleEnterSpaceKey } from "@/components/shared/ClickableRow";
 
 export function ProjectsPage() {
   const navigate = useNavigate();
@@ -123,11 +124,11 @@ export function ProjectsPage() {
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {projectList.map((project) => (
-            <button
+            <ClickableRow
               key={project.id}
-              type="button"
-              onClick={() => navigate(`/projects/${project.id}`)}
-              className={`${surface.section} px-5 py-4 text-left cursor-pointer transition-colors hover:bg-muted/40 group`}
+              mode="link"
+              to={`/projects/${project.id}`}
+              className={`${surface.section} px-5 py-4 rounded-md`}
             >
               <div className="flex items-start justify-between gap-3">
                 <h3 className="text-base font-semibold tracking-tight group-hover:text-info transition-colors truncate">{project.name}</h3>
@@ -156,7 +157,7 @@ export function ProjectsPage() {
                   </ResponsiveContainer>
                 </div>
               ) : null}
-            </button>
+            </ClickableRow>
           ))}
         </div>
       ) : (
@@ -179,8 +180,12 @@ export function ProjectsPage() {
                 .map((project) => (
                   <tr
                     key={project.id}
-                    className="border-b last:border-0 cursor-pointer hover:bg-muted/40 transition-colors"
+                    tabIndex={0}
+                    role="link"
+                    aria-label={`Abrir projeto ${project.name}`}
+                    className="border-b last:border-0 cursor-pointer hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                     onClick={() => navigate(`/projects/${project.id}`)}
+                    onKeyDown={handleEnterSpaceKey(() => navigate(`/projects/${project.id}`))}
                   >
                     <td className="p-3">
                       <div className="font-medium">{project.name}</div>

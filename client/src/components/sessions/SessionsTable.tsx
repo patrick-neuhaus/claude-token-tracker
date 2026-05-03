@@ -1,4 +1,4 @@
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 import { SessionNameEditor } from "./SessionNameEditor";
@@ -6,6 +6,7 @@ import { useRenameSession } from "@/hooks/useSessions";
 import { formatDate, formatUSD } from "@/lib/formatters";
 import { toast } from "sonner";
 import { SortableTableHeader } from "@/components/shared/SortableTableHeader";
+import { ClickableRow } from "@/components/shared/ClickableRow";
 
 interface Session {
   id: string;
@@ -33,7 +34,6 @@ interface Props {
 const COLS = "minmax(220px,2fr) 100px minmax(140px,1.5fr) 150px 150px 90px 110px 32px";
 
 export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
-  const navigate = useNavigate();
   const rename = useRenameSession();
 
   function handleRename(id: string, name: string) {
@@ -66,11 +66,12 @@ export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
       {/* Rows */}
       <div className="divide-y divide-border">
         {sessions.map((s) => (
-          <div
+          <ClickableRow
             key={s.id}
-            className="grid gap-3 px-5 py-3 cursor-pointer hover:bg-muted/40 transition-colors group items-center"
+            mode="link"
+            to={`/sessions/${s.id}`}
+            className="grid gap-3 px-5 py-3 items-center"
             style={{ gridTemplateColumns: COLS }}
-            onClick={() => navigate(`/sessions/${s.id}`)}
           >
             <div onClick={(e) => e.stopPropagation()} className="min-w-0">
               <SessionNameEditor
@@ -99,7 +100,7 @@ export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
             <span className="text-sm text-right tabular-nums">{s.entry_count}</span>
             <span className="text-sm text-right tabular-nums font-medium">{formatUSD(s.total_cost_usd)}</span>
             <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity justify-self-end" />
-          </div>
+          </ClickableRow>
         ))}
       </div>
     </div>
