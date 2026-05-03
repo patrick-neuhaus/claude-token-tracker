@@ -20,6 +20,7 @@ import { Clock, DollarSign, Activity, Layers, Info } from "lucide-react";
 import { Tooltip as UITooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { MS_PER_DAY } from "@/lib/constants";
 import { TOOLTIP_PROPS } from "@/lib/chartConfig";
+import { FilterChip } from "@/components/shared/FilterChip";
 
 // --- helpers ---
 
@@ -219,17 +220,13 @@ export function SessionTimePage() {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs text-muted-foreground">Presets:</span>
               {[15, 30, 60, 90, 120, 180].map((v) => (
-                <button
+                <FilterChip
                   key={v}
+                  label={v >= 60 ? `${v / 60}h` : `${v}m`}
+                  active={gap === v}
                   onClick={() => setGap(v)}
-                  className={`px-2.5 py-0.5 text-xs rounded-md border transition-colors ${
-                    gap === v
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:border-muted-foreground/50"
-                  }`}
-                >
-                  {v >= 60 ? `${v / 60}h` : `${v}m`}
-                </button>
+                  variant="primary"
+                />
               ))}
             </div>
           </div>

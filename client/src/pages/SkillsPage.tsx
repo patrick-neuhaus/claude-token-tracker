@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Lock, ArrowRight } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { SortableTableHeader } from "@/components/shared/SortableTableHeader";
+import { FilterChip, FilterChipGroup } from "@/components/shared/FilterChip";
 
 const CATEGORIES = [
   "all", "meta", "code-review", "guard", "implementation", "design",
@@ -157,54 +158,34 @@ export function SkillsPage() {
             className="pl-9"
           />
         </div>
-        <button
+        <FilterChip
+          label="Lock-in"
+          active={lockedOnly}
           onClick={() => setLockedOnly(!lockedOnly)}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-sm border transition-colors ${
-            lockedOnly
-              ? "bg-warning/15 border-warning/40 text-warning"
-              : "border-border text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-          }`}
-        >
-          <Lock className="h-3 w-3" />
-          Lock-in
-        </button>
+          icon={Lock}
+          variant="warning"
+        />
       </div>
 
       {/* Source chips */}
-      <div className="flex items-center gap-1 flex-wrap">
-        <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">source:</span>
-        {SOURCES.map((src) => (
-          <button
-            key={src}
-            onClick={() => setSource(src)}
-            className={`px-2.5 py-1 text-xs rounded-sm border transition-colors tabular-nums ${
-              source === src
-                ? "bg-info/15 border-info/40 text-info"
-                : "border-border text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-            }`}
-          >
-            {src === "all" ? "all" : SOURCE_LABEL[src]} ({sourceCounts[src] || 0})
-          </button>
-        ))}
-      </div>
+      <FilterChipGroup
+        label="source:"
+        options={SOURCES.map((src) => ({
+          value: src,
+          label: src === "all" ? "all" : SOURCE_LABEL[src],
+          count: sourceCounts[src] || 0,
+        }))}
+        active={source}
+        onChange={setSource}
+      />
 
       {/* Category chips */}
-      <div className="flex items-center gap-1 flex-wrap">
-        <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">categoria:</span>
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setCategory(cat)}
-            className={`px-2.5 py-1 text-xs rounded-sm border transition-colors ${
-              category === cat
-                ? "bg-info/15 border-info/40 text-info"
-                : "border-border text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
+      <FilterChipGroup
+        label="categoria:"
+        options={CATEGORIES.map((cat) => ({ value: cat, label: cat }))}
+        active={category}
+        onChange={setCategory}
+      />
 
       {/* Tabela densa */}
       {filtered.length === 0 ? (
