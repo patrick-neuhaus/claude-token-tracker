@@ -42,9 +42,9 @@ export function MonthNarrative({
   const parts: string[] = [];
 
   if (cost > plan) {
-    parts.push(`Você extraiu ${formatUSD(cost)} em valor API-equivalent este mes — ${pct}% do seu plano de ${formatUSD(plan)}.`);
+    parts.push(`Você extraiu ${formatUSD(cost)} em valor API-equivalent este mês — ${pct}% do seu plano de ${formatUSD(plan)}.`);
   } else if (cost > 0) {
-    parts.push(`Você está em ${formatUSD(cost)} este mes (${pct}% do plano de ${formatUSD(plan)}).`);
+    parts.push(`Você está em ${formatUSD(cost)} este mês (${pct}% do plano de ${formatUSD(plan)}).`);
   }
 
   if (topModelName) {

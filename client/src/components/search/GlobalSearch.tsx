@@ -157,7 +157,7 @@ export function GlobalSearch({ open, onOpenChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-2xl p-0 gap-0 top-[20%] translate-y-0"
+        className="max-w-2xl p-0 gap-0 top-4 sm:top-[20%] translate-y-0"
         onKeyDown={handleKey}
       >
         <div className="flex items-center gap-3 px-4 py-3 border-b border-border">

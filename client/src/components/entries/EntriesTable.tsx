@@ -41,13 +41,31 @@ export function EntriesTable({ entries }: Props) {
         <span className="text-right">Output</span>
         <span className="text-right">
           <Tooltip>
-            <TooltipTrigger className="cursor-help underline decoration-dotted">Cache R</TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  className="cursor-help underline decoration-dotted bg-transparent border-0 p-0 text-xs font-medium text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                >
+                  Cache R
+                </button>
+              }
+            />
             <TooltipContent>Tokens lidos do cache — não cobrados como input normal</TooltipContent>
           </Tooltip>
         </span>
         <span className="text-right">
           <Tooltip>
-            <TooltipTrigger className="cursor-help underline decoration-dotted">Cache W</TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  className="cursor-help underline decoration-dotted bg-transparent border-0 p-0 text-xs font-medium text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                >
+                  Cache W
+                </button>
+              }
+            />
             <TooltipContent>Tokens escritos no cache — armazenados para requests futuros</TooltipContent>
           </Tooltip>
         </span>
