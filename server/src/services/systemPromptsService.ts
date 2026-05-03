@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { env } from "../config/env.js";
+import { isFresh } from "../utils/ttlCache.js";
 
 interface FixedSource {
   kind: "file";
@@ -76,10 +77,6 @@ interface CacheEntry {
 let listCache: CacheEntry | null = null;
 const TTL_MS = 60_000;
 
-function isFresh(at: number) {
-  return Date.now() - at < TTL_MS;
-}
-
 async function statFile(p: string): Promise<{ exists: boolean; lineCount: number; lastModified: string | null; bytes: number; body?: string }> {
   try {
     const body = await fs.readFile(p, "utf-8");
@@ -123,7 +120,7 @@ async function expandSources(): Promise<{ id: string; label: string; path: strin
 }
 
 export async function listSystemPrompts(): Promise<SystemPromptSummary[]> {
-  if (listCache && isFresh(listCache.at)) return listCache.data;
+  if (listCache && isFresh(listCache.at, TTL_MS)) return listCache.data;
   const expanded = await expandSources();
   const out: SystemPromptSummary[] = [];
   for (const src of expanded) {

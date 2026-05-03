@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { env } from "../config/env.js";
+import { isFresh } from "../utils/ttlCache.js";
 
 // Source dirs come from env (defaults in env.ts match Patrick's machine).
 const SKILLFORGE_DIR = env.SKILLFORGE_DIR;
@@ -44,10 +45,6 @@ let cache: {
 } = { listAt: 0 };
 const TTL_MS = 60_000;
 
-function isFresh(ts: number) {
-  return Date.now() - ts < TTL_MS;
-}
-
 /** Parse YAML frontmatter. Skill.md frontmatter is simple: name + description (sometimes license). */
 export function parseFrontmatter(content: string): { meta: Record<string, string>; body: string } {
   const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
@@ -90,7 +87,7 @@ export function parseFrontmatter(content: string): { meta: Record<string, string
 }
 
 async function parseLockedSkills(): Promise<Map<string, string>> {
-  if (cache.locked && isFresh(cache.listAt)) return cache.locked;
+  if (cache.locked && isFresh(cache.listAt, TTL_MS)) return cache.locked;
   const map = new Map<string, string>();
   try {
     const content = await fs.readFile(FIXES_FILE, "utf-8");
@@ -295,7 +292,7 @@ async function buildSummaryFromEntry(
 }
 
 export async function listSkills(): Promise<SkillSummary[]> {
-  if (cache.list && isFresh(cache.listAt)) return cache.list;
+  if (cache.list && isFresh(cache.listAt, TTL_MS)) return cache.list;
 
   const locked = await parseLockedSkills();
 
@@ -336,7 +333,7 @@ export async function listSkills(): Promise<SkillSummary[]> {
 
 /** Resolve the on-disk dir for a skill name + optional source. */
 async function resolveSkillDir(name: string, source?: SkillSource): Promise<{ dir: string; source: SkillSource } | null> {
-  if (!cache.index || !isFresh(cache.listAt)) await listSkills();
+  if (!cache.index || !isFresh(cache.listAt, TTL_MS)) await listSkills();
   const inner = cache.index?.get(name);
   if (!inner || inner.size === 0) return null;
   if (source && inner.has(source)) {
