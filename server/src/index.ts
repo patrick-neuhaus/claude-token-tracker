@@ -11,20 +11,8 @@ const app = express();
 app.use(cors({ origin: ["http://localhost:3001", "http://localhost:3002", "http://localhost:5173"] }));
 app.use(express.json({ limit: "16kb" }));
 
-// Migrations idempotentes
-const { pool } = await import("./config/database.js");
-await pool.query(`
-  ALTER TABLE user_settings
-    ADD COLUMN IF NOT EXISTS daily_budget_usd NUMERIC(10,4),
-    ADD COLUMN IF NOT EXISTS session_budget_usd NUMERIC(10,4),
-    ADD COLUMN IF NOT EXISTS plan_start_date DATE,
-    ADD COLUMN IF NOT EXISTS weekly_reset_dow INT DEFAULT 2,
-    ADD COLUMN IF NOT EXISTS weekly_reset_hour INT DEFAULT 15
-`);
-await pool.query(`
-  ALTER TABLE sessions
-    ADD COLUMN IF NOT EXISTS session_name TEXT
-`);
+// BUG-03 fix: schema migrations now live in server/migrations/008-009.sql,
+// applied via `npm run migrate`. Boot no longer ALTERs schema.
 
 // Mount API routes
 const routeMap = [
