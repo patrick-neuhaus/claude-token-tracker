@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, MessageSquare, FolderOpen, List, Settings, Shield,
   LogOut, TrendingUp, TrendingDown, BarChart2, Trophy, FileCode, ScrollText,
+  Search,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlanStatus } from "@/hooks/usePlanStatus";
@@ -61,7 +62,11 @@ function PlanCountdown() {
   );
 }
 
-export function Sidebar() {
+interface Props {
+  onSearchOpen?: () => void;
+}
+
+export function Sidebar({ onSearchOpen }: Props) {
   const { user, logout } = useAuth();
 
   return (
@@ -70,6 +75,25 @@ export function Sidebar() {
         <h2 className="text-base font-semibold tracking-tight">Claude Token Tracker</h2>
         <p className="text-xs text-muted-foreground mt-0.5">{user?.email}</p>
       </div>
+
+      {/* Search trigger — promovido pra sidebar (C3 + DS Δ4+5) */}
+      {onSearchOpen && (
+        <div className="px-3 pb-2">
+          <button
+            type="button"
+            onClick={onSearchOpen}
+            className="w-full inline-flex items-center justify-between gap-2 px-3 py-1.5 text-xs text-muted-foreground bg-muted/30 hover:bg-muted/60 border border-border rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Abrir busca global (Ctrl+K)"
+          >
+            <span className="flex items-center gap-2">
+              <Search className="h-3.5 w-3.5" />
+              Buscar...
+            </span>
+            <kbd className="font-mono text-[10px] border border-border rounded px-1 bg-background">Ctrl+K</kbd>
+          </button>
+        </div>
+      )}
+
       <PlanCountdown />
       <Separator className="bg-sidebar-border" />
 
