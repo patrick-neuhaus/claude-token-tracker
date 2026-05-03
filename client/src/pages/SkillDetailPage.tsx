@@ -10,6 +10,7 @@ import { SkillFileTree } from "@/components/skills/SkillFileTree";
 import { SkillSearch } from "@/components/skills/SkillSearch";
 import { MarkdownView } from "@/components/markdown/MarkdownView";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { MarkdownDocPanel } from "@/components/shared/MarkdownDocPanel";
 
 const SOURCE_COLOR: Record<SkillSource, string> = {
   skillforge: "border-info/40 bg-info/10 text-info",
@@ -102,9 +103,7 @@ export function SkillDetailPage() {
         </TabsList>
 
         <TabsContent value="skill" className="mt-4">
-          <div className="bg-card border border-border rounded-md px-6 py-5">
-            <MarkdownView content={skill.body} mode={viewMode} />
-          </div>
+          <MarkdownDocPanel content={skill.body} mode={viewMode} />
         </TabsContent>
 
         <TabsContent value="files" className="mt-4">
