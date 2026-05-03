@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { NavBreadcrumb } from "@/components/shared/NavBreadcrumb";
 import { SessionNameEditor } from "@/components/sessions/SessionNameEditor";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ErrorState } from "@/components/shared/ErrorState";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -61,9 +62,7 @@ export function SessionDetailPage() {
 
   if (isLoading) return <Skeletons />;
   if (isError || !data) {
-    return (
-      <EmptyState icon={Activity} message="Erro ao carregar sessão" />
-    );
+    return <ErrorState title="Erro ao carregar sessão" />;
   }
 
   const { session, aggregates, timeline, by_model, entries } = data;

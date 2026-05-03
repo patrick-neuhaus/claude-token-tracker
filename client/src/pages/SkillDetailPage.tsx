@@ -1,6 +1,6 @@
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useState } from "react";
-import { ArrowLeft, Lock, FileText, FolderTree, Search, AlertTriangle, Code2, Eye } from "lucide-react";
+import { ArrowLeft, Lock, FileText, FolderTree, Search, Code2, Eye } from "lucide-react";
 import { useSkillDetail, useSkillFile, type SkillSource } from "@/hooks/useSkills";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { SkillFileTree } from "@/components/skills/SkillFileTree";
 import { SkillSearch } from "@/components/skills/SkillSearch";
 import { MarkdownView } from "@/components/markdown/MarkdownView";
+import { ErrorState } from "@/components/shared/ErrorState";
 
 const SOURCE_COLOR: Record<SkillSource, string> = {
   skillforge: "border-info/40 bg-info/10 text-info",
@@ -39,12 +40,11 @@ export function SkillDetailPage() {
 
   if (isError || !skill) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <AlertTriangle className="h-12 w-12 text-destructive" />
-        <p className="text-lg font-medium">Skill não encontrada</p>
-        <Button variant="outline" onClick={() => refetch()}>Tentar novamente</Button>
-        <Link to="/skills"><Button variant="ghost">Voltar pra lista</Button></Link>
-      </div>
+      <ErrorState
+        title="Skill não encontrada"
+        onRetry={() => refetch()}
+        backLink={{ to: "/skills", label: "Voltar pra lista" }}
+      />
     );
   }
 

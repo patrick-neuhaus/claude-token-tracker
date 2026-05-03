@@ -1,10 +1,11 @@
 import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
-import { ArrowLeft, AlertTriangle, Code2, Eye, ScrollText } from "lucide-react";
+import { ArrowLeft, Code2, Eye, ScrollText } from "lucide-react";
 import { useSystemPromptDetail } from "@/hooks/useSystemPrompts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { MarkdownView } from "@/components/markdown/MarkdownView";
+import { ErrorState } from "@/components/shared/ErrorState";
 
 export function SystemPromptDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -23,12 +24,11 @@ export function SystemPromptDetailPage() {
 
   if (isError || !prompt) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <AlertTriangle className="h-12 w-12 text-destructive" />
-        <p className="text-lg font-medium">System prompt não encontrado</p>
-        <Button variant="outline" onClick={() => refetch()}>Tentar novamente</Button>
-        <Link to="/system-prompts"><Button variant="ghost">Voltar pra lista</Button></Link>
-      </div>
+      <ErrorState
+        title="System prompt não encontrado"
+        onRetry={() => refetch()}
+        backLink={{ to: "/system-prompts", label: "Voltar pra lista" }}
+      />
     );
   }
 
