@@ -21,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonRows } from "@/components/shared/SkeletonGrid";
 import { ViewModeToggle } from "@/components/shared/ViewModeToggle";
 import { ClickableRow, handleEnterSpaceKey } from "@/components/shared/ClickableRow";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 export function ProjectsPage() {
   const navigate = useNavigate();
@@ -86,26 +87,28 @@ export function ProjectsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold tracking-tight">Projetos</h2>
-        <div className="flex items-center gap-2">
-          {/* Toggle view */}
-          {projectList && projectList.length > 0 && (
-            <ViewModeToggle
-              options={[
-                { value: "grid", icon: LayoutGrid, label: "Visualização em grade" },
-                { value: "list", icon: List, label: "Visualização em lista" },
-              ]}
-              value={viewMode}
-              onChange={setViewMode}
-            />
-          )}
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Projeto
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Projetos"
+        actions={
+          <>
+            {/* Toggle view */}
+            {projectList && projectList.length > 0 && (
+              <ViewModeToggle
+                options={[
+                  { value: "grid", icon: LayoutGrid, label: "Visualização em grade" },
+                  { value: "list", icon: List, label: "Visualização em lista" },
+                ]}
+                value={viewMode}
+                onChange={setViewMode}
+              />
+            )}
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Projeto
+            </Button>
+          </>
+        }
+      />
 
       {!projectList || projectList.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
