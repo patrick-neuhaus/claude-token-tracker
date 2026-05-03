@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, type DragEvent } from "react";
+import { useState, useRef, type DragEvent } from "react";
 import { Section } from "@/components/shared/Section";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,7 +58,9 @@ export function CsvImport() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const importMutation = useImportCsv();
 
-  const processFile = useCallback((file: File) => {
+  // B7.9 (P3.1 react-patterns): useCallback removed — none of these handlers are
+  // passed to memoized children. Plain function declarations are simpler + lighter.
+  function processFile(file: File) {
     if (!file.name.endsWith(".csv")) {
       toast.error("Selecione um arquivo .csv");
       return;
@@ -75,37 +77,31 @@ export function CsvImport() {
       setTotalRows(Math.max(0, lines.length - 1));
     };
     reader.readAsText(file);
-  }, []);
+  }
 
-  const handleDragOver = useCallback((e: DragEvent) => {
+  function handleDragOver(e: DragEvent) {
     e.preventDefault();
     setIsDragging(true);
-  }, []);
+  }
 
-  const handleDragLeave = useCallback((e: DragEvent) => {
+  function handleDragLeave(e: DragEvent) {
     e.preventDefault();
     setIsDragging(false);
-  }, []);
+  }
 
-  const handleDrop = useCallback(
-    (e: DragEvent) => {
-      e.preventDefault();
-      setIsDragging(false);
-      const file = e.dataTransfer.files[0];
-      if (file) processFile(file);
-    },
-    [processFile],
-  );
+  function handleDrop(e: DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  }
 
-  const handleFileSelect = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) processFile(file);
-    },
-    [processFile],
-  );
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  }
 
-  const handleImport = useCallback(() => {
+  function handleImport() {
     if (!csvText) return;
     importMutation.mutate(csvText, {
       onSuccess: (data) => {
@@ -118,9 +114,9 @@ export function CsvImport() {
         toast.error(`Erro na importacao: ${err.message}`);
       },
     });
-  }, [csvText, importMutation]);
+  }
 
-  const handleReset = useCallback(() => {
+  function handleReset() {
     setCsvText(null);
     setFileName("");
     setPreview(null);
@@ -129,7 +125,7 @@ export function CsvImport() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  }, [importMutation]);
+  }
 
   const isSuccess = importMutation.isSuccess;
   const result = importMutation.data;

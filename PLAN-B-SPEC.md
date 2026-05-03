@@ -614,3 +614,60 @@ Items conscientemente NÃO inclusos no Plan B (Wave futura ou descartados):
 ---
 
 **Próximo passo:** Phase 3 SDD (Implement) com `/clear` + leitura deste spec como sole source of truth. NÃO improvisar — se ambíguo, parar e perguntar.
+
+---
+
+## B7.5 Bundle Splitting Report
+
+**Baseline (pós-B7 deletes):** `dist/assets/index-DlHjAQj7.js` = **1,274.30 kB** (gzip: 376.55 kB). Vite warn limite 500 kB.
+
+**Análise:** bundle único, sem code-splitting de rota nem de lib pesada. Top 3 candidates priorizados (ordem de impacto/esforço):
+
+### 1. Recharts — top priority (alto impacto, esforço médio) — Recharts ~150-200 kB minified
+
+**Onde é usado** (8 arquivos, todos charts):
+- `pages/AnalyticsPage.tsx` — line + bar
+- `pages/ProjectsPage.tsx` — area
+- `pages/SessionDetailPage.tsx` — area
+- `components/charts/ModelPieChart.tsx`, `DailyCostAreaChart.tsx`
+- `components/dashboard/CostByModelChart.tsx`, `CostBySourceChart.tsx`, `DailyCostChart.tsx`
+- `components/sessions/SessionTimeScatterChart.tsx`
+- `components/analytics/ProjectComparison.tsx`
+
+**Split strategy:** route-level lazy import via `React.lazy()` + `<Suspense fallback>`. Pages que renderizam charts (Analytics, Projects, SessionDetail, Dashboard) viram chunks separados. Login/Settings/Admin não baixam Recharts.
+
+**Ganho estimado:** ~150-200 kB removido do main bundle (Dashboard ainda carrega em rota direta, mas Settings/Login economizam 100% desse cost). Em pages sem chart (Login, Settings, Admin, Entries), redução é integral.
+
+**Esforço:** 30-45min. Trocar 14 imports diretos `import { DashboardPage }` por `const DashboardPage = lazy(() => import("./pages/DashboardPage"))`. Wrap `<Routes>` em `<Suspense>`.
+
+### 2. React-Markdown + remark-gfm — segunda prioridade (médio impacto, esforço baixo) — ~80-100 kB
+
+**Onde é usado** (2 arquivos, só skill detail):
+- `components/markdown/MarkdownView.tsx` — única consumidora real de `react-markdown`
+- `pages/SkillDetailPage.tsx` — única page que renderiza
+- `components/shared/MarkdownDocPanel.tsx` — wrapper sobre MarkdownView
+
+**Split strategy:** lazy import do `MarkdownView` dentro do `SkillDetailPage`. SkillsPage (lista) não baixa. SystemPromptDetailPage também consome via MarkdownDocPanel — mesma rota-level split serve.
+
+**Ganho estimado:** ~80-100 kB. Skills list (rota mais visitada) economiza tudo. Detail só baixa quando navegado.
+
+**Esforço:** 15-20min. `const MarkdownView = lazy(() => import("@/components/markdown/MarkdownView").then(m => ({ default: m.MarkdownView })))`.
+
+### 3. Fuse.js — terceira prioridade (baixo impacto, esforço baixo) — ~12-15 kB
+
+**Onde é usado** (3 arquivos):
+- `pages/SkillsPage.tsx` — busca dentro da lista de skills
+- `components/search/GlobalSearch.tsx` — global cmd+k
+- `components/skills/SkillSearch.tsx` — busca dentro de skill detail
+
+**Split strategy:** dynamic import on-demand quando usuário foca input de busca. `GlobalSearch` é usada via cmd+k (modal) — perfeito candidato. `SkillsPage` carrega sempre (busca é UI principal), mas pode `await import("fuse.js")` no primeiro keystroke.
+
+**Ganho estimado:** ~12-15 kB. Pequeno em absolutos mas barato (zero risco de regressão de UX se feito on-focus).
+
+**Esforço:** 15min. Fuse é tree-shakeable mas modal-only carrega em todo render — mover pra dynamic import elimina cost.
+
+### Total estimado de ganho
+
+Implementando 1+2+3: **~250-310 kB** de redução do main bundle (~20-25%). Bundle main fica ~960-1020 kB, Dashboard chunk ~150 kB, SkillDetail chunk ~80 kB. Atinge spec do Vite (chunks <500 kB) em 80% das rotas.
+
+**Implementar:** Wave futura (não em B7) — splitting de Recharts é o de melhor ROI mas requer testar todos charts pós-lazy. Recomendo Wave C1 dedicada com regression test manual de cada page.

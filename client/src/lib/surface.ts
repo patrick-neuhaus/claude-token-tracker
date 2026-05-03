@@ -4,6 +4,8 @@
  * Use these className strings instead of <Card>/<CardHeader>/<CardContent> components.
  * The DS rule: vary padding/radius/border by context, not uniform like Card forces.
  *
+ * Card primitive deletado em B7.1 — use surface.* helpers
+ *
  * Reference: anti-ai-design-system anti-pattern #1 (Card soup).
  */
 

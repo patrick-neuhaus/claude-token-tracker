@@ -3,7 +3,7 @@ import { env } from "./env.js";
 
 export const pool = new pg.Pool({
   connectionString: env.DATABASE_URL,
-  max: 10,
+  max: parseInt(process.env.DB_POOL_MAX || "10", 10),
 });
 
 export async function query<T extends pg.QueryResultRow = any>(
