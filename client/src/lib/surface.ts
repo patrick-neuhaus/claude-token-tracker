@@ -26,3 +26,20 @@ export const surfaceContent = "px-5 py-4";
 
 /** Single-padding wrapper for `surface.primary` when no header. */
 export const surfaceBody = "px-5 py-4";
+
+/* ============================================================
+   Typography utility recipes (ds-tokens 3.3 — gap small, no token)
+   Use these strings directly in className for consistency across pages.
+   ============================================================ */
+
+/** Page header h2 recipe — used by all pages. */
+export const textH2 = "text-xl font-semibold tracking-tight";
+
+/** Subtitle below h2 — informational (count, period, filter). */
+export const textSubtitle = "text-sm text-muted-foreground";
+
+/** Display number (KPI cards, dashboard metrics). */
+export const textKpi = "text-3xl font-semibold tabular-nums tracking-tight";
+
+/** Caption — small labels, table headers. */
+export const textCaption = "text-xs text-muted-foreground uppercase tracking-wider";

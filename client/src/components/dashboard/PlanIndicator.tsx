@@ -88,7 +88,7 @@ export function PlanIndicator({ totalCostUsd, planCostUsd, weeklyResetDow = 2, w
           </div>
           <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full transition-all duration-1000 ease-out"
+              className="h-full rounded-full transition-[width] duration-300 ease-out"
               style={{
                 width: `${barWidth}%`,
                 backgroundColor: color,

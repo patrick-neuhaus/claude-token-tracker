@@ -191,6 +191,52 @@ body {
   --sidebar-ring: hsl(217 85% 65%);
 }
 
+/* ============================================================
+   Motion tokens — durations + easings (semantic, mode-agnostic)
+   Spec: docs/audits/04-motion-design.md FUND-01..FUND-05
+   ============================================================ */
+:root {
+  --motion-fast: 100ms;        /* hover/focus/press, sort/filter feedback */
+  --motion-base: 200ms;        /* color transitions, dropdown/tooltip in/out */
+  --motion-slow: 320ms;        /* modal entry/exit, tab/page transitions */
+  --motion-decorative: 480ms;  /* raros: achievement unlock, KPI pulse on update */
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+
+  --motion-stagger: 15ms;
+}
+
+@theme inline {
+  --duration-fast: var(--motion-fast);
+  --duration-base: var(--motion-base);
+  --duration-slow: var(--motion-slow);
+  --duration-decorative: var(--motion-decorative);
+}
+
+/* ============================================================
+   Reduced motion gate global (FUND-01, P0 BLOCKING — a11y gate)
+   Snap-to-end para todas animações, mantém estado funcional.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-slot="skeleton"] {
+    animation: none !important;
+    background-color: hsl(var(--muted) / 0.6);
+  }
+  [class*="hover:scale-"]:hover {
+    transform: scale(1) !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

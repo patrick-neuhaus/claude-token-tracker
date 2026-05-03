@@ -1,8 +1,21 @@
 export const MS_PER_DAY = 86_400_000;
 
+/**
+ * CHART_COLORS — Recharts paleta consumindo --chart-1..5 do index.css.
+ * Drift fix (ds-tokens 3.4): antes era hardcoded hex, agora segue tokens.
+ * 5 cores principais + 5 fallbacks com alpha reduzido = 10 distinguíveis.
+ */
 export const CHART_COLORS = [
-  "#6366f1", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6",
-  "#06b6d4", "#f97316", "#84cc16", "#ec4899", "#14b8a6",
+  "hsl(var(--chart-1))",      // 217 80% 60% blue
+  "hsl(var(--chart-2))",      // 152 55% 55% green
+  "hsl(var(--chart-3))",      // 38 80% 62%  amber
+  "hsl(var(--chart-4))",      // 280 55% 65% purple
+  "hsl(var(--chart-5))",      // 340 65% 60% magenta
+  "hsl(var(--chart-1) / 0.7)",
+  "hsl(var(--chart-2) / 0.7)",
+  "hsl(var(--chart-3) / 0.7)",
+  "hsl(var(--chart-4) / 0.7)",
+  "hsl(var(--chart-5) / 0.7)",
 ];
 
 export const DOW_LABELS_FULL = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -19,6 +32,7 @@ export const MODEL_COLORS: Record<string, string> = {
 export const SOURCE_COLORS: Record<string, string> = {
   "claude-code": "#f59e0b",
   "claude.ai": "#06b6d4",
+  codex: "#10b981",
 };
 
 export const VALUE_COLORS = {
@@ -29,6 +43,7 @@ export const VALUE_COLORS = {
 
 export function normalizeModelFamily(raw: string): string {
   const lower = raw.toLowerCase();
+  if (lower.includes("gpt")) return "outro";
   if (lower.includes("opus")) return "opus";
   if (lower.includes("sonnet")) return "sonnet";
   if (lower.includes("haiku")) return "haiku";
