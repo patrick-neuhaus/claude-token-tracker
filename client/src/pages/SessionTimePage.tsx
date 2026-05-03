@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ErrorState } from "@/components/shared/ErrorState";
 import {
   ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ZAxis,
 } from "recharts";
@@ -247,7 +248,7 @@ export function SessionTimePage() {
       )}
 
       {isError && (
-        <EmptyState icon={Activity} message="Erro ao carregar dados" />
+        <ErrorState title="Erro ao carregar dados" />
       )}
 
       {!isLoading && !isError && rows.length === 0 && (

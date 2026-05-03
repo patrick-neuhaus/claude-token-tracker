@@ -11,9 +11,10 @@ import { DailyCostChart } from "@/components/dashboard/DailyCostChart";
 import { DashboardFilters as DashboardFiltersBar } from "@/components/dashboard/DashboardFilters";
 import { BudgetAlert } from "@/components/dashboard/BudgetAlert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BarChart3, AlertTriangle, Settings } from "lucide-react";
+import { BarChart3, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { ErrorState } from "@/components/shared/ErrorState";
 
 function DashboardSkeleton() {
   return (
@@ -55,13 +56,10 @@ export function DashboardPage() {
 
   if (errorSummary || errorCharts) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <AlertTriangle className="h-12 w-12 text-destructive" />
-        <p className="text-lg font-medium">Erro ao carregar dados</p>
-        <Button variant="outline" onClick={() => { refetchSummary(); refetchCharts(); }}>
-          Tentar novamente
-        </Button>
-      </div>
+      <ErrorState
+        title="Erro ao carregar dados"
+        onRetry={() => { refetchSummary(); refetchCharts(); }}
+      />
     );
   }
 

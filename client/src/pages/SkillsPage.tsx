@@ -5,8 +5,8 @@ import { useSkillsList, type SkillSummary, type SkillSource } from "@/hooks/useS
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Search, Lock, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search, Lock, ArrowUpDown, ArrowUp, ArrowDown, ArrowRight } from "lucide-react";
+import { ErrorState } from "@/components/shared/ErrorState";
 
 const CATEGORIES = [
   "all", "meta", "code-review", "guard", "implementation", "design",
@@ -134,14 +134,11 @@ export function SkillsPage() {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <AlertTriangle className="h-12 w-12 text-destructive" />
-        <p className="text-lg font-medium">Erro ao carregar skills</p>
-        <p className="text-sm text-muted-foreground max-w-md text-center">
-          Verifica se as fontes estão acessíveis (skillforge-arsenal, oh-my-claudecode, ~/.claude/plugins/cache).
-        </p>
-        <Button variant="outline" onClick={() => refetch()}>Tentar novamente</Button>
-      </div>
+      <ErrorState
+        title="Erro ao carregar skills"
+        description="Verifica se as fontes estão acessíveis (skillforge-arsenal, oh-my-claudecode, ~/.claude/plugins/cache)."
+        onRetry={() => refetch()}
+      />
     );
   }
 

@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { useSystemPromptsList, type SystemPromptSummary } from "@/hooks/useSystemPrompts";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, ArrowRight, ScrollText } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, ArrowRight, ScrollText } from "lucide-react";
+import { ErrorState } from "@/components/shared/ErrorState";
 
 type SortCol = "label" | "lineCount" | "lastModified" | "bytes";
 
@@ -83,11 +83,10 @@ export function SystemPromptsPage() {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <AlertTriangle className="h-12 w-12 text-destructive" />
-        <p className="text-lg font-medium">Erro ao carregar system prompts</p>
-        <Button variant="outline" onClick={() => refetch()}>Tentar novamente</Button>
-      </div>
+      <ErrorState
+        title="Erro ao carregar system prompts"
+        onRetry={() => refetch()}
+      />
     );
   }
 
