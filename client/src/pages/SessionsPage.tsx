@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { useSessions, type SessionFilters } from "@/hooks/useSessions";
+import { useState, useCallback, useEffect } from "react";
+import { useSessions, type SessionFilters, useRenameSession } from "@/hooks/useSessions";
 import { useProjects } from "@/hooks/useProjects";
+import { useDebounce } from "@/hooks/useDebounce";
 import { SessionsTable } from "@/components/sessions/SessionsTable";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,14 +15,25 @@ import { Pagination } from "@/components/shared/Pagination";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { StatCard } from "@/components/shared/StatCard";
 import { formatUSD, formatNumber } from "@/lib/formatters";
+import { toast } from "sonner";
 
 export function SessionsPage() {
+  // Search input is locally-controlled (immediate echo to user) but debounced
+  // before flowing to filters (mitigates P2.1 search lag via causa raiz).
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 250);
+
   const [filters, setFilters] = useState<SessionFilters>({
     page: 1,
     search: "",
     sort_by: "last_seen",
     sort_dir: "desc",
   });
+
+  // Sync debounced search → filters (resets page to 1).
+  useEffect(() => {
+    setFilters((f) => (f.search === debouncedSearch ? f : { ...f, search: debouncedSearch, page: 1 }));
+  }, [debouncedSearch]);
 
   const [dateRange, setDateRange] = useState<{ preset?: string; from?: string; to?: string }>({});
 
@@ -33,14 +45,30 @@ export function SessionsPage() {
   const { data: projectsData } = useProjects();
   const projects = projectsData || [];
 
-  function handleSort(col: string) {
+  const rename = useRenameSession();
+
+  // Stable callback so SessionsTable doesn't re-render on every parent render.
+  const handleSort = useCallback((col: string) => {
     setFilters((f) => ({
       ...f,
       page: 1,
       sort_by: col,
       sort_dir: f.sort_by === col && f.sort_dir === "desc" ? "asc" : "desc",
     }));
-  }
+  }, []);
+
+  const handleRename = useCallback(
+    (id: string, name: string) => {
+      rename.mutate(
+        { id, custom_name: name },
+        {
+          onSuccess: () => toast.success("Nome atualizado"),
+          onError: () => toast.error("Erro ao renomear sessão"),
+        },
+      );
+    },
+    [rename],
+  );
 
   const hasActiveFilters = !!(filters.project_id);
 
@@ -53,8 +81,8 @@ export function SessionsPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Buscar..."
-              value={filters.search}
-              onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value, page: 1 }))}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -123,6 +151,7 @@ export function SessionsPage() {
             sortBy={filters.sort_by}
             sortDir={filters.sort_dir}
             onSort={handleSort}
+            onRename={handleRename}
           />
           <div className="flex items-center justify-between flex-wrap gap-2">
             <p className="text-xs text-muted-foreground">
