@@ -150,7 +150,7 @@ export function CsvImport() {
             onClick={() => fileInputRef.current?.click()}
             className={`
               flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8
-              cursor-pointer transition-all duration-200
+              cursor-pointer transition-colors duration-200
               ${
                 isDragging
                   ? "border-primary bg-primary/5 scale-[1.01]"

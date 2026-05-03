@@ -240,9 +240,9 @@ export function AchievementsPage() {
                 {catBadges.map((b) => (
                   <div
                     key={b.id}
-                    className={`rounded-lg border p-3 transition-all ${
+                    className={`rounded-lg border p-3 transition-colors ${
                       b.unlocked
-                        ? `bg-gradient-to-br ${TIER_STYLES[b.tier]} hover:scale-[1.02]`
+                        ? `bg-gradient-to-br ${TIER_STYLES[b.tier]} hover:bg-card/80`
                         : "opacity-40 hover:opacity-60"
                     }`}
                   >

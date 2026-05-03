@@ -226,7 +226,7 @@ export function Achievements() {
           {unlocked.map((b) => (
             <div
               key={b.id}
-              className={`rounded-lg border p-3 bg-gradient-to-br ${TIER_STYLES[b.tier || "bronze"]} transition-all hover:scale-[1.02]`}
+              className={`rounded-lg border p-3 bg-gradient-to-br ${TIER_STYLES[b.tier || "bronze"]} transition-colors hover:bg-card/80`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xl">{b.icon}</span>
