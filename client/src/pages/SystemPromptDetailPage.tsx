@@ -4,8 +4,8 @@ import { ArrowLeft, Code2, Eye, ScrollText } from "lucide-react";
 import { useSystemPromptDetail } from "@/hooks/useSystemPrompts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { MarkdownView } from "@/components/markdown/MarkdownView";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { MarkdownDocPanel } from "@/components/shared/MarkdownDocPanel";
 
 export function SystemPromptDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -61,9 +61,7 @@ export function SystemPromptDetailPage() {
         </Button>
       </div>
 
-      <div className="bg-card border border-border rounded-md px-6 py-5">
-        <MarkdownView content={prompt.body} mode={viewMode} />
-      </div>
+      <MarkdownDocPanel content={prompt.body} mode={viewMode} />
     </div>
   );
 }
