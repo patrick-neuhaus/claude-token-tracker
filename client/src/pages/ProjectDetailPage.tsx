@@ -36,6 +36,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
+import { handleEnterSpaceKey } from "@/components/shared/ClickableRow";
 import {
   ArrowLeft,
   Pencil,
@@ -411,8 +412,12 @@ export function ProjectDetailPage() {
                 {project.sessions.map((session) => (
                   <TableRow
                     key={session.id}
-                    className="group cursor-pointer hover:bg-accent/50 transition-colors"
+                    tabIndex={0}
+                    role="link"
+                    aria-label={`Abrir sessão ${session.custom_name || session.session_id.slice(0, 12)}`}
+                    className="group cursor-pointer hover:bg-accent/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                     onClick={() => navigate(`/sessions/${session.id}`)}
+                    onKeyDown={handleEnterSpaceKey(() => navigate(`/sessions/${session.id}`))}
                   >
                     <TableCell className="font-medium">
                       {session.custom_name || session.session_id.slice(0, 12)}
