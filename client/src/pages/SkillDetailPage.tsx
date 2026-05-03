@@ -4,13 +4,13 @@ import { ArrowLeft, Lock, FileText, FolderTree, Search, Code2, Eye } from "lucid
 import { useSkillDetail, useSkillFile, type SkillSource } from "@/hooks/useSkills";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SkillFileTree } from "@/components/skills/SkillFileTree";
 import { SkillSearch } from "@/components/skills/SkillSearch";
 import { MarkdownView } from "@/components/markdown/MarkdownView";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { MarkdownDocPanel } from "@/components/shared/MarkdownDocPanel";
+import { ViewModeToggle } from "@/components/shared/ViewModeToggle";
 
 const SOURCE_COLOR: Record<SkillSource, string> = {
   skillforge: "border-info/40 bg-info/10 text-info",
@@ -75,14 +75,14 @@ export function SkillDetailPage() {
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">{skill.description}</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setViewMode(viewMode === "rendered" ? "raw" : "rendered")}
-          className="gap-1.5"
-        >
-          {viewMode === "rendered" ? <><Code2 className="h-3.5 w-3.5" /> Raw</> : <><Eye className="h-3.5 w-3.5" /> Render</>}
-        </Button>
+        <ViewModeToggle
+          options={[
+            { value: "rendered", icon: Eye, label: "Render" },
+            { value: "raw", icon: Code2, label: "Raw" },
+          ]}
+          value={viewMode}
+          onChange={setViewMode}
+        />
       </div>
 
       {/* Tabs */}
