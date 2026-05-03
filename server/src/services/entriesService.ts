@@ -1,53 +1,20 @@
 import { query } from "../config/database.js";
+import {
+  buildEntryFilters,
+  type EntryFilterParams,
+} from "../utils/filterBuilders.js";
 
-export interface EntryFilters {
-  model?: string;
-  source?: string;
-  from?: string;
-  to?: string;
-}
+// Re-export for legacy callers (route still imports this name).
+export type EntryFilters = EntryFilterParams;
 
-interface ListEntriesArgs extends EntryFilters {
+interface ListEntriesArgs extends EntryFilterParams {
   page: number;
   limit: number;
 }
 
-function buildEntryWhere(
-  userId: string,
-  filters: EntryFilters,
-  startIdx = 2,
-): { where: string; params: any[]; nextIdx: number } {
-  const conditions: string[] = ["e.user_id = $1"];
-  const params: any[] = [userId];
-  let idx = startIdx;
-
-  if (filters.model) {
-    conditions.push(`e.model ILIKE $${idx++}`);
-    params.push(`%${filters.model}%`);
-  }
-  if (filters.source) {
-    conditions.push(`e.source = $${idx++}`);
-    params.push(filters.source);
-  }
-  if (filters.from) {
-    conditions.push(`e.timestamp >= $${idx++}`);
-    params.push(filters.from);
-  }
-  if (filters.to) {
-    conditions.push(`e.timestamp <= $${idx++}`);
-    params.push(filters.to);
-  }
-
-  return {
-    where: `WHERE ${conditions.join(" AND ")}`,
-    params,
-    nextIdx: idx,
-  };
-}
-
 export async function listEntries(userId: string, args: ListEntriesArgs) {
   const offset = (args.page - 1) * args.limit;
-  const { where, params, nextIdx } = buildEntryWhere(userId, args);
+  const { where, params, nextIdx } = buildEntryFilters(userId, args);
 
   const [rows, countResult] = await Promise.all([
     query(
@@ -75,10 +42,10 @@ export async function listEntries(userId: string, args: ListEntriesArgs) {
 
 export async function listEntriesForExport(
   userId: string,
-  filters: EntryFilters,
+  filters: EntryFilterParams,
   limit = 50_000,
 ) {
-  const { where, params } = buildEntryWhere(userId, filters);
+  const { where, params } = buildEntryFilters(userId, filters);
 
   const result = await query(
     `SELECT e.timestamp, e.source, e.model, e.input_tokens, e.output_tokens,
