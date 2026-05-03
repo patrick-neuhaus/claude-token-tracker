@@ -18,6 +18,7 @@ import { CHART_COLORS, DOW_LABELS_FULL } from "@/lib/constants";
 import type { ProjectComparisonData, AnalyticsData } from "@/lib/types";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { TOOLTIP_PROPS } from "@/lib/chartConfig";
+import { FilterChip } from "@/components/shared/FilterChip";
 
 function delta(current: number, last: number) {
   if (last === 0) return null;
@@ -122,17 +123,14 @@ function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: str
         {/* Seleção */}
         <div className="flex flex-wrap gap-2">
           {projects.map((p) => (
-            <button
+            <FilterChip
               key={p.id}
+              label={p.name}
+              active={selected.includes(p.id)}
               onClick={() => toggleProject(p.id)}
-              className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
-                selected.includes(p.id)
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border text-muted-foreground hover:border-muted-foreground/50"
-              }`}
-            >
-              {p.name}
-            </button>
+              variant="primary"
+              disabled={selected.length === 3 && !selected.includes(p.id)}
+            />
           ))}
         </div>
 
