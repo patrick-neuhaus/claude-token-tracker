@@ -1,10 +1,11 @@
 import { useNavigate, Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { SessionNameEditor } from "./SessionNameEditor";
 import { useRenameSession } from "@/hooks/useSessions";
 import { formatDate, formatUSD } from "@/lib/formatters";
 import { toast } from "sonner";
+import { SortableTableHeader } from "@/components/shared/SortableTableHeader";
 
 interface Session {
   id: string;
@@ -28,33 +29,12 @@ interface Props {
   onSort?: (col: string) => void;
 }
 
-function SortIcon({ col, sortBy, sortDir }: { col: string; sortBy?: string; sortDir?: "asc" | "desc" }) {
-  if (sortBy !== col) return <ArrowUpDown className="inline ml-1 h-3.5 w-3.5 opacity-40" />;
-  if (sortDir === "asc") return <ArrowUp className="inline ml-1 h-3.5 w-3.5" />;
-  return <ArrowDown className="inline ml-1 h-3.5 w-3.5" />;
-}
-
 // Grid columns: name | source | project | first | last | entries | cost | arrow
 const COLS = "minmax(220px,2fr) 100px minmax(140px,1.5fr) 150px 150px 90px 110px 32px";
 
 export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
   const navigate = useNavigate();
   const rename = useRenameSession();
-
-  function sortHead(col: string, label: string, align: "left" | "right" = "left") {
-    return (
-      <button
-        type="button"
-        onClick={() => onSort?.(col)}
-        className={`flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors ${
-          align === "right" ? "justify-end" : ""
-        }`}
-      >
-        {label}
-        <SortIcon col={col} sortBy={sortBy} sortDir={sortDir} />
-      </button>
-    );
-  }
 
   function handleRename(id: string, name: string) {
     rename.mutate(
@@ -76,10 +56,10 @@ export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
         <span className="text-xs font-medium text-muted-foreground">Nome</span>
         <span className="text-xs font-medium text-muted-foreground">Fonte</span>
         <span className="text-xs font-medium text-muted-foreground">Projeto</span>
-        {sortHead("first_seen", "Primeira entrada")}
-        {sortHead("last_seen", "Última atividade")}
-        {sortHead("entry_count", "Entradas", "right")}
-        {sortHead("total_cost_usd", "Custo", "right")}
+        <SortableTableHeader col="first_seen" label="Primeira entrada" sortBy={sortBy} sortDir={sortDir} onSort={(c) => onSort?.(c)} />
+        <SortableTableHeader col="last_seen" label="Última atividade" sortBy={sortBy} sortDir={sortDir} onSort={(c) => onSort?.(c)} />
+        <SortableTableHeader col="entry_count" label="Entradas" sortBy={sortBy} sortDir={sortDir} onSort={(c) => onSort?.(c)} align="right" />
+        <SortableTableHeader col="total_cost_usd" label="Custo" sortBy={sortBy} sortDir={sortDir} onSort={(c) => onSort?.(c)} align="right" />
         <span></span>
       </div>
 

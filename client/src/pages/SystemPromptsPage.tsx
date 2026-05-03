@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import { useSystemPromptsList, type SystemPromptSummary } from "@/hooks/useSystemPrompts";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, ArrowUpDown, ArrowUp, ArrowDown, ArrowRight, ScrollText } from "lucide-react";
+import { Search, ArrowRight, ScrollText } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { SortableTableHeader } from "@/components/shared/SortableTableHeader";
 
 type SortCol = "label" | "lineCount" | "lastModified" | "bytes";
 
@@ -49,26 +50,6 @@ export function SystemPromptsPage() {
   function toggleSort(col: SortCol) {
     if (sortBy === col) setSortDir(sortDir === "asc" ? "desc" : "asc");
     else { setSortBy(col); setSortDir("asc"); }
-  }
-
-  function SortIcon({ col }: { col: SortCol }) {
-    if (sortBy !== col) return <ArrowUpDown className="inline h-3 w-3 opacity-40" />;
-    return sortDir === "asc" ? <ArrowUp className="inline h-3 w-3" /> : <ArrowDown className="inline h-3 w-3" />;
-  }
-
-  function sortHead(col: SortCol, label: string, align: "left" | "right" = "left") {
-    return (
-      <button
-        type="button"
-        onClick={() => toggleSort(col)}
-        className={`flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors ${
-          align === "right" ? "justify-end" : ""
-        }`}
-      >
-        {label}
-        <SortIcon col={col} />
-      </button>
-    );
   }
 
   if (isLoading) {
@@ -128,11 +109,11 @@ export function SystemPromptsPage() {
             className="grid gap-3 px-5 py-3 border-b border-border bg-muted/30"
             style={{ gridTemplateColumns: COLS }}
           >
-            {sortHead("label", "Label")}
+            <SortableTableHeader col="label" label="Label" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
             <span className="text-xs font-medium text-muted-foreground">Path</span>
-            {sortHead("lineCount", "Linhas", "right")}
-            {sortHead("bytes", "Tamanho", "right")}
-            {sortHead("lastModified", "Modificado")}
+            <SortableTableHeader col="lineCount" label="Linhas" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} align="right" />
+            <SortableTableHeader col="bytes" label="Tamanho" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} align="right" />
+            <SortableTableHeader col="lastModified" label="Modificado" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
             <span></span>
           </div>
 
