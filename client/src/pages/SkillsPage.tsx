@@ -5,8 +5,9 @@ import { useSkillsList, type SkillSummary, type SkillSource } from "@/hooks/useS
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Search, Lock, ArrowUpDown, ArrowUp, ArrowDown, ArrowRight } from "lucide-react";
+import { Search, Lock, ArrowRight } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { SortableTableHeader } from "@/components/shared/SortableTableHeader";
 
 const CATEGORIES = [
   "all", "meta", "code-review", "guard", "implementation", "design",
@@ -100,26 +101,6 @@ export function SkillsPage() {
       setSortBy(col);
       setSortDir("asc");
     }
-  }
-
-  function SortIcon({ col }: { col: SortCol }) {
-    if (sortBy !== col) return <ArrowUpDown className="inline h-3 w-3 opacity-40" />;
-    return sortDir === "asc" ? <ArrowUp className="inline h-3 w-3" /> : <ArrowDown className="inline h-3 w-3" />;
-  }
-
-  function sortHead(col: SortCol, label: string, align: "left" | "right" = "left") {
-    return (
-      <button
-        type="button"
-        onClick={() => toggleSort(col)}
-        className={`flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors ${
-          align === "right" ? "justify-end" : ""
-        }`}
-      >
-        {label}
-        <SortIcon col={col} />
-      </button>
-    );
   }
 
   if (isLoading) {
@@ -237,12 +218,12 @@ export function SkillsPage() {
             className="grid gap-3 px-5 py-3 border-b border-border bg-muted/30"
             style={{ gridTemplateColumns: COLS }}
           >
-            {sortHead("name", "Nome")}
-            {sortHead("source", "Source")}
+            <SortableTableHeader col="name" label="Nome" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+            <SortableTableHeader col="source" label="Source" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
             <span className="text-xs font-medium text-muted-foreground">Descrição</span>
-            {sortHead("category", "Categoria")}
-            {sortHead("fileCount", "Arq", "right")}
-            {sortHead("lockedAt", "Lock-in")}
+            <SortableTableHeader col="category" label="Categoria" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
+            <SortableTableHeader col="fileCount" label="Arq" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} align="right" />
+            <SortableTableHeader col="lockedAt" label="Lock-in" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
             <span></span>
           </div>
 
