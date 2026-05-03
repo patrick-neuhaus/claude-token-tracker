@@ -16,14 +16,14 @@ import {
 } from "@/components/ui/table";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  PieChart, Pie, Cell, BarChart, Bar, Legend,
+  BarChart, Bar,
 } from "recharts";
 import {
   MessageSquare, DollarSign, Hash, Clock, Activity, FolderOpen, ExternalLink,
 } from "lucide-react";
 import { formatUSD, formatNumber, formatTokens, formatDate } from "@/lib/formatters";
-import { MODEL_COLORS, normalizeModelFamily } from "@/lib/constants";
 import { TOOLTIP_PROPS } from "@/lib/chartConfig";
+import { ModelPieChart } from "@/components/charts/ModelPieChart";
 import { toast } from "sonner";
 
 function formatDuration(seconds: number): string {
@@ -78,17 +78,6 @@ export function SessionDetailPage() {
       }
     );
   }
-
-  // Pie grouped by model family
-  const modelGrouped = by_model.reduce<Record<string, number>>((acc, d) => {
-    const family = normalizeModelFamily(d.model);
-    acc[family] = (acc[family] || 0) + d.cost_usd;
-    return acc;
-  }, {});
-  const modelPie = Object.entries(modelGrouped)
-    .map(([name, value]) => ({ name: name.charAt(0).toUpperCase() + name.slice(1), value }))
-    .sort((a, b) => b.value - a.value);
-  const modelTotal = modelPie.reduce((s, d) => s + d.value, 0);
 
   // Token composition bar
   const tokenBreakdown = [
@@ -190,33 +179,10 @@ export function SessionDetailPage() {
       {/* Grid 2-col: modelos + composição de tokens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Section title="Custo por Modelo">
-            {modelPie.length === 0 ? (
+            {by_model.length === 0 ? (
               <EmptyState icon={Activity} message="Sem dados" />
             ) : (
-              <ResponsiveContainer width="100%" height={240}>
-                <PieChart>
-                  <Pie
-                    data={modelPie}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={50}
-                    outerRadius={90}
-                    paddingAngle={2}
-                  >
-                    {modelPie.map((d) => (
-                      <Cell key={d.name} fill={MODEL_COLORS[d.name.toLowerCase()] || MODEL_COLORS.outro} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value) => [
-                      `${formatUSD(Number(value))} (${modelTotal > 0 ? ((Number(value) / modelTotal) * 100).toFixed(1) : 0}%)`,
-                      "Custo",
-                    ]}
-                    {...TOOLTIP_PROPS}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+              <ModelPieChart data={by_model} innerRadius={50} outerRadius={90} />
             )}
         </Section>
 
