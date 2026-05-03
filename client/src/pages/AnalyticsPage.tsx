@@ -1,195 +1,30 @@
 import { useState } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import { formatUSD, formatTokens, formatNumber, formatShortDate, formatFullDate } from "@/lib/formatters";
-import { useProjects } from "@/hooks/useProjects";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { formatUSD, formatShortDate } from "@/lib/formatters";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { Section } from "@/components/shared/Section";
-import { surface } from "@/lib/surface";
 import {
   ResponsiveContainer, LineChart, Line, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, Cell,
 } from "recharts";
-import { TrendingUp, TrendingDown, Minus, BarChart2, Clock, Flame, Trophy, Zap } from "lucide-react";
+import { BarChart2 } from "lucide-react";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { ContributionGraph } from "@/components/analytics/ContributionGraph";
-import { CHART_COLORS, DOW_LABELS_FULL } from "@/lib/constants";
-import type { ProjectComparisonData, AnalyticsData } from "@/lib/types";
+import { CHART_COLORS } from "@/lib/constants";
+import type { AnalyticsData } from "@/lib/types";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { TOOLTIP_PROPS } from "@/lib/chartConfig";
-import { FilterChip } from "@/components/shared/FilterChip";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { PeriodComparisonGrid } from "@/components/analytics/PeriodComparisonGrid";
+import { StreaksKpiGrid } from "@/components/analytics/StreaksKpiGrid";
+import { HeatmapWeekHour } from "@/components/analytics/HeatmapWeekHour";
+import { ProjectComparison } from "@/components/analytics/ProjectComparison";
+import { KpiBox } from "@/components/analytics/KpiBox";
+import { Clock } from "lucide-react";
 
-function delta(current: number, last: number) {
-  if (last === 0) return null;
-  return ((current - last) / last) * 100;
-}
-
-function DeltaBadge({ current, last, metricType = "cost" }: { current: number; last: number; metricType?: "cost" | "neutral" }) {
-  const d = delta(current, last);
-  if (d === null) return <span className="text-xs text-muted-foreground">Sem mês anterior</span>;
-  const up = d >= 0;
-  const Icon = d === 0 ? Minus : up ? TrendingUp : TrendingDown;
-  // cost: up = ruim (vermelho); neutral: up = bom (verde); down sempre cinza
-  let color = "text-muted-foreground";
-  if (d !== 0) {
-    if (metricType === "cost") {
-      color = up ? "text-red-400" : "text-green-400";
-    } else {
-      color = up ? "text-green-400" : "text-muted-foreground";
-    }
-  }
-  return (
-    <span className={`flex items-center gap-1 text-xs font-medium ${color}`}>
-      <Icon className="h-3.5 w-3.5" />
-      {Math.abs(d).toFixed(1)}% vs mês anterior
-    </span>
-  );
-}
-
-// EmptyChart usa EmptyState compartilhado
+// EmptyChart usa EmptyState compartilhado (densidade reduzida)
 function EmptyChart({ message }: { message: string }) {
   return <EmptyState icon={BarChart2} message={message} className="h-40 py-0" />;
-}
-
-interface KpiBoxProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  suffix?: string;
-  hint?: React.ReactNode;
-}
-
-function KpiBox({ icon, label, value, suffix, hint }: KpiBoxProps) {
-  return (
-    <div className={`${surface.section} px-5 py-4`}>
-      <div className="flex items-center gap-2 mb-1">
-        {icon}
-        <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      </div>
-      <div className="text-2xl font-semibold tabular-nums">
-        {value}
-        {suffix && <span className="text-sm font-normal text-muted-foreground ml-1">{suffix}</span>}
-      </div>
-      {hint && <p className="text-xs text-muted-foreground mt-1 truncate">{hint}</p>}
-    </div>
-  );
-}
-
-
-
-// Componente de comparação de projetos
-function ProjectComparison({ dateRange }: { dateRange: { from?: string; to?: string } }) {
-  const { data: projectsData } = useProjects();
-  const projects = projectsData || [];
-  const [selected, setSelected] = useState<string[]>([]);
-
-  const qs = new URLSearchParams();
-  if (selected.length) qs.set("projects", selected.join(","));
-  if (dateRange.from) qs.set("from", dateRange.from);
-  if (dateRange.to) qs.set("to", dateRange.to);
-
-  const { data: compareData } = useQuery({
-    queryKey: ["analytics", "compare", selected, dateRange],
-    queryFn: () => api.get(`/analytics/compare?${qs.toString()}`),
-    enabled: selected.length >= 2,
-  });
-
-  const cd = compareData as ProjectComparisonData | undefined;
-
-  // pivot daily por projeto
-  const dailyMap: Record<string, Record<string, number>> = {};
-  for (const row of (cd?.daily || [])) {
-    const day = row.day.slice(0, 10);
-    if (!dailyMap[day]) dailyMap[day] = {};
-    dailyMap[day][row.project] = (dailyMap[day][row.project] || 0) + row.cost_usd;
-  }
-  const dailyData = Object.entries(dailyMap)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([day, costs]) => ({ day, ...costs }));
-  const projectNamesInComparison = [...new Set<string>((cd?.daily || []).map((r) => r.project))];
-
-  function toggleProject(id: string) {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : prev.length < 3 ? [...prev, id] : prev
-    );
-  }
-
-  if (projects.length < 2) return null;
-
-  return (
-    <Section title="Comparação de Projetos" description="Selecione até 3 projetos para comparar">
-      <div className="space-y-4">
-        {/* Seleção */}
-        <div className="flex flex-wrap gap-2">
-          {projects.map((p) => (
-            <FilterChip
-              key={p.id}
-              label={p.name}
-              active={selected.includes(p.id)}
-              onClick={() => toggleProject(p.id)}
-              variant="primary"
-              disabled={selected.length === 3 && !selected.includes(p.id)}
-            />
-          ))}
-        </div>
-
-        {selected.length < 2 && (
-          <p className="text-sm text-muted-foreground text-center py-4">Selecione pelo menos 2 projetos</p>
-        )}
-
-        {selected.length >= 2 && cd && (
-          <>
-            {/* Tabela comparativa */}
-            <div className="rounded-md border overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/40">
-                    <th className="text-left p-3 font-medium">Projeto</th>
-                    <th className="text-right p-3 font-medium">Custo total</th>
-                    <th className="text-right p-3 font-medium">Sessões</th>
-                    <th className="text-right p-3 font-medium">Tokens</th>
-                    <th className="text-right p-3 font-medium">Custo/sessão</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(cd.summary || []).map((row, i) => (
-                    <tr key={row.project_id} className="border-b last:border-0">
-                      <td className="p-3 flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
-                        {row.project}
-                      </td>
-                      <td className="p-3 text-right font-medium tabular-nums">{formatUSD(row.total_cost_usd)}</td>
-                      <td className="p-3 text-right tabular-nums">{formatNumber(row.session_count)}</td>
-                      <td className="p-3 text-right tabular-nums">{formatTokens(row.total_tokens)}</td>
-                      <td className="p-3 text-right tabular-nums">{formatUSD(row.cost_per_session)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Gráfico sobrepostos */}
-            {dailyData.length > 0 && (
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={dailyData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="day" tickFormatter={formatShortDate} tick={{ fontSize: 11 }} />
-                  <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-                  <Tooltip formatter={(v) => formatUSD(Number(v))} labelFormatter={(v) => formatShortDate(String(v))} {...TOOLTIP_PROPS} />
-                  <Legend />
-                  {projectNamesInComparison.map((name, i) => (
-                    <Line key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} dot={false} strokeWidth={2} connectNulls />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </>
-        )}
-      </div>
-    </Section>
-  );
 }
 
 export function AnalyticsPage() {
@@ -218,7 +53,6 @@ export function AnalyticsPage() {
   // --- 1. Project Trend: pivot por projeto ---
   type PT = AnalyticsData["project_trend"][number];
   type MT = AnalyticsData["model_trend"][number];
-  type HM = AnalyticsData["heatmap"][number];
   const projectNames = [...new Set<string>(project_trend.map((r: PT) => r.project))];
   const dayMap: Record<string, Record<string, number>> = {};
   for (const row of project_trend) {
@@ -245,13 +79,6 @@ export function AnalyticsPage() {
       ...costs,
     }));
 
-  // --- Heatmap: matrix 7×24 ---
-  const heatmapMax = Math.max(...heatmap.map((r: HM) => r.entries), 1);
-  const heatmapMatrix: Record<string, number> = {};
-  for (const row of heatmap) {
-    heatmapMatrix[`${row.dow}-${row.hour}`] = row.entries;
-  }
-
   return (
     <div className="space-y-6">
       <PageHeader title="Analytics" />
@@ -259,54 +86,10 @@ export function AnalyticsPage() {
       {/* === BLOCO ESTÁTICO — não muda com filtros === */}
 
       {/* Comparação de períodos */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          {
-            label: "Custo este mês",
-            current: period_comparison?.current_month ?? 0,
-            last: period_comparison?.last_month ?? 0,
-            fmt: (v: number) => formatUSD(v),
-            metricType: "cost" as const,
-          },
-          {
-            label: "Tokens este mês",
-            current: Number(period_comparison?.current_tokens ?? 0),
-            last: Number(period_comparison?.last_tokens ?? 0),
-            fmt: (v: number) => formatTokens(v),
-            metricType: "neutral" as const,
-          },
-          {
-            label: "Entradas este mês",
-            current: period_comparison?.current_entries ?? 0,
-            last: period_comparison?.last_entries ?? 0,
-            fmt: (v: number) => String(v),
-            metricType: "neutral" as const,
-          },
-        ].map(({ label, current, last, fmt, metricType }) => (
-          <div key={label} className={`${surface.section} px-5 py-4`}>
-            <p className="text-xs font-medium text-muted-foreground">{label}</p>
-            <div className="text-2xl font-semibold tabular-nums mt-1">{fmt(current)}</div>
-            <div className="mt-1">
-              <DeltaBadge current={current} last={last} metricType={metricType} />
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">Mês anterior: {fmt(last)}</p>
-          </div>
-        ))}
-      </div>
+      <PeriodComparisonGrid periodComparison={period_comparison} />
 
       {/* Gamification — Streaks */}
-      {streaks && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <KpiBox icon={<Flame className="h-4 w-4 text-warning" />} label="Streak Atual" value={`${streaks.current_streak ?? 0}`} suffix="dias" hint={`Recorde: ${streaks.record_streak ?? 0} dias · ${streaks.active_days_total ?? 0} dias ativos total`} />
-          <KpiBox icon={<Trophy className="h-4 w-4 text-warning" />} label="Dia mais Caro" value={formatUSD(streaks.most_expensive_day_cost ?? 0)} hint={streaks.most_expensive_day ? formatFullDate(streaks.most_expensive_day) : "—"} />
-          {hourly && (
-            <KpiBox icon={<Clock className="h-4 w-4 text-muted-foreground" />} label="Custo/Hora Ativa" value={formatUSD(hourly.cost_per_active_hour)} suffix="/h" hint={`${hourly.active_hours} horas ativas · hoje: ${formatUSD(hourly.cost_today)}`} />
-          )}
-          {!hourly && (
-            <KpiBox icon={<Zap className="h-4 w-4 text-info" />} label="Sessão Mais Cara" value={formatUSD(top_sessions?.[0]?.total_cost_usd ?? 0)} hint={top_sessions?.[0]?.custom_name || top_sessions?.[0]?.session_id?.slice(0, 12) || "—"} />
-          )}
-        </div>
-      )}
+      <StreaksKpiGrid streaks={streaks} hourly={hourly} topSessions={top_sessions} />
 
       {/* Custo por hora ativa (se não tem streaks) */}
       {hourly && !streaks && (
@@ -322,47 +105,9 @@ export function AnalyticsPage() {
           <ContributionGraph data={daily_cost || []} />
         </Section>
 
-        <Section title={heatmapLabel}><>
-            {!heatmap?.length ? (
-              <EmptyChart message="Nenhum dado de uso encontrado" />
-            ) : (
-              <div className="overflow-x-auto">
-                <div className="inline-block min-w-full">
-                  <div className="flex gap-1 mb-1 pl-10">
-                    {Array.from({ length: 24 }, (_, h) => (
-                      <div key={h} className="w-6 text-center text-xs text-muted-foreground" style={{ minWidth: 24 }}>
-                        {h % 4 === 0 ? h : ""}
-                      </div>
-                    ))}
-                  </div>
-                  {DOW_LABELS_FULL.map((day, dow) => (
-                    <div key={dow} className="flex items-center gap-1 mb-1">
-                      <div className="w-8 text-right text-xs text-muted-foreground pr-2">{day}</div>
-                      {Array.from({ length: 24 }, (_, hour) => {
-                        const val = heatmapMatrix[`${dow}-${hour}`] || 0;
-                        const alpha = val === 0 ? 0.06 : 0.12 + (val / heatmapMax) * 0.88;
-                        return (
-                          <div
-                            key={hour}
-                            title={`${day} ${hour}h: ${val} entradas`}
-                            className="rounded-sm"
-                            style={{ width: 24, height: 24, minWidth: 24, background: `rgba(99,102,241,${alpha.toFixed(2)})` }}
-                          />
-                        );
-                      })}
-                    </div>
-                  ))}
-                  <div className="flex items-center gap-2 mt-2 pl-10">
-                    <span className="text-xs text-muted-foreground">Menos</span>
-                    {[0.06, 0.28, 0.5, 0.72, 1].map((o) => (
-                      <div key={o} className="rounded-sm" style={{ width: 16, height: 16, background: `rgba(99,102,241,${o})` }} />
-                    ))}
-                    <span className="text-xs text-muted-foreground">Mais</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </></Section>
+        <Section title={heatmapLabel}>
+          <HeatmapWeekHour heatmap={heatmap} />
+        </Section>
       </div>
 
       {/* === FILTRO — divide estático de filtrável === */}
@@ -382,73 +127,74 @@ export function AnalyticsPage() {
 
       {/* Custo por Projeto */}
       <Section title="Custo por Projeto">
-          {projectNames.length === 0 ? (
-            <EmptyChart message="Nenhum projeto com sessões vinculadas ainda" />
-          ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={projectTrendData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="day" tickFormatter={formatShortDate} tick={{ fontSize: 11 }} />
-                <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-                <Tooltip formatter={(v) => formatUSD(Number(v))} labelFormatter={(v) => formatShortDate(String(v))} {...TOOLTIP_PROPS} />
-                <Legend />
-                {projectNames.map((name, i) => (
-                  <Line key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} dot={false} strokeWidth={2} connectNulls />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
-          )}
+        {projectNames.length === 0 ? (
+          <EmptyChart message="Nenhum projeto com sessões vinculadas ainda" />
+        ) : (
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart data={projectTrendData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <XAxis dataKey="day" tickFormatter={formatShortDate} tick={{ fontSize: 11 }} />
+              <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
+              <Tooltip formatter={(v) => formatUSD(Number(v))} labelFormatter={(v) => formatShortDate(String(v))} {...TOOLTIP_PROPS} />
+              <Legend />
+              {projectNames.map((name, i) => (
+                <Line key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} dot={false} strokeWidth={2} connectNulls />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </Section>
 
-      {/* Comparação de projetos (Wave 2C) */}
+      {/* Comparação de projetos */}
       <ProjectComparison dateRange={dateRange} />
 
       {/* Tendência de modelos */}
       <Section title="Custo por Modelo (por semana)">
-          {modelNames.length === 0 ? (
-            <EmptyChart message="Nenhum dado de modelo encontrado" />
-          ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={modelTrendData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="week" tick={{ fontSize: 11 }} />
-                <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-                <Tooltip formatter={(v) => formatUSD(Number(v))} {...TOOLTIP_PROPS} />
-                <Legend />
-                {modelNames.map((name, i) => (
-                  <Area key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} fill={CHART_COLORS[i % CHART_COLORS.length]} fillOpacity={0.15} strokeWidth={2} stackId="1" connectNulls />
-                ))}
-              </AreaChart>
-            </ResponsiveContainer>
-          )}
+        {modelNames.length === 0 ? (
+          <EmptyChart message="Nenhum dado de modelo encontrado" />
+        ) : (
+          <ResponsiveContainer width="100%" height={260}>
+            <AreaChart data={modelTrendData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <XAxis dataKey="week" tick={{ fontSize: 11 }} />
+              <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
+              <Tooltip formatter={(v) => formatUSD(Number(v))} {...TOOLTIP_PROPS} />
+              <Legend />
+              {modelNames.map((name, i) => (
+                <Area key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} fill={CHART_COLORS[i % CHART_COLORS.length]} fillOpacity={0.15} strokeWidth={2} stackId="1" connectNulls />
+              ))}
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
       </Section>
 
       {/* Top 10 sessões mais caras */}
       <Section title="Top 10 Sessões mais Caras">
-          {!top_sessions?.length ? (
-            <EmptyChart message="Nenhuma sessão encontrada" />
-          ) : (
-            <ResponsiveContainer width="100%" height={Math.max(180, top_sessions.length * 28)}>
-              <BarChart
-                data={top_sessions.map((s: typeof top_sessions[number]) => ({
-                  name: s.custom_name || s.session_id.slice(0, 12) + "…",
-                  cost: s.total_cost_usd,
-                }))}
-                layout="vertical"
-                margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-                <XAxis type="number" tickFormatter={(v: number) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v) => formatUSD(Number(v))} {...TOOLTIP_PROPS} />
-                <Bar dataKey="cost" radius={[0, 4, 4, 0]}>
-                  {top_sessions.map((_: unknown, i: number) => (
-                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          )}
+        {!top_sessions?.length ? (
+          <EmptyChart message="Nenhuma sessão encontrada" />
+        ) : (
+          <ResponsiveContainer width="100%" height={Math.max(180, top_sessions.length * 28)}>
+            <BarChart
+              data={top_sessions.map((s: typeof top_sessions[number]) => ({
+                name: s.custom_name || s.session_id.slice(0, 12) + "…",
+                cost: s.total_cost_usd,
+                session_id: s.session_id,
+              }))}
+              layout="vertical"
+              margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
+              <XAxis type="number" tickFormatter={(v: number) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} />
+              <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11 }} />
+              <Tooltip formatter={(v) => formatUSD(Number(v))} {...TOOLTIP_PROPS} />
+              <Bar dataKey="cost" radius={[0, 4, 4, 0]}>
+                {top_sessions.map((s, i: number) => (
+                  <Cell key={s.session_id} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </Section>
 
     </div>
