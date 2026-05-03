@@ -4,6 +4,7 @@ import { Section } from "@/components/shared/Section";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { formatUSD } from "@/lib/formatters";
 
 interface Badge {
@@ -196,26 +197,24 @@ export function AchievementsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight">Conquistas</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {totalUnlocked} de {badges.length} desbloqueadas
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {(["bronze", "silver", "gold", "diamond"] as const).map((tier) => {
-            const count = badges.filter((b) => b.tier === tier && b.unlocked).length;
-            const total = badges.filter((b) => b.tier === tier).length;
-            return (
-              <div key={tier} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border bg-gradient-to-br ${TIER_STYLES[tier]}`}>
-                <span className="font-medium tabular-nums">{count}/{total}</span>
-                <span className="text-xs text-muted-foreground">{TIER_LABEL[tier]}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <PageHeader
+        title="Conquistas"
+        subtitle={`${totalUnlocked} de ${badges.length} desbloqueadas`}
+        actions={
+          <div className="flex items-center gap-2 flex-wrap">
+            {(["bronze", "silver", "gold", "diamond"] as const).map((tier) => {
+              const count = badges.filter((b) => b.tier === tier && b.unlocked).length;
+              const total = badges.filter((b) => b.tier === tier).length;
+              return (
+                <div key={tier} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border bg-gradient-to-br ${TIER_STYLES[tier]}`}>
+                  <span className="font-medium tabular-nums">{count}/{total}</span>
+                  <span className="text-xs text-muted-foreground">{TIER_LABEL[tier]}</span>
+                </div>
+              );
+            })}
+          </div>
+        }
+      />
 
       <div className="space-y-1">
         <Progress value={(totalUnlocked / badges.length) * 100} className="h-2" />

@@ -2,6 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SettingsForm } from "@/components/settings/SettingsForm";
 import { WebhookInfo } from "@/components/settings/WebhookInfo";
 import { CsvImport } from "@/components/settings/CsvImport";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 export function SettingsPage() {
   const { user } = useAuth();
@@ -10,7 +11,7 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold tracking-tight">Configurações</h2>
+      <PageHeader title="Configurações" />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Coluna esquerda: Configurações + Referência de preços */}
         <div className="space-y-6">

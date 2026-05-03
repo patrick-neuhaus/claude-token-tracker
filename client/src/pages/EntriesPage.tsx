@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SkeletonRows } from "@/components/shared/SkeletonGrid";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { Download, Loader2 } from "lucide-react";
 import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Pagination } from "@/components/shared/Pagination";
@@ -47,7 +48,7 @@ export function EntriesPage() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold tracking-tight">Entradas</h2>
+      <PageHeader title="Entradas" />
 
       <div className="flex flex-wrap items-end gap-4 rounded-lg border border-border p-4">
         <div className="space-y-1">

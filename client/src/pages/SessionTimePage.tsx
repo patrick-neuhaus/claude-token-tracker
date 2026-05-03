@@ -21,6 +21,7 @@ import { Tooltip as UITooltip, TooltipContent, TooltipTrigger } from "@/componen
 import { MS_PER_DAY } from "@/lib/constants";
 import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 import { FilterChip } from "@/components/shared/FilterChip";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 // --- helpers ---
 
@@ -112,9 +113,10 @@ export function SessionTimePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-semibold tracking-tight">Tempo por Sessão</h2>
+      <PageHeader
+        title="Tempo por Sessão"
+        subtitle="Tempo útil aproximado por sessão. Ajuste o gap máximo considerado como trabalho contínuo."
+        actions={
           <UITooltip>
             <TooltipTrigger
               className="text-muted-foreground hover:text-foreground transition-colors"
@@ -132,11 +134,8 @@ export function SessionTimePage() {
               </div>
             </TooltipContent>
           </UITooltip>
-        </div>
-        <p className="text-sm text-muted-foreground mt-1">
-          Tempo útil aproximado por sessão. Ajuste o gap máximo considerado como trabalho contínuo.
-        </p>
-      </div>
+        }
+      />
 
       {/* Controles */}
       <div className={`${surface.section} px-5 py-4 space-y-4`}>

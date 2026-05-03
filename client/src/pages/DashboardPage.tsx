@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 function DashboardSkeleton() {
   return (
@@ -82,9 +83,7 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold tracking-tight">Dashboard</h2>
-      </div>
+      <PageHeader title="Dashboard" />
       <SummaryCards
         totalCostUsd={s.total_cost_usd}
         totalTokens={Number(s.total_tokens)}

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { Search, X, DollarSign, Layers, TrendingUp, BarChart3 } from "lucide-react";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { NativeSelect } from "@/components/shared/NativeSelect";
@@ -45,18 +46,20 @@ export function SessionsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold tracking-tight">Sessões</h2>
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar..."
-            value={filters.search}
-            onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value, page: 1 }))}
-            className="pl-10"
-          />
-        </div>
-      </div>
+      <PageHeader
+        title="Sessões"
+        actions={
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar..."
+              value={filters.search}
+              onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value, page: 1 }))}
+              className="pl-10"
+            />
+          </div>
+        }
+      />
 
       {/* Date range filter */}
       <DateRangeFilter

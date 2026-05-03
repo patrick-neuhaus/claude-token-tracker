@@ -19,6 +19,7 @@ import type { ProjectComparisonData, AnalyticsData } from "@/lib/types";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 import { FilterChip } from "@/components/shared/FilterChip";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 function delta(current: number, last: number) {
   if (last === 0) return null;
@@ -198,7 +199,7 @@ export function AnalyticsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h2 className="text-xl font-semibold tracking-tight">Analytics</h2>
+        <PageHeader title="Analytics" />
         <SkeletonGrid count={4} cols={1} itemHeight="h-72" />
       </div>
     );
@@ -253,7 +254,7 @@ export function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold tracking-tight">Analytics</h2>
+      <PageHeader title="Analytics" />
 
       {/* === BLOCO ESTÁTICO — não muda com filtros === */}
 

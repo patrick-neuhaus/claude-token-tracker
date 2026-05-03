@@ -9,6 +9,7 @@ import { Search, Lock, ArrowRight } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { SortableTableHeader } from "@/components/shared/SortableTableHeader";
 import { FilterChip, FilterChipGroup } from "@/components/shared/FilterChip";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 const CATEGORIES = [
   "all", "meta", "code-review", "guard", "implementation", "design",
@@ -132,10 +133,10 @@ export function SkillsPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight">Skills</h2>
-          <p className="text-sm text-muted-foreground mt-1 tabular-nums">
+      <PageHeader
+        title="Skills"
+        subtitle={
+          <>
             {filtered.length} de {skills?.length ?? 0} skills
             {" · "}
             <span className="text-info">{sourceCounts.skillforge || 0} skillforge</span>
@@ -143,9 +144,9 @@ export function SkillsPage() {
             <span className="text-chart-4">{sourceCounts.omc || 0} omc</span>
             {" · "}
             <span>{sourceCounts.builtin || 0} built-in</span>
-          </p>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Filtros */}
       <div className="flex items-center gap-3 flex-wrap">
