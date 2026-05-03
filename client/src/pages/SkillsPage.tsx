@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Search, Lock, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { SortableTableHeader } from "@/components/shared/SortableTableHeader";
 import { FilterChip, FilterChipGroup } from "@/components/shared/FilterChip";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -190,9 +192,29 @@ export function SkillsPage() {
 
       {/* Tabela densa */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground text-sm border border-border rounded-md bg-card">
-          Nenhuma skill encontrada com esses filtros.
-        </div>
+        (search || category !== "all" || source !== "all" || lockedOnly) ? (
+          <EmptyState
+            message="Nenhuma skill com esses filtros"
+            description="Tente remover ou ajustar os filtros aplicados."
+            action={
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                onClick={() => {
+                  setSearch("");
+                  setCategory("all");
+                  setSource("all");
+                  setLockedOnly(false);
+                }}
+              >
+                Limpar filtros
+              </Button>
+            }
+          />
+        ) : (
+          <EmptyState message="Nenhuma skill registrada" />
+        )
       ) : (
         <div className="bg-card border border-border rounded-md overflow-hidden">
           {/* Header */}
