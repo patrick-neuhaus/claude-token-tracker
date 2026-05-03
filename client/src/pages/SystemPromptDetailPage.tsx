@@ -3,9 +3,9 @@ import { useState } from "react";
 import { ArrowLeft, Code2, Eye, ScrollText } from "lucide-react";
 import { useSystemPromptDetail } from "@/hooks/useSystemPrompts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { MarkdownDocPanel } from "@/components/shared/MarkdownDocPanel";
+import { ViewModeToggle } from "@/components/shared/ViewModeToggle";
 
 export function SystemPromptDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -51,14 +51,14 @@ export function SystemPromptDetailPage() {
             {prompt.lineCount} linhas · {(prompt.bytes / 1024).toFixed(1)}KB
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setViewMode(viewMode === "rendered" ? "raw" : "rendered")}
-          className="gap-1.5"
-        >
-          {viewMode === "rendered" ? <><Code2 className="h-3.5 w-3.5" /> Raw</> : <><Eye className="h-3.5 w-3.5" /> Render</>}
-        </Button>
+        <ViewModeToggle
+          options={[
+            { value: "rendered", icon: Eye, label: "Render" },
+            { value: "raw", icon: Code2, label: "Raw" },
+          ]}
+          value={viewMode}
+          onChange={setViewMode}
+        />
       </div>
 
       <MarkdownDocPanel content={prompt.body} mode={viewMode} />

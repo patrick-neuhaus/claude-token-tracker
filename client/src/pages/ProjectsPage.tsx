@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { ResponsiveContainer, AreaChart, Area } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonRows } from "@/components/shared/SkeletonGrid";
+import { ViewModeToggle } from "@/components/shared/ViewModeToggle";
 
 export function ProjectsPage() {
   const navigate = useNavigate();
@@ -89,24 +90,14 @@ export function ProjectsPage() {
         <div className="flex items-center gap-2">
           {/* Toggle view */}
           {projectList && projectList.length > 0 && (
-            <div className="flex rounded-md border border-border overflow-hidden">
-              <button
-                onClick={() => setViewMode("grid")}
-                aria-label="Visualização em grade"
-                aria-pressed={viewMode === "grid"}
-                className={`px-2.5 py-1.5 transition-colors ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                aria-label="Visualização em lista"
-                aria-pressed={viewMode === "list"}
-                className={`px-2.5 py-1.5 transition-colors ${viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
-              >
-                <List className="h-4 w-4" />
-              </button>
-            </div>
+            <ViewModeToggle
+              options={[
+                { value: "grid", icon: LayoutGrid, label: "Visualização em grade" },
+                { value: "list", icon: List, label: "Visualização em lista" },
+              ]}
+              value={viewMode}
+              onChange={setViewMode}
+            />
           )}
           <Button onClick={() => setDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
