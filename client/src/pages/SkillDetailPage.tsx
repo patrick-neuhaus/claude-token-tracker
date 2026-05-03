@@ -1,6 +1,6 @@
-import { useParams, Link, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useState } from "react";
-import { ArrowLeft, Lock, FileText, FolderTree, Search, Code2, Eye } from "lucide-react";
+import { Lock, FileText, FolderTree, Search, Code2, Eye } from "lucide-react";
 import { useSkillDetail, useSkillFile, type SkillSource } from "@/hooks/useSkills";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -11,6 +11,7 @@ import { MarkdownView } from "@/components/markdown/MarkdownView";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { MarkdownDocPanel } from "@/components/shared/MarkdownDocPanel";
 import { ViewModeToggle } from "@/components/shared/ViewModeToggle";
+import { DetailHeader } from "@/components/shared/DetailHeader";
 
 const SOURCE_COLOR: Record<SkillSource, string> = {
   skillforge: "border-info/40 bg-info/10 text-info",
@@ -51,15 +52,12 @@ export function SkillDetailPage() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="space-y-2 flex-1 min-w-0">
-          <Link to="/skills" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-3 w-3" />
-            Skills
-          </Link>
-          <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="text-xl font-semibold tracking-tight font-mono">{skill.name}</h2>
+      <DetailHeader
+        backTo="/skills"
+        backLabel="Skills"
+        title={skill.name}
+        badges={
+          <>
             <Badge variant="outline" className={`text-[10px] ${SOURCE_COLOR[skill.source]}`}>
               {skill.source}
             </Badge>
@@ -72,18 +70,22 @@ export function SkillDetailPage() {
                 validated:{skill.lockedAt}
               </span>
             )}
-          </div>
+          </>
+        }
+        subtitle={
           <p className="text-sm text-muted-foreground leading-relaxed">{skill.description}</p>
-        </div>
-        <ViewModeToggle
-          options={[
-            { value: "rendered", icon: Eye, label: "Render" },
-            { value: "raw", icon: Code2, label: "Raw" },
-          ]}
-          value={viewMode}
-          onChange={setViewMode}
-        />
-      </div>
+        }
+        actions={
+          <ViewModeToggle
+            options={[
+              { value: "rendered", icon: Eye, label: "Render" },
+              { value: "raw", icon: Code2, label: "Raw" },
+            ]}
+            value={viewMode}
+            onChange={setViewMode}
+          />
+        }
+      />
 
       {/* Tabs */}
       <Tabs defaultValue="skill">
