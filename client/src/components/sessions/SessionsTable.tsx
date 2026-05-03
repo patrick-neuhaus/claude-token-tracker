@@ -2,9 +2,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 import { SessionNameEditor } from "./SessionNameEditor";
-import { useRenameSession } from "@/hooks/useSessions";
 import { formatDate, formatUSD } from "@/lib/formatters";
-import { toast } from "sonner";
 import { SortableTableHeader } from "@/components/shared/SortableTableHeader";
 import { ClickableRow } from "@/components/shared/ClickableRow";
 
@@ -28,24 +26,21 @@ interface Props {
   sortBy?: string;
   sortDir?: "asc" | "desc";
   onSort?: (col: string) => void;
+  /** Called when user renames a session inline (id + new name). */
+  onRename: (id: string, name: string) => void;
 }
 
 // Grid columns: name | source | project | first | last | entries | cost | arrow
 const COLS = "minmax(220px,2fr) 100px minmax(140px,1.5fr) 150px 150px 90px 110px 32px";
 
-export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
-  const rename = useRenameSession();
-
-  function handleRename(id: string, name: string) {
-    rename.mutate(
-      { id, custom_name: name },
-      {
-        onSuccess: () => toast.success("Nome atualizado"),
-        onError: () => toast.error("Erro ao renomear sessão"),
-      },
-    );
-  }
-
+/**
+ * SessionsTable — pure presentational sessions list.
+ *
+ * Boundary fix (B3.5): no longer owns useNavigate or useRenameSession.
+ * Receives onRename callback from parent. Navigation now happens via
+ * ClickableRow's <Link to>, which is keyboard-accessible natively.
+ */
+export function SessionsTable({ sessions, sortBy, sortDir, onSort, onRename }: Props) {
   return (
     <div className="bg-card border border-border rounded-md overflow-hidden">
       {/* Header */}
@@ -77,7 +72,7 @@ export function SessionsTable({ sessions, sortBy, sortDir, onSort }: Props) {
               <SessionNameEditor
                 currentName={s.custom_name}
                 sessionId={s.session_id}
-                onSave={(name) => handleRename(s.id, name)}
+                onSave={(name) => onRename(s.id, name)}
                 source={s.source}
                 firstSeen={s.first_seen}
                 entryCount={s.entry_count}
