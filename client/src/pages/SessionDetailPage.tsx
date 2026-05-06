@@ -135,8 +135,8 @@ export function SessionDetailPage() {
 
       {/* Metrics bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard icon={DollarSign} iconColor="text-success" label="Custo Total" value={formatUSD(aggregates.total_cost_usd)} />
-        <StatCard icon={Hash} iconColor="text-info" label="Total Tokens" value={formatTokens(aggregates.total_tokens)} />
+        <StatCard icon={DollarSign} iconColor="text-success-display" label="Custo Total" value={formatUSD(aggregates.total_cost_usd)} />
+        <StatCard icon={Hash} iconColor="text-info-display" label="Total Tokens" value={formatTokens(aggregates.total_tokens)} />
         <StatCard icon={Clock} iconColor="text-warning" label="Duração" value={formatDuration(duration)} />
         <StatCard icon={Activity} iconColor="text-chart-4" label="Entradas" value={formatNumber(aggregates.entry_count)} />
       </div>
@@ -166,8 +166,8 @@ export function SessionDetailPage() {
                   type="monotone"
                   dataKey="cumulative_cost"
                   name="Custo acumulado"
-                  stroke="#10b981"
-                  fill="#10b981"
+                  stroke="hsl(var(--chart-2))"
+                  fill="hsl(var(--chart-2))"
                   fillOpacity={0.2}
                   strokeWidth={2}
                 />
@@ -193,7 +193,7 @@ export function SessionDetailPage() {
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                 <YAxis tickFormatter={(v) => formatTokens(v)} tick={{ fontSize: 11 }} width={60} />
                 <Tooltip formatter={(v) => formatTokens(Number(v))} {...TOOLTIP_PROPS} />
-                <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
         </Section>

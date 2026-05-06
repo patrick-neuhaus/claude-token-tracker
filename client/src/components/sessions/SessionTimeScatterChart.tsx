@@ -34,7 +34,7 @@ export function SessionTimeScatterChart({ data, height = 400 }: Props) {
           name="Tempo útil"
           tickFormatter={(v: number) => `${v.toFixed(0)}m`}
           tick={{ fontSize: 11 }}
-          label={{ value: "Tempo útil (minutos)", position: "insideBottom", offset: -10, fontSize: 11, fill: "#a0a0b8" }}
+          label={{ value: "Tempo útil (minutos)", position: "insideBottom", offset: -10, fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
         />
         <YAxis
           type="number"
@@ -42,7 +42,7 @@ export function SessionTimeScatterChart({ data, height = 400 }: Props) {
           name="Custo"
           tickFormatter={(v: number) => `$${v.toFixed(0)}`}
           tick={{ fontSize: 11 }}
-          label={{ value: "Custo (USD)", angle: -90, position: "insideLeft", fontSize: 11, fill: "#a0a0b8" }}
+          label={{ value: "Custo (USD)", angle: -90, position: "insideLeft", fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
         />
         <ZAxis type="number" dataKey="calls" range={[60, 400]} name="calls" />
         <Tooltip
@@ -69,7 +69,7 @@ export function SessionTimeScatterChart({ data, height = 400 }: Props) {
             return null;
           }}
         />
-        <Scatter data={data} fill="#6366f1" fillOpacity={0.6} />
+        <Scatter data={data} fill="hsl(var(--chart-1))" fillOpacity={0.6} />
       </ScatterChart>
     </ResponsiveContainer>
   );

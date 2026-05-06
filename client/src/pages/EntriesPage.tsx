@@ -56,7 +56,7 @@ export function EntriesPage() {
         subtitle={d ? `${d.total.toLocaleString("pt-BR")} entradas no total` : undefined}
       />
 
-      <div className="flex flex-wrap items-end gap-4 rounded-lg border border-border p-4">
+      <div className="flex flex-wrap items-end gap-4 rounded-xl border border-border bg-card p-4">
         <div className="space-y-1">
           <Label className="text-xs">Modelo</Label>
           <NativeSelect

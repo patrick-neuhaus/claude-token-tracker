@@ -205,7 +205,7 @@ export function ProjectDetailPage() {
             message="Nenhuma sessão neste projeto. Clique em 'Adicionar Sessão' pra começar a rastrear custos."
           />
         ) : (
-          <div className="rounded-md border">
+          <div className="rounded-xl border border-border bg-card">
             <Table>
               <TableHeader>
                 <TableRow>

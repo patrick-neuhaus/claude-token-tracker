@@ -13,7 +13,7 @@ interface Props {
   data: Datum[];
   /** Chart height in pixels. Default 240. */
   height?: number;
-  /** Stroke + fill color. Default indigo. */
+  /** Stroke + fill color. Default --chart-1 token. */
   color?: string;
 }
 
@@ -26,7 +26,7 @@ interface Props {
 export function DailyCostAreaChart({
   data,
   height = 240,
-  color = "#6366f1",
+  color = "hsl(var(--chart-1))",
 }: Props) {
   return (
     <ResponsiveContainer width="100%" height={height}>
