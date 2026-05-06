@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAchievements } from "@/hooks/useAchievements";
+import { ConfettiBurst } from "@/components/shared/ConfettiBurst";
 
 const STORAGE_KEY = "achievements_seen";
 
@@ -18,22 +19,23 @@ function saveSeen(ids: Set<string>) {
 }
 
 /**
- * AchievementNotifier — Wave B4.1 V001 + B7.6 (BUG-15 setTimeout cleanup)
+ * AchievementNotifier — Wave 6.7a polish (confetti burst on unlock).
  *
  * Consumes server-authoritative useAchievements hook. Detects newly unlocked
- * badges (vs localStorage history) and fires toast notifications.
+ * badges (vs localStorage seen set) and:
+ * - Fires sonner toast per badge (max 5, +1 overflow toast)
+ * - Mounts ConfettiBurst overlay 2s when at least 1 new badge detected
  *
- * Note (P2.8 react-patterns): notified.current is REMOVED. Previously this
- * caused a one-shot effect that wouldn't re-notify on subsequent unlocks
- * during a session. Now relies on `seen` set deduplication only.
- *
- * Note (B7.6 BUG-15): timer ids tracked in ref + cleanup in useEffect return.
- * Previously, unmount before timers fired left stray toasts queued.
+ * Notes preserved from prior waves:
+ * - First-time bootstrap (seen set empty) seeds without spamming toasts
+ * - Timer ids tracked in ref + cleanup on unmount (BUG-15)
+ * - notified.current REMOVED (P2.8) — relies on `seen` dedup only
  */
 export function AchievementNotifier() {
   const { user } = useAuth();
   const { data } = useAchievements();
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     if (!user || !data) return;
@@ -50,6 +52,9 @@ export function AchievementNotifier() {
     }
 
     if (newBadges.length === 0) return;
+
+    // Confetti burst (single trigger covers all unlocks in this batch)
+    setShowConfetti(true);
 
     // Show toast per new badge (max 5) — track timer ids for cleanup
     const toShow = newBadges.slice(0, 5);
@@ -84,12 +89,13 @@ export function AchievementNotifier() {
     const allSeen = new Set([...seen, ...currentIds]);
     saveSeen(allSeen);
 
-    // Cleanup: clear pending timers on unmount or effect re-run
     return () => {
       timersRef.current.forEach(clearTimeout);
       timersRef.current = [];
     };
   }, [data, user]);
 
-  return null;
+  if (!showConfetti) return null;
+
+  return <ConfettiBurst onComplete={() => setShowConfetti(false)} />;
 }
