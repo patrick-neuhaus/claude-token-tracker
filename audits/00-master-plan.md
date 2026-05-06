@@ -428,7 +428,8 @@ Plano pode mudar em qualquer ponto se:
 | 6.4a | ✅ done | 2026-05-06 | 2026-05-06 | LoginPage 50/50 split canonical (brand panel + form panel + Artemis tagline) |
 | 6.4b | ✅ done | 2026-05-06 | 2026-05-06 | OnboardingWizard CRIAR (5 steps + live detection + AppLayout trigger + confetti motion) |
 | 6.4c | ⏸ pendente | — | — | MOCK_USER bypass cleanup (preparar deploy VPS — F-NEW-5 backlog) |
-| 6.5-6.8 | ⏸ pendente | — | — | — |
+| 6.5 | ✅ done | 2026-05-06 | 2026-05-06 | FormField canonical + SettingsForm refactor (PricingDrawer pivotou pra F-NEW-8 backlog — requer schema novo) |
+| 6.6-6.8 | ⏸ pendente | — | — | — |
 | 7 | ⏸ pendente (condicional) | — | — | — |
 
 ---
@@ -610,6 +611,29 @@ Features identificadas durante S2 mas fora de escopo das waves atuais. Documenta
 - Wave 6.x foco visual — auth providers fora de scope
 
 **Dependências:** F-NEW-5 deploy VPS ✅, F-NEW-6 multi-tenant SaaS (LGPD parte) ✅.
+
+### F-NEW-8: PricingDrawer (custom rates per-model UI)
+
+**Origem:** Wave 6.5 — pivotou pra backlog porque backend não suporta custom pricing.
+
+**Descrição:**
+- Schema novo: tabela `user_pricing_overrides` (user_id, model_key, input_rate, output_rate, cache_read_rate, cache_write_rate, ttl_5min_factor, created_at, updated_at)
+- Backend lookup: `getModelPricing(userId, modelKey)` checa overrides primeiro, fallback PRICING hardcoded em config/pricing.ts
+- Drawer canonical (lift `display/Drawer.jsx` anti-ai-design-system):
+  - Side-out right, focus trap, ESC close, animation slide-in
+  - Header: "Customizar pricing por modelo" + close X
+  - Body: grid model picker (Sonnet/Opus/Haiku/GPT-5/etc) → form FormField rates
+  - Footer: "Cancelar" + "Salvar overrides"
+- SettingsPage adiciona link "Customizar pricing →" no surface section "Configurações"
+- Upcoming use-case: contratos enterprise com Anthropic ($descontos), GPT models internos custos
+- Reset opção: "Restaurar padrão" botão por modelo deleta override
+
+**Por quê backlog (não Wave 6.5):**
+- Backend mudança schema requerida (tabela nova + migration + endpoint CRUD)
+- Wave 6.5 priorizou FormField canonical + Settings polish (entrega visual)
+- Decisão estratégica: vale ROI? Maioria users usa rates default Anthropic — feature avançada
+
+**Dependências:** Wave 7 single-tenant migration ✅, schema migration ✅, backend CRUD endpoints ✅.
 
 ---
 

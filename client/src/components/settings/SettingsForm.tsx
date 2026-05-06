@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from "react";
-import { Section } from "@/components/shared/Section";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/forms/FormField";
 import { useUpdateSettings } from "@/hooks/useSettings";
 import { toast } from "sonner";
 import { Bell, CalendarClock } from "lucide-react";
 import { NativeSelect } from "@/components/shared/NativeSelect";
+import { surface, surfaceHeader, surfaceContent } from "@/lib/surface";
 
 const DOW_OPTIONS = [
   { value: 0, label: "Domingo" },
@@ -28,10 +28,9 @@ interface Props {
   weeklyResetHour?: number;
 }
 
-type FieldErrors = Partial<Record<
-  "rate" | "plan" | "daily" | "session" | "resetHour" | "startDate",
-  string
->>;
+type FieldErrors = Partial<
+  Record<"rate" | "plan" | "daily" | "session" | "resetHour" | "startDate", string>
+>;
 
 function validate(args: {
   rate: string;
@@ -70,9 +69,21 @@ function validate(args: {
   return errors;
 }
 
+/**
+ * SettingsForm — Wave 6.5 lift to canonical FormField pattern + surface helpers.
+ *
+ * Drops Section wrapper for direct surface.section + surfaceHeader. FormField
+ * wraps every input with auto-aria injection (aria-invalid, aria-describedby).
+ * Validation logic preserved (live: error on blur, clear on change).
+ */
 export function SettingsForm({
-  brlRate, planCostUsd, dailyBudgetUsd, sessionBudgetUsd,
-  planStartDate, weeklyResetDow = 2, weeklyResetHour = 15,
+  brlRate,
+  planCostUsd,
+  dailyBudgetUsd,
+  sessionBudgetUsd,
+  planStartDate,
+  weeklyResetDow = 2,
+  weeklyResetHour = 15,
 }: Props) {
   const [rate, setRate] = useState(String(brlRate));
   const [plan, setPlan] = useState(String(planCostUsd));
@@ -114,11 +125,24 @@ export function SettingsForm({
     );
   }
 
+  const clearError = (field: keyof FieldErrors) =>
+    setErrors((p) => (p[field] ? { ...p, [field]: undefined } : p));
+
   return (
-    <Section title="Configurações">
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-md" noValidate>
-          <div className="space-y-2">
-            <Label htmlFor="settings-rate">Taxa USD → BRL</Label>
+    <div className={surface.section}>
+      <header className={surfaceHeader}>
+        <h2 className="text-base font-semibold tracking-tight">Configurações</h2>
+      </header>
+      <div className={surfaceContent}>
+        <form onSubmit={handleSubmit} className="space-y-4 max-w-md" noValidate>
+          <FormField
+            id="settings-rate"
+            label="Taxa USD → BRL"
+            htmlFor="settings-rate"
+            error={errors.rate}
+            helper="Usado para calcular valores em BRL no dashboard"
+            required
+          >
             <Input
               id="settings-rate"
               type="number"
@@ -127,19 +151,19 @@ export function SettingsForm({
               value={rate}
               onChange={(e) => {
                 setRate(e.target.value);
-                if (errors.rate) setErrors((p) => ({ ...p, rate: undefined }));
+                clearError("rate");
               }}
-              aria-invalid={errors.rate ? true : undefined}
-              aria-describedby={errors.rate ? "settings-rate-err" : "settings-rate-hint"}
             />
-            {errors.rate ? (
-              <p id="settings-rate-err" className="text-xs text-destructive">{errors.rate}</p>
-            ) : (
-              <p id="settings-rate-hint" className="text-xs text-muted-foreground">Usado para calcular valores em BRL no dashboard</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="settings-plan">Custo mensal do plano (USD)</Label>
+          </FormField>
+
+          <FormField
+            id="settings-plan"
+            label="Custo mensal do plano (USD)"
+            htmlFor="settings-plan"
+            error={errors.plan}
+            helper="Usado para calcular o indicador de valor do plano"
+            required
+          >
             <Input
               id="settings-plan"
               type="number"
@@ -148,38 +172,37 @@ export function SettingsForm({
               value={plan}
               onChange={(e) => {
                 setPlan(e.target.value);
-                if (errors.plan) setErrors((p) => ({ ...p, plan: undefined }));
+                clearError("plan");
               }}
-              aria-invalid={errors.plan ? true : undefined}
-              aria-describedby={errors.plan ? "settings-plan-err" : "settings-plan-hint"}
             />
-            {errors.plan ? (
-              <p id="settings-plan-err" className="text-xs text-destructive">{errors.plan}</p>
-            ) : (
-              <p id="settings-plan-hint" className="text-xs text-muted-foreground">Usado para calcular o indicador de valor do plano</p>
-            )}
-          </div>
+          </FormField>
 
           {/* Billing info */}
-          <div className="border-t pt-4 mt-4">
+          <div className="border-t border-border pt-5 mt-5">
             <div className="flex items-center gap-2 mb-3">
               <CalendarClock className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">Ciclo do Plano</span>
             </div>
             <div className="space-y-3">
-              <div className="space-y-2">
-                <Label htmlFor="settings-startdate">Data de início do plano</Label>
+              <FormField
+                id="settings-startdate"
+                label="Data de início do plano"
+                htmlFor="settings-startdate"
+                helper="Quando começou a pagar o Claude (calcula meses pagos)"
+              >
                 <Input
                   id="settings-startdate"
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">Quando começou a pagar o Claude (calcula meses pagos)</p>
-              </div>
+              </FormField>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="settings-resetdow">Reset semanal — dia</Label>
+                <FormField
+                  id="settings-resetdow"
+                  label="Reset semanal — dia"
+                  htmlFor="settings-resetdow"
+                >
                   <NativeSelect
                     id="settings-resetdow"
                     sizing="default"
@@ -188,12 +211,18 @@ export function SettingsForm({
                     className="w-full"
                   >
                     {DOW_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
                     ))}
                   </NativeSelect>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="settings-resethour">Reset semanal — hora (BRT)</Label>
+                </FormField>
+                <FormField
+                  id="settings-resethour"
+                  label="Reset semanal — hora (BRT)"
+                  htmlFor="settings-resethour"
+                  error={errors.resetHour}
+                >
                   <Input
                     id="settings-resethour"
                     type="number"
@@ -203,15 +232,10 @@ export function SettingsForm({
                     value={resetHour}
                     onChange={(e) => {
                       setResetHour(e.target.value);
-                      if (errors.resetHour) setErrors((p) => ({ ...p, resetHour: undefined }));
+                      clearError("resetHour");
                     }}
-                    aria-invalid={errors.resetHour ? true : undefined}
-                    aria-describedby={errors.resetHour ? "settings-resethour-err" : undefined}
                   />
-                  {errors.resetHour && (
-                    <p id="settings-resethour-err" className="text-xs text-destructive">{errors.resetHour}</p>
-                  )}
-                </div>
+                </FormField>
               </div>
               <p className="text-xs text-muted-foreground">
                 Dia e hora que o limite semanal do Claude reseta (horário de Brasília)
@@ -220,59 +244,60 @@ export function SettingsForm({
           </div>
 
           {/* Alertas */}
-          <div className="border-t pt-4 mt-4">
+          <div className="border-t border-border pt-5 mt-5">
             <div className="flex items-center gap-2 mb-3">
               <Bell className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">Alertas de Gasto</span>
             </div>
             <div className="space-y-3">
-              <div className="space-y-2">
-                <Label htmlFor="settings-daily">Limite diário (USD)</Label>
+              <FormField
+                id="settings-daily"
+                label="Limite diário (USD)"
+                htmlFor="settings-daily"
+                error={errors.daily}
+                helper="Deixe vazio para desativar"
+              >
                 <Input
                   id="settings-daily"
                   type="number"
                   step="0.01"
                   min={0}
-                  placeholder="Ex: 50.00 (deixe vazio para desativar)"
+                  placeholder="Ex: 50.00"
                   value={daily}
                   onChange={(e) => {
                     setDaily(e.target.value);
-                    if (errors.daily) setErrors((p) => ({ ...p, daily: undefined }));
+                    clearError("daily");
                   }}
-                  aria-invalid={errors.daily ? true : undefined}
-                  aria-describedby={errors.daily ? "settings-daily-err" : undefined}
                 />
-                {errors.daily && (
-                  <p id="settings-daily-err" className="text-xs text-destructive">{errors.daily}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="settings-session">Limite por sessão (USD)</Label>
+              </FormField>
+              <FormField
+                id="settings-session"
+                label="Limite por sessão (USD)"
+                htmlFor="settings-session"
+                error={errors.session}
+                helper="Deixe vazio para desativar"
+              >
                 <Input
                   id="settings-session"
                   type="number"
                   step="0.01"
                   min={0}
-                  placeholder="Ex: 10.00 (deixe vazio para desativar)"
+                  placeholder="Ex: 10.00"
                   value={session}
                   onChange={(e) => {
                     setSession(e.target.value);
-                    if (errors.session) setErrors((p) => ({ ...p, session: undefined }));
+                    clearError("session");
                   }}
-                  aria-invalid={errors.session ? true : undefined}
-                  aria-describedby={errors.session ? "settings-session-err" : undefined}
                 />
-                {errors.session && (
-                  <p id="settings-session-err" className="text-xs text-destructive">{errors.session}</p>
-                )}
-              </div>
+              </FormField>
             </div>
           </div>
 
           <Button type="submit" disabled={update.isPending}>
             {update.isPending ? "Salvando..." : "Salvar"}
           </Button>
-      </form>
-    </Section>
+        </form>
+      </div>
+    </div>
   );
 }
