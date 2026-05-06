@@ -22,12 +22,14 @@ export const DOW_LABELS_FULL = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"
 export const DOW_LABELS_SPARSE = ["", "Seg", "", "Qua", "", "Sex", ""];
 export const MONTH_LABELS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-// Wave 6.1 — Artemis brand-aligned chart palette via tokens
+// Wave 6.1 — Artemis brand-aligned chart palette via tokens.
+// Wave 7.2 — adicionado gpt + fallback colorido (não cinza "outro").
 export const MODEL_COLORS: Record<string, string> = {
   opus: "hsl(var(--chart-4))",      // purple
   sonnet: "hsl(var(--chart-1))",    // vibrant blue (brand)
   haiku: "hsl(var(--chart-2))",     // green
-  outro: "hsl(var(--muted-foreground))",
+  gpt: "hsl(var(--chart-3))",       // amber
+  outro: "hsl(var(--chart-5))",     // magenta (não muted)
 };
 
 export const SOURCE_COLORS: Record<string, string> = {
@@ -44,7 +46,7 @@ export const VALUE_COLORS = {
 
 export function normalizeModelFamily(raw: string): string {
   const lower = raw.toLowerCase();
-  if (lower.includes("gpt")) return "outro";
+  if (lower.includes("gpt")) return "gpt";
   if (lower.includes("opus")) return "opus";
   if (lower.includes("sonnet")) return "sonnet";
   if (lower.includes("haiku")) return "haiku";
@@ -53,4 +55,22 @@ export function normalizeModelFamily(raw: string): string {
 
 export function getModelColor(raw: string): string {
   return MODEL_COLORS[normalizeModelFamily(raw)] || MODEL_COLORS.outro;
+}
+
+/**
+ * displayModelName — Wave 7.2: nome bruto kebab→Title Case sem fallback "Outro".
+ * Hook envia model bruto (claude-opus-4-7, gpt-5.5). Patrick prefere preservar
+ * o nome do modelo no front em vez de agrupar em família.
+ *
+ * Ex: "claude-opus-4-7" → "Claude Opus 4 7"
+ *     "gpt-5.5"          → "Gpt 5.5"
+ *     "claude-haiku-4-5-20251001" → trunca data: "Claude Haiku 4 5"
+ */
+export function displayModelName(raw: string): string {
+  // Tira sufixo de data tipo -20251001 (8 dígitos no final, comum no Anthropic API)
+  const cleaned = raw.replace(/-\d{8}$/, "");
+  return cleaned
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }

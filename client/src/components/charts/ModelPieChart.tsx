@@ -1,7 +1,7 @@
 import {
   ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend,
 } from "recharts";
-import { MODEL_COLORS, normalizeModelFamily } from "@/lib/constants";
+import { MODEL_COLORS, displayModelName, getModelColor } from "@/lib/constants";
 import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 import { formatUSD } from "@/lib/formatters";
 
@@ -20,15 +20,11 @@ interface Props {
   outerRadius?: number;
 }
 
+const TOP_N = 6;
+
 /**
- * ModelPieChart — donut chart of cost grouped by normalized model family.
- *
- * ZERO-DIFF extraction: identical structure between ProjectDetailPage:344-362
- * and SessionDetailPage:201-225. Reuses MODEL_COLORS + normalizeModelFamily
- * from constants.
- *
- * Caller passes raw `[{ model, cost_usd }]` rows; component handles the
- * groupBy + percentage tooltip formatting.
+ * ModelPieChart — Wave 7.2: nome bruto kebab→Title Case sem agrupar família.
+ * Cor via família pra consistência visual. Top 6 + "Outros" se >6 models.
  */
 export function ModelPieChart({
   data,
@@ -36,15 +32,21 @@ export function ModelPieChart({
   innerRadius = 40,
   outerRadius = 80,
 }: Props) {
-  const grouped = data.reduce<Record<string, number>>((acc, d) => {
-    const family = normalizeModelFamily(d.model);
-    acc[family] = (acc[family] || 0) + d.cost_usd;
-    return acc;
-  }, {});
+  const sorted = [...data].sort((a, b) => b.cost_usd - a.cost_usd);
+  const top = sorted.slice(0, TOP_N);
+  const rest = sorted.slice(TOP_N);
+  const restSum = rest.reduce((s, d) => s + d.cost_usd, 0);
 
-  const modelPie = Object.entries(grouped)
-    .map(([name, value]) => ({ name: name.charAt(0).toUpperCase() + name.slice(1), value }))
-    .sort((a, b) => b.value - a.value);
+  const modelPie = [
+    ...top.map((d) => ({
+      name: displayModelName(d.model),
+      value: d.cost_usd,
+      fill: getModelColor(d.model),
+    })),
+    ...(rest.length > 0
+      ? [{ name: `Outros (${rest.length})`, value: restSum, fill: MODEL_COLORS.outro }]
+      : []),
+  ];
 
   const modelTotal = modelPie.reduce((s, d) => s + d.value, 0);
 
@@ -60,7 +62,7 @@ export function ModelPieChart({
           paddingAngle={2}
         >
           {modelPie.map((d) => (
-            <Cell key={d.name} fill={MODEL_COLORS[d.name.toLowerCase()] || MODEL_COLORS.outro} />
+            <Cell key={d.name} fill={d.fill} />
           ))}
         </Pie>
         <Tooltip
