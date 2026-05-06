@@ -429,7 +429,7 @@ Plano pode mudar em qualquer ponto se:
 | 6.4b | ✅ done | 2026-05-06 | 2026-05-06 | OnboardingWizard CRIAR (5 steps + live detection + AppLayout trigger + confetti motion) |
 | 6.4c | ✅ done | 2026-05-06 | 2026-05-06 | MOCK_USER bypass removed (AuthContext real auth restored + AppLayout redirect /login reativado — pronto pra deploy VPS) |
 | 6.5 | ✅ done | 2026-05-06 | 2026-05-06 | FormField canonical + SettingsForm refactor (PricingDrawer pivotou pra F-NEW-8 backlog — requer schema novo) |
-| 6.6 | ⏸ pendente | — | — | Skills/SystemPrompts (pendency: modelo a/b/c não decidido) |
+| 6.6 | ✅ done | 2026-05-06 | 2026-05-06 | Skills/SystemPrompts surface lift — `rounded-md` → `rounded-xl` em SkillsPage + SystemPromptsPage. Pendency modelo a/b/c não bloqueou — restante já tinha tokens canonical Wave 4. |
 | 6.7a | ✅ done | 2026-05-06 | 2026-05-06 | Achievements motion polish (ConfettiBurst shared + BadgeCard ease-spring overshoot + TierProgressBar milestones + AchievementNotifier confetti dispatch) |
 | 6.7b | ⏸ pendente | — | — | StreakCounter + StreakLostScreen CRIAR (depende backend signal streak.lost_pending) |
 | 6.8 | ✅ done | 2026-05-06 | 2026-05-06 | Cleanup pages (rounded-md → rounded-xl + chart hex hardcoded → tokens em ProjectsPage/ProjectDetailPage/EntriesPage/SessionDetailPage/DailyCostChart/CostBySourceChart/SessionTimeScatterChart/DailyCostAreaChart) |
@@ -438,7 +438,7 @@ Plano pode mudar em qualquer ponto se:
 | 7.4 | ✅ done | 2026-05-06 | 2026-05-06 | Auth bug user teste resolvido: senha de `pet19.rv@gmail.com` resetada via SQL UPDATE pra `AdminArtemis@2026` (bcrypt 12 rounds). Hash anterior não batia com senha que Patrick lembrava. Login via curl confirmou status="active" + token. Auth flow estruturalmente OK. |
 | 7.3 | ⏸ pendente | — | — | Custom pricing input (PricingDrawer F-NEW-8 schema novo) |
 | 7.5 | ✅ done | 2026-05-06 | 2026-05-06 | LoginPage dark/light toggle (Sun/Moon button fixed top-right + useTheme integration) |
-| 7.6 | ⚠️ partial | 2026-05-06 | 2026-05-06 | HeatmapWeekHour cor `rgba(99,102,241)` indigo legacy → `hsl(var(--chart-1))` brand. Interaction hover→resize NÃO implementado (ambíguo, Patrick precisa definir UX antes). |
+| 7.6 | ✅ done | 2026-05-06 | 2026-05-06 | HeatmapWeekHour: cor brand `hsl(var(--chart-1))` + tiles viraram buttons clickable + click abre detail panel inline (dia/hora/entries/cost) com close X + ring selected + scale hover. |
 | 7.7 | ✅ done | 2026-05-06 | 2026-05-06 | --input light de `0 0% 100%` (white) → `220 13% 80%` (gray-300) — border visível em fundo branco. |
 
 ---
