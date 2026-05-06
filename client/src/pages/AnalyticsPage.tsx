@@ -111,8 +111,8 @@ export function AnalyticsPage() {
       </div>
 
       {/* === FILTRO — divide estático de filtrável === */}
-      <div className="border-t pt-4">
-        <h2 className="text-lg font-semibold mb-3">Detalhamento por Período</h2>
+      <div className="border-t border-border pt-5">
+        <h2 className="text-xl font-semibold tracking-tight mb-3">Detalhamento por Período</h2>
         <DateRangeFilter
           value={dateRange}
           onChange={setDateRange}
