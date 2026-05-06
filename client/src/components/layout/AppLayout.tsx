@@ -1,15 +1,27 @@
 import { Outlet, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSummary } from "@/hooks/useDashboard";
 import { Sidebar } from "./Sidebar";
 import { AchievementNotifier } from "@/components/analytics/AchievementNotifier";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
 import { ShortcutsOverlay } from "@/components/ShortcutsOverlay";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+
+const ONBOARDING_KEY = "onboarding_completed";
 
 export function AppLayout() {
   const { user, loading } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(() =>
+    typeof window !== "undefined" && localStorage.getItem(ONBOARDING_KEY) === "true",
+  );
+
+  // Wave 6.4b: trigger Onboarding wizard when user has zero data AND
+  // localStorage flag not set. Polls /summary; auto-hides once entries land.
+  const { data: summary } = useSummary({ period: "month" });
+  const showOnboarding = !onboardingCompleted && !!summary && summary.entry_count === 0;
 
   // Cmd+K / Ctrl+K — global search; "?" or Shift+/ — shortcuts overlay.
   // Skip when focus is in an input/textarea/contenteditable to not steal typing.
@@ -70,6 +82,9 @@ export function AppLayout() {
       <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
       <ShortcutsOverlay open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
       <AchievementNotifier />
+      {showOnboarding && (
+        <OnboardingWizard onComplete={() => setOnboardingCompleted(true)} />
+      )}
     </div>
   );
 }
