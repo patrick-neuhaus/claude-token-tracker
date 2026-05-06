@@ -1,17 +1,18 @@
 import { query } from "../config/database.js";
-import { calculateCost } from "../utils/costCalculator.js";
+import { getEffectivePricing } from "./pricingOverrideService.js";
 import type { TokenPayload } from "../types/index.js";
 
 export async function insertTokenEntry(userId: string, payload: TokenPayload) {
   let costUsd = payload.cost_usd ?? 0;
   if (costUsd <= 0) {
-    costUsd = calculateCost(
-      payload.model,
-      payload.input_tokens,
-      payload.output_tokens,
-      payload.cache_read,
-      payload.cache_write
-    );
+    // Wave 7.3: usa pricing com override per-user antes de fallback global PRICING.
+    const pricing = await getEffectivePricing(userId, payload.model);
+    costUsd =
+      ((payload.input_tokens || 0) * pricing.input +
+        (payload.output_tokens || 0) * pricing.output +
+        (payload.cache_read || 0) * pricing.cache_read +
+        (payload.cache_write || 0) * pricing.cache_write) /
+      1_000_000;
   }
 
   const totalTokens =
