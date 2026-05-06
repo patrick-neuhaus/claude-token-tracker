@@ -424,8 +424,9 @@ Plano pode mudar em qualquer ponto se:
 | 6.0 | ✅ done | 2026-05-06 | 2026-05-06 | Shell canonical lift (Sidebar + UserMenu + ThemeContext) |
 | 6.1 | ✅ done | 2026-05-06 | 2026-05-06 | Dashboard internals (StatCard canonical + WebhookPing + chart tokens + surface rounded-xl) |
 | 6.2 | ✅ done | 2026-05-06 | 2026-05-06 | Sessions lift (AppTable canonical port + SessionsTable refactor + drop ClickableRow/SortableTableHeader) |
-| 6.3 | ⏸ pendente | — | — | Analytics page lift |
-| 6.4-6.8 | ⏸ pendente | — | — | — |
+| 6.3 | ✅ done | 2026-05-06 | 2026-05-06 | Analytics lift (KpiBox MetricCard anatomy + useCountUp shared + DeltaBadge tokens fix + TOOLTIP_PROPS tokens + textH2 canonical) |
+| 6.4 | ⏸ pendente | — | — | Login + Onboarding wizard |
+| 6.5-6.8 | ⏸ pendente | — | — | — |
 | 7 | ⏸ pendente (condicional) | — | — | — |
 
 ---
