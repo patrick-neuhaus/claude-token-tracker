@@ -32,37 +32,28 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
 }
 
-// Wave 6.1 BYPASS — single-tenant mock user pra preview visual sem backend.
-// Wave 7 cleanup formal: drop AuthProvider inteiro + LoginPage + auth routes server.
-const MOCK_USER: User = {
-  id: "mock",
-  email: "preview@artemis.local",
-  display_name: "Preview",
-  webhook_token: "ck_mock_preview_token",
-  role: "user",
-  brl_rate: 5.0,
-  plan_cost_usd: 200,
-  daily_budget_usd: null,
-  session_budget_usd: null,
-  plan_start_date: null,
-  weekly_reset_dow: 2,
-  weekly_reset_hour: 15,
-};
-
 const AuthContext = createContext<AuthContextType | null>(null);
 
+/**
+ * AuthProvider — real auth (Wave 6.4c — MOCK_USER bypass removed).
+ *
+ * Flow:
+ * - Mount: read token from localStorage. If present, fetch /auth/me → setUser.
+ *   If absent OR /auth/me fails, setUser(null) → AppLayout redirects /login.
+ * - login(): POST /auth/login → save token + refreshUser
+ * - logout(): clean token + setUser(null) → triggers /login redirect
+ * - 401 from any endpoint: api.ts clears token; next render finds user=null.
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Wave 6.1 bypass — começa com MOCK_USER em vez de null
-  const [user, setUser] = useState<User | null>(MOCK_USER);
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
     try {
       const data = await api.get<User>("/auth/me");
       setUser(data);
     } catch {
-      // Wave 6.1 bypass: backend off → mantém MOCK_USER em vez de null
-      setUser(MOCK_USER);
+      setUser(null);
     }
   }, []);
 
