@@ -2,13 +2,14 @@ import { Router } from "express";
 import { z } from "zod";
 import { webhookAuth } from "../middleware/webhookAuth.js";
 import { insertTokenEntry } from "../services/tokenService.js";
+import { describeError } from "../utils/security.js";
 import type { WebhookRequest } from "../types/index.js";
 
 const router = Router();
 
 const payloadSchema = z.object({
   timestamp: z.string(),
-  source: z.enum(["claude-code", "claude.ai"]),
+  source: z.enum(["claude-code", "claude.ai", "codex"]),
   model: z.string().min(1),
   input_tokens: z.number().int().min(0).default(0),
   output_tokens: z.number().int().min(0).default(0),
@@ -59,9 +60,10 @@ router.post("/track-tokens", webhookAuth, async (req, res) => {
 
     res.status(201).json({ status: "ok", cost_usd: result.cost_usd });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("[ERROR]", message);
-    res.status(500).json({ status: "error", message });
+    // BUG-13 fix: log only error class + code, never the full message
+    // (the message can include parts of the rejected payload).
+    console.error("[WEBHOOK ERROR]", describeError(err));
+    res.status(500).json({ status: "error", message: "internal error" });
   }
 });
 

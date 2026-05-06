@@ -1,6 +1,6 @@
 # Claude Token Tracker
 
-Dashboard local para rastrear uso de tokens do Claude (API-equivalent) e comparar com o custo do plano Max ($200/mes).
+Dashboard local para rastrear uso de tokens do Claude e Codex/OpenAI.
 
 ## Pre-requisitos
 
@@ -62,6 +62,26 @@ export TOKEN_TRACKER_TOKEN=cole-seu-token-aqui
 ```
 
 Ou edite diretamente `scripts/claude_code_hook.py`.
+
+### Codex (collector)
+
+Rode o setup do SkillForge para instalar o coletor:
+
+```powershell
+cd "C:\Users\Patrick Neuhaus\Documents\Github\skillforge-arsenal"
+powershell -ExecutionPolicy Bypass -File codex/scripts/setup-codex-runtime.ps1
+python codex/scripts/codex-token-collector.py --dry-run --limit 5
+```
+
+Para envio real, defina:
+
+```powershell
+$env:TOKEN_TRACKER_WEBHOOK="http://localhost:3002/api/webhook/track-tokens"
+$env:TOKEN_TRACKER_TOKEN="cole-seu-token-aqui"
+python codex/scripts/codex-token-collector.py
+```
+
+O payload usa `source: "codex"` e modelos OpenAI como `gpt-5.5`.
 
 ## Comandos
 

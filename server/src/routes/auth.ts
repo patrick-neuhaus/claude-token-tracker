@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { registerUser, loginUser, getMe } from "../services/authService.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { maskEmail, describeError } from "../utils/security.js";
 import type { AuthRequest } from "../types/index.js";
 
 const router = Router();
@@ -18,7 +19,7 @@ const loginSchema = z.object({
 });
 
 router.post("/register", async (req, res) => {
-  console.log("[AUTH] Register attempt:", req.body?.email);
+  console.log("[AUTH] Register attempt:", maskEmail(req.body?.email));
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ status: "error", message: parsed.error.issues[0].message });
@@ -39,9 +40,9 @@ router.post("/register", async (req, res) => {
         user: result.user,
       });
     }
-  } catch (err: any) {
-    console.error("[REGISTER ERROR]", err);
-    if (err.code === "23505") {
+  } catch (err: unknown) {
+    console.error("[REGISTER ERROR]", describeError(err));
+    if ((err as { code?: string })?.code === "23505") {
       res.status(409).json({ status: "error", message: "Email already registered" });
       return;
     }

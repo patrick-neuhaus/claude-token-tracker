@@ -23,6 +23,13 @@ export interface ModelPricing {
  * Older models cost 3× more — wrong family fallback under-bills 3×.
  */
 export const PRICING: Record<string, ModelPricing> = {
+  "gpt-5.5": { input: 5.0, output: 30.0, cache_read: 0.5, cache_write: 5.0 },
+  "gpt-5.5-pro": { input: 30.0, output: 180.0, cache_read: 30.0, cache_write: 30.0 },
+  "gpt-5.4": { input: 2.5, output: 15.0, cache_read: 0.25, cache_write: 2.5 },
+  "gpt-5.4-mini": { input: 0.75, output: 4.5, cache_read: 0.075, cache_write: 0.75 },
+  "gpt-5.4-nano": { input: 0.2, output: 1.25, cache_read: 0.02, cache_write: 0.2 },
+  "gpt-5.3-codex": { input: 1.75, output: 14.0, cache_read: 0.175, cache_write: 1.75 },
+
   // === Opus current generation (4.5+) — $5 / $25 ===
   "opus-4-7": { input: 5.0, output: 25.0, cache_read: 0.5, cache_write: 6.25 },
   "opus-4-6": { input: 5.0, output: 25.0, cache_read: 0.5, cache_write: 6.25 },
@@ -45,6 +52,7 @@ export const PRICING: Record<string, ModelPricing> = {
   "haiku-3": { input: 0.25, output: 1.25, cache_read: 0.03, cache_write: 0.3 },
 
   // === Family fallback (current generation pricing) ===
+  "gpt-5": { input: 5.0, output: 30.0, cache_read: 0.5, cache_write: 5.0 },
   opus: { input: 5.0, output: 25.0, cache_read: 0.5, cache_write: 6.25 },
   sonnet: { input: 3.0, output: 15.0, cache_read: 0.3, cache_write: 3.75 },
   haiku: { input: 1.0, output: 5.0, cache_read: 0.1, cache_write: 1.25 },
