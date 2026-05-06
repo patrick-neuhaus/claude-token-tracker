@@ -102,6 +102,19 @@ Não é setting avançado. Modal/drawer aparece ao detectar modelo desconhecido.
 - [ ] Adicionar tokens motion novos (`--ease-back`, `--motion-celebration`, `--motion-pulse-loop`)?
 - [ ] Pares de contraste WCAG AA pra validar com paleta Artemis (ver Wave 4 Phase 5 review)
 
+### ⚠️ PENDÊNCIA SUBDOCUMENTADA S1 (resolver em S2 antes de Wave 5/6 detalhar)
+
+**Skills + SystemPrompts pages** (`/skills`, `/skills/:name`, `/system-prompts`, `/system-prompts/:id`) foram subdocumentadas em S1 — só listei como "Wave 6.5 Showcase" genérico. Pergunta crítica não respondida:
+
+> Modelo de dados Skills/SystemPrompts: (a) single-tenant pessoal CRUD, (b) showcase Patrick hardcoded/seed, (c) híbrido seed + add own?
+
+Patrick decidiu na sessão S1: "vamos mexer com essa parte depois". Resolver no início de S2 (logo após confirmar typography Wave 4) ANTES de Wave 5 lift map detalhar essas pages, pra não retrabalho. Impacta:
+- Schema (single-tenant precisa `user_id` em skills/system_prompts)
+- Wave 6.5 escopo (CRUD vs viewer-only)
+- Onboarding wizard (cobre "add first skill" se opção a/c)
+- Branding pitch (showcase tem ângulo marketing forte se opção b/c)
+- Wave 7 refactor (migration depende da escolha)
+
 ### Phase 5 Wave 4 review BLOCKING
 - Contrast em todos pares reais (text/foreground, focus-ring, surfaces)
 - Hit target ≥ 24×24 CSS px
