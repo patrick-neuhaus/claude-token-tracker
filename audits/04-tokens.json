@@ -1,0 +1,426 @@
+{
+  "name": "claude-token-tracker / Studio Artemis",
+  "version": "1.0.0",
+  "generated": "2026-05-06T16:34:42.941Z",
+  "brand": {
+    "primary": "#003899",
+    "accent": "#005EFF",
+    "family": "Studio Artemis",
+    "tagline": "Plausible pra Claude"
+  },
+  "mode": "dark",
+  "typography": {
+    "display": "IBM Plex Sans",
+    "body": "Inter",
+    "mono": "Geist Mono"
+  },
+  "palette": {
+    "primary": "#003899",
+    "accent": "#005EFF",
+    "secondary": "#000000",
+    "text": "#667085",
+    "blueDeep": "#0D419B",
+    "blueDark": "#0848C5",
+    "blueMid": "#1E93FF",
+    "blueLight": "#48B7FF",
+    "gray025": "#FFFFFF",
+    "gray050": "#F2F4F7",
+    "gray100": "#EAECF0",
+    "gray200": "#D0D5DD",
+    "gray300": "#98A2B3",
+    "gray400": "#667085",
+    "gray500": "#475467",
+    "gray600": "#344054",
+    "gray700": "#182230",
+    "gray800": "#101828",
+    "gray900": "#0C111D"
+  },
+  "semantic": {
+    "--background": "#0C111D",
+    "--foreground": "#F2F4F7",
+    "--card": "#101828",
+    "--card-foreground": "#F2F4F7",
+    "--popover": "#101828",
+    "--popover-foreground": "#F2F4F7",
+    "--muted": "#182230",
+    "--muted-foreground": "#98A2B3",
+    "--border": "#667085",
+    "--input": "#182230",
+    "--ring": "#005EFF",
+    "--primary": "#0848C5",
+    "--primary-foreground": "#F2F4F7",
+    "--accent": "#005EFF",
+    "--accent-foreground": "#F2F4F7",
+    "--secondary": "#182230",
+    "--secondary-foreground": "#F2F4F7",
+    "--brand-navy": "#003899",
+    "--brand-blue-vivid": "#005EFF",
+    "--brand-blue-deep": "#0D419B",
+    "--brand-blue-dark": "#0848C5",
+    "--brand-blue-mid": "#1E93FF",
+    "--brand-blue-light": "#48B7FF",
+    "--destructive": "#D92D20",
+    "--destructive-foreground": "#F2F4F7",
+    "--success": "#039855",
+    "--success-foreground": "#F2F4F7",
+    "--warning": "#DC6803",
+    "--warning-foreground": "#F2F4F7",
+    "--info": "#005EFF",
+    "--info-foreground": "#F2F4F7",
+    "--sidebar-background": "#0C111D",
+    "--sidebar-foreground": "#F2F4F7",
+    "--sidebar-primary": "#003899",
+    "--sidebar-primary-foreground": "#F2F4F7",
+    "--sidebar-accent": "#101828",
+    "--sidebar-accent-foreground": "#F2F4F7",
+    "--sidebar-border": "#182230",
+    "--sidebar-ring": "#005EFF",
+    "--sidebar-indicator": "#005EFF",
+    "--status-pending-bg": "#182230",
+    "--status-pending-fg": "#D0D5DD",
+    "--status-success-fg": "#12B76A",
+    "--status-warning-fg": "#F79009",
+    "--status-error-fg": "#F04438",
+    "--status-info-fg": "#1E93FF"
+  },
+  "motion": {
+    "--motion-instant": "80ms",
+    "--motion-fast": "150ms",
+    "--motion-normal": "200ms",
+    "--motion-slow": "300ms",
+    "--motion-page": "400ms",
+    "--ease-standard": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "--ease-out": "cubic-bezier(0, 0, 0.2, 1)",
+    "--ease-in": "cubic-bezier(0.4, 0, 1, 1)",
+    "--ease-spring": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+    "--motion-stagger": "15ms",
+    "--motion-base": "var(--motion-normal)",
+    "--motion-decorative": "var(--motion-page)",
+    "--ease-in-out": "var(--ease-standard)",
+    "--ease-emphasized": "var(--ease-out)",
+    "--motion-celebration": "800ms",
+    "--motion-pulse-loop": "2s"
+  },
+  "spacing": {
+    "--space-1": "4px",
+    "--space-1-5": "6px",
+    "--space-2": "8px",
+    "--space-3": "12px",
+    "--space-4": "16px",
+    "--space-5": "20px",
+    "--space-6": "24px",
+    "--space-8": "32px",
+    "--space-10": "40px",
+    "--space-12": "48px",
+    "--space-16": "64px"
+  },
+  "radius": {
+    "--radius-sm": "6px",
+    "--radius-md": "8px",
+    "--radius-lg": "12px",
+    "--radius-xl": "16px",
+    "--radius-2xl": "20px",
+    "--radius": "0.5rem"
+  },
+  "shadows": {
+    "--shadow-xs": "0 1px 2px rgb(0 0 0 / .25)",
+    "--shadow-sm": "0 1px 4px rgb(0 0 0 / .35)",
+    "--shadow-md": "0 2px 8px rgb(0 0 0 / .45)",
+    "--shadow-lg": "0 4px 16px rgb(0 0 0 / .55)",
+    "--shadow-xl": "0 8px 32px rgb(0 0 0 / .65)",
+    "--shadow-card": "0 1px 2px rgb(0 0 0 / .25)",
+    "--shadow-popover": "0 8px 24px -4px rgb(0 0 0 / .50)",
+    "--shadow-dialog": "0 24px 48px -12px rgb(0 0 0 / .65)",
+    "--shadow-drawer": "0 0 24px rgb(0 0 0 / .50)",
+    "--shadow-sidebar": "0 1px 3px rgb(0 0 0 / .30)",
+    "--shadow-toast": "0 6px 20px -4px rgb(0 0 0 / .50)",
+    "--shadow-tooltip": "0 2px 8px rgb(0 0 0 / .55)",
+    "--shadow-control": "0 1px 2px 0 rgb(0 0 0 / .35)",
+    "--overlay-backdrop": "rgb(0 0 0 / .60)"
+  },
+  "pickFgDerivations": [
+    {
+      "fgKey": "--card-foreground",
+      "bgKey": "--card",
+      "bgHex": "#101828",
+      "picked": "#F2F4F7",
+      "ratio": "17.75"
+    },
+    {
+      "fgKey": "--popover-foreground",
+      "bgKey": "--popover",
+      "bgHex": "#101828",
+      "picked": "#F2F4F7",
+      "ratio": "17.75"
+    },
+    {
+      "fgKey": "--primary-foreground",
+      "bgKey": "--primary",
+      "bgHex": "#0848C5",
+      "picked": "#F2F4F7",
+      "ratio": "7.65"
+    },
+    {
+      "fgKey": "--accent-foreground",
+      "bgKey": "--accent",
+      "bgHex": "#005EFF",
+      "picked": "#F2F4F7",
+      "ratio": "5.19"
+    },
+    {
+      "fgKey": "--secondary-foreground",
+      "bgKey": "--secondary",
+      "bgHex": "#182230",
+      "picked": "#F2F4F7",
+      "ratio": "16.03"
+    },
+    {
+      "fgKey": "--sidebar-foreground",
+      "bgKey": "--sidebar-background",
+      "bgHex": "#0C111D",
+      "picked": "#F2F4F7",
+      "ratio": "18.86"
+    },
+    {
+      "fgKey": "--sidebar-primary-foreground",
+      "bgKey": "--sidebar-primary",
+      "bgHex": "#003899",
+      "picked": "#F2F4F7",
+      "ratio": "10.37"
+    },
+    {
+      "fgKey": "--sidebar-accent-foreground",
+      "bgKey": "--sidebar-accent",
+      "bgHex": "#101828",
+      "picked": "#F2F4F7",
+      "ratio": "17.75"
+    }
+  ],
+  "wcag": {
+    "validatedAt": "2026-05-06T16:34:42.943Z",
+    "pairs": [
+      {
+        "label": "Foreground / Background",
+        "fg": "--foreground",
+        "bg": "--background",
+        "fgHex": "#F2F4F7",
+        "bgHex": "#0C111D",
+        "type": "text",
+        "ratio": "17.12",
+        "level": "AAA",
+        "pass": true
+      },
+      {
+        "label": "Foreground / Card",
+        "fg": "--card-foreground",
+        "bg": "--card",
+        "fgHex": "#F2F4F7",
+        "bgHex": "#101828",
+        "type": "text",
+        "ratio": "16.11",
+        "level": "AAA",
+        "pass": true
+      },
+      {
+        "label": "Muted-fg / Background",
+        "fg": "--muted-foreground",
+        "bg": "--background",
+        "fgHex": "#98A2B3",
+        "bgHex": "#0C111D",
+        "type": "text",
+        "ratio": "7.32",
+        "level": "AAA",
+        "pass": true
+      },
+      {
+        "label": "Muted-fg / Card",
+        "fg": "--muted-foreground",
+        "bg": "--card",
+        "fgHex": "#98A2B3",
+        "bgHex": "#101828",
+        "type": "text",
+        "ratio": "6.89",
+        "level": "AA",
+        "pass": true
+      },
+      {
+        "label": "Muted-fg / Muted",
+        "fg": "--muted-foreground",
+        "bg": "--muted",
+        "fgHex": "#98A2B3",
+        "bgHex": "#182230",
+        "type": "text",
+        "ratio": "6.22",
+        "level": "AA",
+        "pass": true
+      },
+      {
+        "label": "Primary-fg / Primary",
+        "fg": "--primary-foreground",
+        "bg": "--primary",
+        "fgHex": "#F2F4F7",
+        "bgHex": "#0848C5",
+        "type": "text",
+        "ratio": "6.95",
+        "level": "AA",
+        "pass": true
+      },
+      {
+        "label": "Accent-fg / Accent",
+        "fg": "--accent-foreground",
+        "bg": "--accent",
+        "fgHex": "#F2F4F7",
+        "bgHex": "#005EFF",
+        "type": "text",
+        "ratio": "4.71",
+        "level": "AA",
+        "pass": true
+      },
+      {
+        "label": "Accent vs Background (UI)",
+        "fg": "--accent",
+        "bg": "--background",
+        "fgHex": "#005EFF",
+        "bgHex": "#0C111D",
+        "type": "ui",
+        "ratio": "3.63",
+        "level": "OK",
+        "pass": true
+      },
+      {
+        "label": "Primary vs Background (UI)",
+        "fg": "--primary",
+        "bg": "--background",
+        "fgHex": "#0848C5",
+        "bgHex": "#0C111D",
+        "type": "ui",
+        "ratio": "2.46",
+        "level": "FAIL",
+        "pass": false
+      },
+      {
+        "label": "Border vs Card (UI)",
+        "fg": "--border",
+        "bg": "--card",
+        "fgHex": "#667085",
+        "bgHex": "#101828",
+        "type": "ui",
+        "ratio": "3.57",
+        "level": "OK",
+        "pass": true
+      },
+      {
+        "label": "Border vs Background (UI)",
+        "fg": "--border",
+        "bg": "--background",
+        "fgHex": "#667085",
+        "bgHex": "#0C111D",
+        "type": "ui",
+        "ratio": "3.79",
+        "level": "OK",
+        "pass": true
+      },
+      {
+        "label": "Ring vs Background (UI)",
+        "fg": "--ring",
+        "bg": "--background",
+        "fgHex": "#005EFF",
+        "bgHex": "#0C111D",
+        "type": "ui",
+        "ratio": "3.63",
+        "level": "OK",
+        "pass": true
+      },
+      {
+        "label": "Status info-fg / Card",
+        "fg": "--status-info-fg",
+        "bg": "--card",
+        "fgHex": "#1E93FF",
+        "bgHex": "#101828",
+        "type": "text",
+        "ratio": "5.64",
+        "level": "AA",
+        "pass": true
+      },
+      {
+        "label": "Status success-fg / Card",
+        "fg": "--status-success-fg",
+        "bg": "--card",
+        "fgHex": "#12B76A",
+        "bgHex": "#101828",
+        "type": "text",
+        "ratio": "6.77",
+        "level": "AA",
+        "pass": true
+      },
+      {
+        "label": "Status warning-fg / Card",
+        "fg": "--status-warning-fg",
+        "bg": "--card",
+        "fgHex": "#F79009",
+        "bgHex": "#101828",
+        "type": "text",
+        "ratio": "7.56",
+        "level": "AAA",
+        "pass": true
+      },
+      {
+        "label": "Status error-fg / Card",
+        "fg": "--status-error-fg",
+        "bg": "--card",
+        "fgHex": "#F04438",
+        "bgHex": "#101828",
+        "type": "text",
+        "ratio": "4.72",
+        "level": "AA",
+        "pass": true
+      },
+      {
+        "label": "Sidebar-fg / Sidebar-bg",
+        "fg": "--sidebar-foreground",
+        "bg": "--sidebar-background",
+        "fgHex": "#F2F4F7",
+        "bgHex": "#0C111D",
+        "type": "text",
+        "ratio": "17.12",
+        "level": "AAA",
+        "pass": true
+      },
+      {
+        "label": "Sidebar-fg / Sidebar-accent",
+        "fg": "--sidebar-accent-foreground",
+        "bg": "--sidebar-accent",
+        "fgHex": "#F2F4F7",
+        "bgHex": "#101828",
+        "type": "text",
+        "ratio": "16.11",
+        "level": "AAA",
+        "pass": true
+      },
+      {
+        "label": "Sidebar-indicator vs bg (UI)",
+        "fg": "--sidebar-indicator",
+        "bg": "--sidebar-background",
+        "fgHex": "#005EFF",
+        "bgHex": "#0C111D",
+        "type": "ui",
+        "ratio": "3.63",
+        "level": "OK",
+        "pass": true
+      }
+    ],
+    "summary": {
+      "total": 19,
+      "passing": 18,
+      "failing": 1
+    }
+  },
+  "extensions": {
+    "artemis": {
+      "--motion-celebration": "800ms",
+      "--motion-pulse-loop": "2s",
+      "--brand-navy": "#003899",
+      "--brand-blue-vivid": "#005EFF"
+    }
+  }
+}
