@@ -427,7 +427,7 @@ Plano pode mudar em qualquer ponto se:
 | 6.3 | ✅ done | 2026-05-06 | 2026-05-06 | Analytics lift (KpiBox MetricCard anatomy + useCountUp shared + DeltaBadge tokens fix + TOOLTIP_PROPS tokens + textH2 canonical) |
 | 6.4a | ✅ done | 2026-05-06 | 2026-05-06 | LoginPage 50/50 split canonical (brand panel + form panel + Artemis tagline) |
 | 6.4b | ✅ done | 2026-05-06 | 2026-05-06 | OnboardingWizard CRIAR (5 steps + live detection + AppLayout trigger + confetti motion) |
-| 6.4c | ⏸ pendente | — | — | MOCK_USER bypass cleanup (preparar deploy VPS — F-NEW-5 backlog) |
+| 6.4c | ✅ done | 2026-05-06 | 2026-05-06 | MOCK_USER bypass removed (AuthContext real auth restored + AppLayout redirect /login reativado — pronto pra deploy VPS) |
 | 6.5 | ✅ done | 2026-05-06 | 2026-05-06 | FormField canonical + SettingsForm refactor (PricingDrawer pivotou pra F-NEW-8 backlog — requer schema novo) |
 | 6.6 | ⏸ pendente | — | — | Skills/SystemPrompts (pendency: modelo a/b/c não decidido) |
 | 6.7a | ✅ done | 2026-05-06 | 2026-05-06 | Achievements motion polish (ConfettiBurst shared + BadgeCard ease-spring overshoot + TierProgressBar milestones + AchievementNotifier confetti dispatch) |
