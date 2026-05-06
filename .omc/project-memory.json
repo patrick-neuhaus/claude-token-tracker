@@ -1,0 +1,208 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1778088313974,
+  "projectRoot": "C:\\Users\\Patrick Neuhaus\\Documents\\Github\\claude-token-tracker",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": ">=18",
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "npm",
+    "runtime": "Node.js 18"
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "concurrently -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
+      "build": "npm run build -w client && npm run build -w server",
+      "start": "node server/dist/index.js",
+      "migrate": "npm run migrate -w server",
+      "db:up": "docker compose up -d",
+      "db:down": "docker compose down"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": true,
+    "workspaces": [
+      "server",
+      "client"
+    ],
+    "mainDirectories": [
+      "docs",
+      "scripts"
+    ],
+    "gitBranches": {
+      "defaultBranch": "master",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "audits": {
+      "path": "audits",
+      "purpose": null,
+      "fileCount": 13,
+      "lastAccessed": 1778088313837,
+      "keyFiles": [
+        "00-master-plan.md",
+        "00-references.md",
+        "01-strategy.md",
+        "02-ux.md",
+        "03-motion.md"
+      ]
+    },
+    "client": {
+      "path": "client",
+      "purpose": null,
+      "fileCount": 10,
+      "lastAccessed": 1778088313839,
+      "keyFiles": [
+        "components.json",
+        "eslint.config.js",
+        "index.html",
+        "package.json",
+        "README.md"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 0,
+      "lastAccessed": 1778088313859,
+      "keyFiles": []
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 4,
+      "lastAccessed": 1778088313861,
+      "keyFiles": [
+        "claude_code_hook.py",
+        "tampermonkey.js",
+        "token_log.jsonl"
+      ]
+    },
+    "server": {
+      "path": "server",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1778088313862,
+      "keyFiles": [
+        "package.json",
+        "tsconfig.json"
+      ]
+    },
+    "client\\dist": {
+      "path": "client\\dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 3,
+      "lastAccessed": 1778088313864,
+      "keyFiles": [
+        "favicon.svg",
+        "icons.svg",
+        "index.html"
+      ]
+    },
+    "client\\node_modules": {
+      "path": "client\\node_modules",
+      "purpose": "Dependencies",
+      "fileCount": 0,
+      "lastAccessed": 1778088313865,
+      "keyFiles": []
+    },
+    "client\\public": {
+      "path": "client\\public",
+      "purpose": "Public files",
+      "fileCount": 2,
+      "lastAccessed": 1778088313865,
+      "keyFiles": [
+        "favicon.svg",
+        "icons.svg"
+      ]
+    },
+    "server\\dist": {
+      "path": "server\\dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 1,
+      "lastAccessed": 1778088313868,
+      "keyFiles": [
+        "index.js"
+      ]
+    },
+    "server\\migrations": {
+      "path": "server\\migrations",
+      "purpose": "Database migrations",
+      "fileCount": 10,
+      "lastAccessed": 1778088313870,
+      "keyFiles": [
+        "001_create_users.sql",
+        "002_create_user_settings.sql",
+        "003_create_token_entries.sql"
+      ]
+    },
+    "server\\src": {
+      "path": "server\\src",
+      "purpose": "Source code",
+      "fileCount": 1,
+      "lastAccessed": 1778088313874,
+      "keyFiles": [
+        "index.ts"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "client\\vite.config.ts",
+      "accessCount": 2,
+      "lastAccessed": 1778088685812,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\lib\\api.ts",
+      "accessCount": 2,
+      "lastAccessed": 1778088845559,
+      "type": "file"
+    },
+    {
+      "path": "audits\\00-master-plan.md",
+      "accessCount": 1,
+      "lastAccessed": 1778088332232,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\index.css",
+      "accessCount": 1,
+      "lastAccessed": 1778088601966,
+      "type": "file"
+    },
+    {
+      "path": "client\\src",
+      "accessCount": 1,
+      "lastAccessed": 1778088778207,
+      "type": "directory"
+    },
+    {
+      "path": "client\\src\\App.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778088785430,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

@@ -34,6 +34,20 @@ export function WebhookInfo({ webhookToken }: Props) {
     "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
   }'`;
 
+  const codexCurlExample = `curl -X POST "${webhookUrl}" \\
+  -H "Content-Type: application/json" \\
+  -H "X-Webhook-Token: ${webhookToken}" \\
+  -d '{
+    "source": "codex",
+    "model": "gpt-5.5",
+    "input_tokens": 1500,
+    "output_tokens": 800,
+    "cache_read_tokens": 400,
+    "cache_write_tokens": 0,
+    "session_id": "codex-session-123",
+    "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+  }'`;
+
   return (
     <>
       <Section title="Webhook">
@@ -118,6 +132,21 @@ export function WebhookInfo({ webhookToken }: Props) {
                 </div>
 
                 <div>
+                  <p className="text-xs font-medium mb-1 text-muted-foreground">Exemplo Codex:</p>
+                  <div className="rounded bg-muted p-3 text-xs font-mono whitespace-pre-wrap overflow-x-auto relative">
+                    {codexCurlExample}
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="absolute top-2 right-2 h-6 w-6"
+                      onClick={() => copyText(codexCurlExample, "codex-curl")}
+                    >
+                      {copied === "codex-curl" ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
                   <p className="text-xs font-medium mb-1 text-muted-foreground">Campos do payload:</p>
                   <div className="rounded-md border text-xs">
                     <table className="w-full">
@@ -130,7 +159,7 @@ export function WebhookInfo({ webhookToken }: Props) {
                       </thead>
                       <tbody>
                         {[
-                          ["source", "string", "Ex: claude.ai, meu-script, n8n"],
+                          ["source", "string", "Ex: claude-code, claude.ai, codex"],
                           ["model", "string", "Nome do modelo usado"],
                           ["input_tokens", "int", "Tokens de entrada"],
                           ["output_tokens", "int", "Tokens de saída"],
@@ -162,7 +191,7 @@ export function WebhookInfo({ webhookToken }: Props) {
 
       <Section
         title="Referência de Preços por Modelo"
-        description={<span>Atualizado 2026-04-29 · fonte: <a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noopener" className="text-info hover:underline">platform.claude.com/pricing</a></span>}
+        description={<span>Atualizado 2026-04-29 · fontes: <a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noopener" className="text-info hover:underline">Claude</a> e <a href="https://developers.openai.com/api/docs/pricing" target="_blank" rel="noopener" className="text-info hover:underline">OpenAI</a></span>}
       >
           <Table>
             <TableHeader>
@@ -175,6 +204,21 @@ export function WebhookInfo({ webhookToken }: Props) {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {/* OpenAI / Codex */}
+              <TableRow>
+                <TableCell className="font-mono text-xs">gpt-5.5 <span className="text-muted-foreground">(Codex)</span></TableCell>
+                <TableCell className="text-right tabular-nums">$5.00</TableCell>
+                <TableCell className="text-right tabular-nums">$30.00</TableCell>
+                <TableCell className="text-right tabular-nums">$0.50</TableCell>
+                <TableCell className="text-right tabular-nums">$5.00</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono text-xs">gpt-5.4-mini</TableCell>
+                <TableCell className="text-right tabular-nums">$0.75</TableCell>
+                <TableCell className="text-right tabular-nums">$4.50</TableCell>
+                <TableCell className="text-right tabular-nums">$0.075</TableCell>
+                <TableCell className="text-right tabular-nums">$0.75</TableCell>
+              </TableRow>
               {/* Current generation */}
               <TableRow>
                 <TableCell className="font-mono text-xs">claude-opus-4-7 <span className="text-muted-foreground">(atual)</span></TableCell>

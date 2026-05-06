@@ -12,16 +12,17 @@
    colors_and_type.css + presets/default/tokens.css redefined with
    Artemis paleta (navy #003899 + vibrant #005EFF + Untitled UI gray).
 
-   Brand: navy + vibrant blue + blueDark + Untitled UI gray scale
-   Modes: light + dark (auto-applied via .dark class on body/html)
-   Typography: IBM Plex Sans (display) + Inter (body) + Geist Mono
-   Sidebar: navy fill in BOTH modes (CRM drama convention)
+   Convention shadcn original: vars triplet HSL puro (sem hsl wrap).
+   @theme inline aplica hsl() pras Tailwind utilities. CSS direto
+   consume via hsl(var(--X)) ou hsl(var(--X) / .5) pra alpha.
+
+   Sidebar: navy fill em ambos modos (CRM drama convention)
    ============================================================ */
 
 body {
   margin: 0;
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -32,10 +33,10 @@ body {
 }
 
 /* ============================================================
-   SHARED PRIMITIVES (CRM canonical — same across modes)
+   SHARED PRIMITIVES (mode-independent)
    ============================================================ */
 :root {
-  /* Spacing scale (4-base) — F-UI-001 */
+  /* Spacing scale (4-base) */
   --space-1:    4px;
   --space-1-5:  6px;
   --space-2:    8px;
@@ -49,15 +50,15 @@ body {
   --space-16:  64px;
 
   /* Type scale */
-  --text-xs:     13px;
-  --text-sm:     15px;
-  --text-base:   17px;
-  --text-lg:     19px;
-  --text-xl:     22px;
-  --text-2xl:    26px;
-  --text-3xl:    32px;
+  --text-xs:    13px;
+  --text-sm:    15px;
+  --text-base:  17px;
+  --text-lg:    19px;
+  --text-xl:    22px;
+  --text-2xl:   26px;
+  --text-3xl:   32px;
 
-  /* Weights — never 700 */
+  /* Weights */
   --weight-normal:    400;
   --weight-medium:    500;
   --weight-semibold:  600;
@@ -75,7 +76,6 @@ body {
   --font-body:    'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
   --font-mono:    'Geist Mono', ui-monospace, monospace;
-  /* Backwards-compat aliases */
   --font-heading: var(--font-display);
   --font-sans:    var(--font-body);
 
@@ -87,7 +87,7 @@ body {
   --radius-xl:  16px;
   --radius-2xl: 20px;
 
-  /* Motion tokens */
+  /* Motion */
   --motion-instant:  80ms;
   --motion-fast:    150ms;
   --motion-normal:  200ms;
@@ -98,199 +98,185 @@ body {
   --ease-in:       cubic-bezier(0.4, 0, 1, 1);
   --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
   --motion-stagger: 15ms;
-
-  /* Tracker aliases */
   --motion-base: var(--motion-normal);
   --motion-decorative: var(--motion-page);
   --ease-in-out: var(--ease-standard);
   --ease-emphasized: var(--ease-out);
   --motion-celebration: 800ms;
   --motion-pulse-loop: 2s;
-
-  /* Animation duration aliases */
   --dur-150: 150ms;
   --dur-200: 200ms;
   --dur-300: 300ms;
   --ease: var(--ease-standard);
 
-  /* Backdrop overlay */
   --overlay-backdrop: hsl(0 0% 0% / .55);
 }
 
 /* ============================================================
    LIGHT MODE (:root) — Studio Artemis
-   Background: gray-050 cool. Card: white lift. Sidebar: navy drama.
    ============================================================ */
 :root {
-  --background: hsl(216 24% 96%);          /* gray-050 #F2F4F7 */
-  --foreground: hsl(222 41% 8%);           /* gray-900 #0C111D */
-  --card: hsl(0 0% 100%);                  /* white card */
-  --card-foreground: hsl(222 41% 8%);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(222 41% 8%);
+  --background: 216 24% 96%;          /* gray-050 #F2F4F7 */
+  --foreground: 222 41% 8%;           /* gray-900 #0C111D */
+  --card: 0 0% 100%;
+  --card-foreground: 222 41% 8%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 41% 8%;
 
-  --primary: hsl(218 100% 30%);            /* navy #003899 */
-  --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(220 17% 93%);           /* gray-200 #E4E7EC */
-  --secondary-foreground: hsl(222 41% 8%);
-  --muted: hsl(220 17% 93%);               /* gray-200 */
-  --muted-foreground: hsl(216 18% 34%);    /* gray-600 #475467 — 7.5:1 vs bg */
-  --accent: hsl(218 100% 50%);             /* vibrant blue #005EFF */
-  --accent-foreground: hsl(0 0% 100%);
-  --accent-decorative: hsl(209 100% 56%);  /* blueMid #1E93FF */
+  --primary: 218 100% 30%;            /* navy #003899 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 17% 93%;
+  --secondary-foreground: 222 41% 8%;
+  --muted: 220 17% 93%;
+  --muted-foreground: 216 18% 34%;    /* gray-600 — 7.5:1 */
+  --accent: 218 100% 50%;             /* vibrant #005EFF */
+  --accent-foreground: 0 0% 100%;
+  --accent-decorative: 209 100% 56%;  /* blueMid */
 
-  --destructive: hsl(4 74% 49%);           /* red-600 #D92D20 */
-  --destructive-foreground: hsl(0 0% 100%);
-  --destructive-display: hsl(4 74% 49%);
-  --success: hsl(153 96% 30%);             /* green-600 #039855 */
-  --success-foreground: hsl(0 0% 100%);
-  --success-display: hsl(155 97% 24%);     /* green-700 — AA on white card */
-  --warning: hsl(28 97% 44%);              /* amber-600 #DC6803 */
-  --warning-foreground: hsl(0 0% 100%);
-  --info: hsl(218 100% 50%);               /* = accent */
-  --info-foreground: hsl(0 0% 100%);
-  --info-display: hsl(218 100% 30%);       /* navy AA on white card */
+  --destructive: 4 74% 49%;
+  --destructive-foreground: 0 0% 100%;
+  --destructive-display: 4 74% 49%;
+  --success: 153 96% 30%;
+  --success-foreground: 0 0% 100%;
+  --success-display: 155 97% 24%;
+  --warning: 28 97% 44%;
+  --warning-foreground: 0 0% 100%;
+  --info: 218 100% 50%;
+  --info-foreground: 0 0% 100%;
+  --info-display: 218 100% 30%;
 
-  --border: hsl(221 13% 46%);              /* gray-400 #667085 — 3:1 UI AA */
-  --input: hsl(0 0% 100%);                 /* white input bg */
-  --ring: hsl(218 100% 50%);               /* vibrant blue focus */
-  --ring-offset: hsl(0 0% 100%);           /* white gap */
+  --border: 221 13% 46%;              /* gray-400 #667085 — 3:1 */
+  --input: 0 0% 100%;
+  --ring: 218 100% 50%;
+  --ring-offset: 0 0% 100%;
 
-  /* Charts brand-aligned */
-  --chart-1: hsl(218 100% 50%);
-  --chart-2: hsl(153 96% 30%);
-  --chart-3: hsl(28 97% 44%);
-  --chart-4: hsl(280 60% 55%);
-  --chart-5: hsl(4 74% 49%);
+  --chart-1: 218 100% 50%;
+  --chart-2: 153 96% 30%;
+  --chart-3: 28 97% 44%;
+  --chart-4: 280 60% 55%;
+  --chart-5: 4 74% 49%;
 
-  /* Sidebar — CRM canonical drama via navy fill (light mode) */
-  --sidebar-background: hsl(218 100% 30%);  /* navy */
-  --sidebar-foreground: hsl(0 0% 100%);
-  --sidebar-primary: hsl(220 92% 40%);      /* blueDark hover */
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(220 92% 40%);       /* blueDark hover state */
-  --sidebar-accent-foreground: hsl(0 0% 100%);
-  --sidebar-border: hsl(218 85% 33%);       /* blueDeep — subtle on navy */
-  --sidebar-ring: hsl(218 100% 50%);
-  --sidebar-indicator: hsl(218 100% 50%);   /* vibrant blue indicator */
-  /* Tracker alias (legacy --sidebar) */
+  /* Sidebar light — navy fill drama */
+  --sidebar-background: 218 100% 30%;
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: 220 92% 40%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 220 92% 40%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 218 85% 33%;
+  --sidebar-ring: 218 100% 50%;
+  --sidebar-indicator: 218 100% 50%;
+  --sidebar-decorative: 218 100% 50%;
   --sidebar: var(--sidebar-background);
 
-  /* Status pairs — bg = color/0.1, fg = full color (CRM canonical) */
-  --status-pending-bg: hsl(220 17% 93%);
-  --status-pending-fg: hsl(222 41% 8%);
-  --status-success-bg: hsl(153 96% 30% / 0.1);
-  --status-success-fg: hsl(155 97% 24%);
-  --status-warning-bg: hsl(28 97% 44% / 0.1);
-  --status-warning-fg: hsl(28 97% 44%);
-  --status-error-bg: hsl(4 74% 49% / 0.1);
-  --status-error-fg: hsl(4 74% 49%);
-  --status-info-bg: hsl(218 100% 50% / 0.1);
-  --status-info-fg: hsl(218 100% 30%);
+  /* Status pairs */
+  --status-pending-bg: 220 17% 93%;
+  --status-pending-fg: 222 41% 8%;
+  --status-success-bg: 153 96% 30% / 0.1;
+  --status-success-fg: 155 97% 24%;
+  --status-warning-bg: 28 97% 44% / 0.1;
+  --status-warning-fg: 28 97% 44%;
+  --status-error-bg: 4 74% 49% / 0.1;
+  --status-error-fg: 4 74% 49%;
+  --status-info-bg: 218 100% 50% / 0.1;
+  --status-info-fg: 218 100% 30%;
 
-  /* Status text foreground (CRM canonical names — alt to --*-display) */
-  --success-text: hsl(155 97% 24%);
-  --warning-text: hsl(35 75% 28%);
-  --destructive-text: hsl(4 74% 49%);
-  --info-text: hsl(218 100% 30%);
+  --success-text: 155 97% 24%;
+  --warning-text: 35 75% 28%;
+  --destructive-text: 4 74% 49%;
+  --info-text: 218 100% 30%;
 
-  /* Brand extensions (Artemis-specific) */
-  --brand-navy: hsl(218 100% 30%);
-  --brand-blue-vivid: hsl(218 100% 50%);
-  --brand-blue-deep: hsl(218 85% 33%);
-  --brand-blue-dark: hsl(220 92% 40%);
-  --brand-blue-mid: hsl(209 100% 56%);
-  --brand-blue-light: hsl(204 100% 64%);
+  --brand-navy: 218 100% 30%;
+  --brand-blue-vivid: 218 100% 50%;
+  --brand-blue-deep: 218 85% 33%;
+  --brand-blue-dark: 220 92% 40%;
+  --brand-blue-mid: 209 100% 56%;
+  --brand-blue-light: 204 100% 64%;
 }
 
 /* ============================================================
    DARK MODE (.dark) — Studio Artemis
-   Background: gray-900. Card: gray-800 lift. Sidebar: NAVY drama
-   (mesma cor do light mode pra brand consistency e contraste forte
-   contra background gray-900).
    ============================================================ */
 .dark {
-  --background: hsl(222 41% 8%);           /* gray-900 #0C111D */
-  --foreground: hsl(216 24% 96%);          /* gray-050 #F2F4F7 */
-  --card: hsl(220 43% 11%);                /* gray-800 #182230 — lift */
-  --card-foreground: hsl(216 24% 96%);
-  --popover: hsl(220 43% 11%);
-  --popover-foreground: hsl(216 24% 96%);
+  --background: 222 41% 8%;           /* gray-900 */
+  --foreground: 216 24% 96%;          /* gray-050 */
+  --card: 220 43% 11%;                /* gray-800 lift */
+  --card-foreground: 216 24% 96%;
+  --popover: 220 43% 11%;
+  --popover-foreground: 216 24% 96%;
 
-  --primary: hsl(220 92% 40%);             /* blueDark #0848C5 — efetivo dark */
-  --primary-foreground: hsl(216 24% 96%);
-  --secondary: hsl(215 33% 14%);           /* gray-700 #1F2A37 */
-  --secondary-foreground: hsl(216 24% 96%);
-  --muted: hsl(215 33% 14%);
-  --muted-foreground: hsl(218 15% 65%);    /* gray-300 #98A2B3 */
-  --accent: hsl(218 100% 50%);
-  --accent-foreground: hsl(216 24% 96%);
-  --accent-decorative: hsl(209 100% 56%);  /* blueMid */
+  --primary: 220 92% 40%;             /* blueDark */
+  --primary-foreground: 216 24% 96%;
+  --secondary: 215 33% 14%;
+  --secondary-foreground: 216 24% 96%;
+  --muted: 215 33% 14%;
+  --muted-foreground: 218 15% 65%;
+  --accent: 218 100% 50%;
+  --accent-foreground: 216 24% 96%;
+  --accent-decorative: 209 100% 56%;
 
-  --destructive: hsl(4 74% 49%);
-  --destructive-foreground: hsl(216 24% 96%);
-  --destructive-display: hsl(4 86% 58%);   /* red-500 brighter for dark */
-  --success: hsl(153 96% 30%);
-  --success-foreground: hsl(216 24% 96%);
-  --success-display: hsl(152 82% 39%);     /* green-500 */
-  --warning: hsl(28 97% 44%);
-  --warning-foreground: hsl(216 24% 96%);
-  --info: hsl(218 100% 50%);
-  --info-foreground: hsl(216 24% 96%);
-  --info-display: hsl(209 100% 56%);       /* blueMid */
+  --destructive: 4 74% 49%;
+  --destructive-foreground: 216 24% 96%;
+  --destructive-display: 4 86% 58%;
+  --success: 153 96% 30%;
+  --success-foreground: 216 24% 96%;
+  --success-display: 152 82% 39%;
+  --warning: 28 97% 44%;
+  --warning-foreground: 216 24% 96%;
+  --info: 218 100% 50%;
+  --info-foreground: 216 24% 96%;
+  --info-display: 209 100% 56%;
 
-  --border: hsl(221 13% 46%);              /* gray-400 — 3:1 vs bg */
-  --input: hsl(215 33% 14%);
-  --ring: hsl(218 100% 50%);
-  --ring-offset: hsl(222 41% 8%);          /* dark bg gap */
+  --border: 221 13% 46%;
+  --input: 215 33% 14%;
+  --ring: 218 100% 50%;
+  --ring-offset: 222 41% 8%;
 
-  /* Charts dark-tuned */
-  --chart-1: hsl(218 100% 50%);
-  --chart-2: hsl(152 82% 39%);
-  --chart-3: hsl(34 94% 50%);
-  --chart-4: hsl(280 55% 65%);
-  --chart-5: hsl(4 86% 58%);
+  --chart-1: 218 100% 50%;
+  --chart-2: 152 82% 39%;
+  --chart-3: 34 94% 50%;
+  --chart-4: 280 55% 65%;
+  --chart-5: 4 86% 58%;
 
-  /* Sidebar dark — KEEP navy fill (CRM drama convention) */
-  --sidebar-background: hsl(218 100% 30%);  /* navy SAME as light */
-  --sidebar-foreground: hsl(216 24% 96%);
-  --sidebar-primary: hsl(220 92% 40%);
-  --sidebar-primary-foreground: hsl(216 24% 96%);
-  --sidebar-accent: hsl(220 92% 40%);       /* blueDark hover */
-  --sidebar-accent-foreground: hsl(216 24% 96%);
-  --sidebar-border: hsl(218 85% 33%);
-  --sidebar-ring: hsl(218 100% 50%);
-  --sidebar-indicator: hsl(218 100% 50%);   /* vibrant blue */
+  /* Sidebar dark — KEEP navy drama */
+  --sidebar-background: 218 100% 30%;
+  --sidebar-foreground: 216 24% 96%;
+  --sidebar-primary: 220 92% 40%;
+  --sidebar-primary-foreground: 216 24% 96%;
+  --sidebar-accent: 220 92% 40%;
+  --sidebar-accent-foreground: 216 24% 96%;
+  --sidebar-border: 218 85% 33%;
+  --sidebar-ring: 218 100% 50%;
+  --sidebar-indicator: 218 100% 50%;
+  --sidebar-decorative: 218 100% 50%;
   --sidebar: var(--sidebar-background);
 
-  /* Status pairs dark — use *_500 brighter foregrounds + 0.15 alpha */
-  --status-pending-bg: hsl(215 33% 14%);
-  --status-pending-fg: hsl(216 24% 96%);
-  --status-success-bg: hsl(152 82% 39% / 0.15);
-  --status-success-fg: hsl(152 82% 39%);
-  --status-warning-bg: hsl(34 94% 50% / 0.15);
-  --status-warning-fg: hsl(34 94% 50%);
-  --status-error-bg: hsl(4 86% 58% / 0.15);
-  --status-error-fg: hsl(4 86% 58%);
-  --status-info-bg: hsl(218 100% 50% / 0.15);
-  --status-info-fg: hsl(209 100% 56%);
+  --status-pending-bg: 215 33% 14%;
+  --status-pending-fg: 216 24% 96%;
+  --status-success-bg: 152 82% 39% / 0.15;
+  --status-success-fg: 152 82% 39%;
+  --status-warning-bg: 34 94% 50% / 0.15;
+  --status-warning-fg: 34 94% 50%;
+  --status-error-bg: 4 86% 58% / 0.15;
+  --status-error-fg: 4 86% 58%;
+  --status-info-bg: 218 100% 50% / 0.15;
+  --status-info-fg: 209 100% 56%;
 
-  --success-text: hsl(152 82% 39%);
-  --warning-text: hsl(34 94% 50%);
-  --destructive-text: hsl(4 86% 58%);
-  --info-text: hsl(209 100% 56%);
+  --success-text: 152 82% 39%;
+  --warning-text: 34 94% 50%;
+  --destructive-text: 4 86% 58%;
+  --info-text: 209 100% 56%;
 
-  --brand-navy: hsl(218 100% 30%);
-  --brand-blue-vivid: hsl(218 100% 50%);
-  --brand-blue-deep: hsl(218 85% 33%);
-  --brand-blue-dark: hsl(220 92% 40%);
-  --brand-blue-mid: hsl(209 100% 56%);
-  --brand-blue-light: hsl(204 100% 64%);
+  --brand-navy: 218 100% 30%;
+  --brand-blue-vivid: 218 100% 50%;
+  --brand-blue-deep: 218 85% 33%;
+  --brand-blue-dark: 220 92% 40%;
+  --brand-blue-mid: 209 100% 56%;
+  --brand-blue-light: 204 100% 64%;
 }
 
 /* ============================================================
-   SHADOW TOKENS (hue-aware — tinted by --foreground)
-   F-UI-002 + F-INT-008 (CRM canonical)
+   SHADOWS hue-aware
    ============================================================ */
 :root {
   --shadow-xs: 0 1px 2px hsl(222 41% 8% / 0.04);
@@ -298,8 +284,6 @@ body {
   --shadow-md: 0 2px 8px hsl(222 41% 8% / 0.12);
   --shadow-lg: 0 4px 16px hsl(222 41% 8% / 0.16);
   --shadow-xl: 0 8px 32px hsl(222 41% 8% / 0.20);
-
-  /* Semantic shadows */
   --shadow-card:    0 1px 2px hsl(222 41% 8% / 0.04);
   --shadow-popover: 0 8px 24px -4px hsl(222 41% 8% / 0.15);
   --shadow-dialog:  0 24px 48px -12px hsl(222 41% 8% / 0.30);
@@ -309,15 +293,12 @@ body {
   --shadow-tooltip: 0 2px 8px hsl(222 41% 8% / 0.20);
   --shadow-control: 0 1px 2px 0 hsl(222 41% 8% / 0.05);
 }
-
 .dark {
-  /* Dark mode shadows: deeper alpha for visibility on gray-900 */
   --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.30);
   --shadow-sm: 0 1px 4px hsl(0 0% 0% / 0.40);
   --shadow-md: 0 2px 8px hsl(0 0% 0% / 0.50);
   --shadow-lg: 0 4px 16px hsl(0 0% 0% / 0.55);
   --shadow-xl: 0 8px 32px hsl(0 0% 0% / 0.60);
-
   --shadow-card:    0 1px 2px hsl(0 0% 0% / 0.30);
   --shadow-popover: 0 8px 24px -4px hsl(0 0% 0% / 0.55);
   --shadow-dialog:  0 24px 48px -12px hsl(0 0% 0% / 0.70);
@@ -329,67 +310,65 @@ body {
 }
 
 /* ============================================================
-   TAILWIND v4 @theme inline mapping
-   Maps custom vars → Tailwind utilities (bg-X, text-X, etc.)
+   TAILWIND v4 @theme inline mapping (shadcn convention: hsl wrap)
    ============================================================ */
 @theme inline {
   --font-heading: var(--font-display);
   --font-sans: var(--font-body);
   --font-mono: var(--font-mono);
 
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent-decorative: var(--accent-decorative);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-destructive-display: var(--destructive-display);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-decorative: hsl(var(--accent-decorative));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-display: hsl(var(--destructive-display));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
 
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-success-display: var(--success-display);
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-  --color-info: var(--info);
-  --color-info-foreground: var(--info-foreground);
-  --color-info-display: var(--info-display);
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-success-display: hsl(var(--success-display));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-info-display: hsl(var(--info-display));
 
-  --color-sidebar: var(--sidebar-background);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  /* Brand extras */
-  --color-brand-navy: var(--brand-navy);
-  --color-brand-blue-vivid: var(--brand-blue-vivid);
-  --color-brand-blue-deep: var(--brand-blue-deep);
-  --color-brand-blue-dark: var(--brand-blue-dark);
-  --color-brand-blue-mid: var(--brand-blue-mid);
-  --color-brand-blue-light: var(--brand-blue-light);
+  --color-brand-navy: hsl(var(--brand-navy));
+  --color-brand-blue-vivid: hsl(var(--brand-blue-vivid));
+  --color-brand-blue-deep: hsl(var(--brand-blue-deep));
+  --color-brand-blue-dark: hsl(var(--brand-blue-dark));
+  --color-brand-blue-mid: hsl(var(--brand-blue-mid));
+  --color-brand-blue-light: hsl(var(--brand-blue-light));
 
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
 
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -405,27 +384,27 @@ body {
 }
 
 /* ============================================================
-   FOCUS RING (CRM canonical 2-layer — F-UI-007 / F-CA-008)
+   FOCUS RING (CRM canonical 2-layer)
    ============================================================ */
 :focus-visible {
   outline: none;
   box-shadow:
-    0 0 0 2px var(--ring-offset),
-    0 0 0 5px hsl(218 100% 50% / 0.55);
+    0 0 0 2px hsl(var(--ring-offset)),
+    0 0 0 5px hsl(var(--ring) / 0.55);
 }
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
 .field-input:focus-visible {
   outline: none;
-  border-color: var(--ring);
+  border-color: hsl(var(--ring));
   box-shadow:
-    0 0 0 2px var(--ring-offset),
-    0 0 0 5px hsl(218 100% 50% / 0.25);
+    0 0 0 2px hsl(var(--ring-offset)),
+    0 0 0 5px hsl(var(--ring) / 0.25);
 }
 
 /* ============================================================
-   REDUCED MOTION (WCAG 2.2.2 + 2.3.3 — middle ground calibrado)
+   REDUCED MOTION (middle ground calibrado)
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -438,7 +417,7 @@ select:focus-visible,
   }
   [data-slot="skeleton"] {
     animation: none !important;
-    background-color: hsl(from var(--muted) h s l / 0.6);
+    background-color: hsl(var(--muted) / 0.6);
   }
   [class*="hover:scale-"]:hover {
     transform: scale(1) !important;
@@ -473,21 +452,21 @@ code, kbd, samp, pre {
   font-feature-settings: 'tnum';
 }
 
-/* Semantic typography classes (CRM canonical) */
+/* Semantic typography classes */
 .t-h1 { font-size: var(--text-3xl); font-weight: var(--weight-semibold); line-height: var(--leading-tight); letter-spacing: var(--track-tight); }
 .t-h2 { font-size: var(--text-xl);  font-weight: var(--weight-semibold); line-height: var(--leading-tight); letter-spacing: var(--track-tight); }
 .t-h3 { font-size: var(--text-sm);  font-weight: var(--weight-medium);   line-height: var(--leading-tight); }
 .t-body         { font-size: var(--text-sm);     line-height: var(--leading-normal); }
 .t-body-lg      { font-size: var(--text-base);   line-height: var(--leading-normal); }
-.t-label        { font-size: var(--text-xs);     color: var(--muted-foreground); font-weight: var(--weight-medium); }
-.t-meta         { font-size: 10px;               color: hsl(from var(--muted-foreground) h s l / 0.7); }
+.t-label        { font-size: var(--text-xs);     color: hsl(var(--muted-foreground)); font-weight: var(--weight-medium); }
+.t-meta         { font-size: 10px;               color: hsl(var(--muted-foreground) / 0.7); }
 .t-mono         { font-family: var(--font-mono); font-feature-settings: 'tnum'; }
 .t-display      { font-family: var(--font-display); }
 
 .text-2xs  { font-size: 10px; line-height: 1.3; letter-spacing: 0.06em; text-transform: uppercase; }
 .text-stat { font-size: 28px; line-height: 1.1; font-weight: 500; }
 
-.muted { color: var(--muted-foreground); }
+.muted { color: hsl(var(--muted-foreground)); }
 .mono  { font-family: var(--font-mono); }
 
 .eyebrow {
@@ -496,4 +475,486 @@ code, kbd, samp, pre {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: hsl(0 0% 100% / 0.4);
+}
+
+/* ============================================================
+   AA-SIDEBAR (canonical CRM template lift Wave 6.0)
+   Lifted from: anti-ai-design-system/ui_kits/default/components/
+                navigation/_aa-sidebar.css
+   ============================================================ */
+.aa-sidebar {
+  background: hsl(var(--sidebar-background));
+  color: hsl(var(--sidebar-foreground));
+  display: flex;
+  flex-direction: column;
+  padding: 18px 14px 14px;
+  gap: 2px;
+  position: relative;
+  overflow: visible;
+  min-width: 0;
+  height: 100dvh;
+  border-right: 1px solid hsl(var(--sidebar-border));
+  width: 272px;
+  flex-shrink: 0;
+  transition: width var(--motion-normal) var(--ease-standard);
+}
+.aa-sidebar.is-collapsed { width: 68px; }
+
+.aa-sidebar--sticky {
+  position: sticky;
+  top: 0;
+}
+
+/* Toggle bolinha */
+.aa-sidebar__toggle {
+  position: absolute;
+  right: -14px;
+  top: 60px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: hsl(var(--card));
+  border: 1.5px solid hsl(var(--border));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 50;
+  color: hsl(var(--foreground));
+  transition: background 150ms, box-shadow 150ms, transform 150ms, right 220ms ease;
+  box-shadow: 0 2px 8px hsl(var(--foreground) / 0.18);
+  padding: 0;
+  font-family: inherit;
+}
+.aa-sidebar.is-collapsed .aa-sidebar__toggle { top: 78px; }
+.aa-sidebar__toggle:hover {
+  background: hsl(var(--muted));
+  box-shadow: 0 3px 12px hsl(var(--foreground) / 0.25);
+  transform: scale(1.08);
+}
+
+/* Brand */
+.aa-sidebar__brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 6px 10px 16px;
+  min-width: 0;
+  flex-shrink: 0;
+}
+.aa-sidebar.is-collapsed .aa-sidebar__brand {
+  padding: 6px 8px 16px;
+  justify-content: center;
+}
+.aa-sidebar__logo-wrap {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.aa-sidebar__logo-tag {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: hsl(var(--sidebar-decorative));
+  background: hsl(var(--sidebar-background));
+  padding: 2px 4px;
+  border-radius: 3px;
+  transform: rotate(-12deg);
+  transform-origin: center;
+  border: 1px solid hsl(var(--sidebar-decorative) / 0.5);
+  box-shadow: 0 2px 4px hsl(var(--foreground) / 0.15);
+  pointer-events: none;
+}
+.aa-sidebar.is-collapsed .aa-sidebar__logo-tag {
+  font-size: 7px;
+  top: -4px;
+  right: -6px;
+}
+.aa-sidebar__brand-text {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: hsl(var(--sidebar-foreground) / 0.55);
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: hsl(var(--sidebar-decorative) / 0.18);
+  border: 1px solid hsl(var(--sidebar-decorative) / 0.3);
+}
+
+/* Nav scrollable */
+.aa-sidebar__nav {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  margin: 0 -14px;
+  padding: 0 14px;
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--sidebar-foreground) / 0.15) transparent;
+}
+.aa-sidebar__nav::-webkit-scrollbar { width: 4px; }
+.aa-sidebar__nav::-webkit-scrollbar-thumb {
+  background: hsl(var(--sidebar-foreground) / 0.18);
+  border-radius: 4px;
+}
+
+.aa-sidebar__group-label {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: hsl(var(--sidebar-foreground) / 0.45);
+  padding: 12px 10px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Nav item */
+.aa-sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: hsl(var(--sidebar-foreground) / 0.8);
+  position: relative;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 0;
+  transition: background 120ms, color 120ms, transform var(--motion-fast) var(--ease-out);
+  background: none;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
+  text-decoration: none;
+}
+.aa-sidebar__item:active { transform: scale(0.98); }
+.aa-sidebar__item:hover {
+  background: hsl(var(--sidebar-accent) / 0.6);
+  color: hsl(var(--sidebar-foreground));
+}
+.aa-sidebar__item.is-active {
+  background: hsl(var(--sidebar-accent));
+  color: hsl(var(--sidebar-foreground));
+  font-weight: 500;
+}
+.aa-sidebar__item.is-active::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: hsl(var(--sidebar-indicator));
+  border-radius: 0 3px 3px 0;
+}
+.aa-sidebar__item:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: -2px;
+}
+.aa-sidebar__item:focus:not(:focus-visible) { outline: none; }
+.aa-sidebar__item-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.aa-sidebar__item-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aa-sidebar__item-badge {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: hsl(var(--sidebar-foreground) / 0.55);
+  font-weight: 600;
+  transition: color 120ms;
+}
+.aa-sidebar__item.is-active .aa-sidebar__item-badge {
+  color: hsl(var(--sidebar-indicator));
+}
+.aa-sidebar__item:hover .aa-sidebar__item-badge {
+  color: hsl(var(--sidebar-foreground) / 0.85);
+}
+
+/* Stagger collapse — labels/badges fade-out + slide left */
+.aa-sidebar__item-label,
+.aa-sidebar__item-badge,
+.aa-sidebar__group-label,
+.aa-sidebar__brand-text {
+  opacity: 1;
+  max-width: 200px;
+  transform: translateX(0);
+  transition: opacity 180ms ease, max-width 220ms ease, transform 180ms ease, visibility 0s 0s;
+  visibility: visible;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.aa-sidebar.is-collapsed .aa-sidebar__item-label,
+.aa-sidebar.is-collapsed .aa-sidebar__item-badge,
+.aa-sidebar.is-collapsed .aa-sidebar__group-label,
+.aa-sidebar.is-collapsed .aa-sidebar__brand-text {
+  opacity: 0;
+  max-width: 0;
+  transform: translateX(-8px);
+  visibility: hidden;
+  transition: opacity 160ms ease, max-width 200ms ease, transform 160ms ease, visibility 0s 200ms;
+}
+
+/* Collapsed: gap zero, justify-content center, padding compact */
+.aa-sidebar.is-collapsed .aa-sidebar__item {
+  justify-content: center;
+  padding: 9px;
+  gap: 0;
+}
+
+/* Footer slot (PlanCountdown + UserMenu) */
+.aa-sidebar__footer {
+  padding-top: 10px;
+  margin-top: 10px;
+  flex-shrink: 0;
+}
+
+/* Mobile drawer */
+.aa-sidebar__hamburger {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 100;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  box-shadow: var(--shadow-sidebar);
+  padding: 0;
+  font-family: inherit;
+}
+.aa-sidebar__backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-backdrop);
+  z-index: 90;
+}
+.aa-sidebar--drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 280px;
+  z-index: 95;
+  border-right: none;
+  height: 100dvh;
+  transform: translateX(-100%);
+  transition: transform var(--motion-normal) var(--ease-out);
+  box-shadow: none;
+}
+.aa-sidebar--drawer.is-open {
+  transform: translateX(0);
+  box-shadow: var(--shadow-drawer);
+}
+
+/* ============================================================
+   AA-USER-MENU (canonical CRM template lift Wave 6.0)
+   2-row card pattern: avatar+name+theme | settings+logout
+   ============================================================ */
+.aa-user-panel {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  margin-top: 8px;
+  border-radius: 16px;
+  background: hsl(var(--sidebar-accent));
+  border: 1px solid hsl(var(--sidebar-border));
+  color: hsl(var(--sidebar-accent-foreground));
+  min-width: 0;
+  position: relative;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.aa-user-panel.account-active::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: hsl(var(--sidebar-indicator));
+  border-radius: 0 3px 3px 0;
+}
+.aa-user-panel-row1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.aa-user-panel-row2 {
+  display: flex;
+  gap: 6px;
+}
+.aa-user-panel-clickable {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  text-align: left;
+  font-family: inherit;
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+.aa-user-panel-clickable:active { transform: scale(0.97); }
+.aa-user-panel-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: hsl(var(--accent) / 0.3);
+  color: hsl(var(--sidebar-accent-foreground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 12px;
+  border: 1px solid hsl(var(--sidebar-accent-foreground) / 0.3);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.aa-user-panel-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.aa-user-panel-name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+.aa-user-action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--sidebar-accent-foreground) / 0.7);
+  transition: background 120ms, color 120ms, transform var(--motion-fast);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.aa-user-action-btn:hover {
+  background: hsl(var(--sidebar-background) / 0.5);
+  color: hsl(var(--sidebar-accent-foreground));
+}
+.aa-user-action-btn:active { transform: scale(0.92); }
+.aa-user-action-btn-wide {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: hsl(var(--sidebar-accent-foreground) / 0.7);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 120ms, color 120ms, transform var(--motion-fast);
+  font-family: inherit;
+  white-space: nowrap;
+}
+.aa-user-action-btn-wide:hover {
+  background: hsl(var(--sidebar-background) / 0.4);
+  color: hsl(var(--sidebar-accent-foreground));
+}
+.aa-user-action-btn-wide:active { transform: scale(0.96); }
+.aa-user-action-btn-wide svg { flex-shrink: 0; opacity: 0.85; }
+
+/* Collapsed: stack vertical icon-only */
+.aa-user-panel.is-collapsed {
+  padding: 8px 6px;
+  gap: 6px;
+  border-radius: 12px;
+}
+.aa-user-panel.is-collapsed .aa-user-panel-info { display: none; }
+.aa-user-panel.is-collapsed .aa-user-panel-row1 {
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+.aa-user-panel.is-collapsed .aa-user-panel-clickable {
+  flex: 0 0 auto;
+  justify-content: center;
+  gap: 0;
+}
+.aa-user-panel.is-collapsed .aa-user-panel-row2 {
+  flex-direction: column;
+  gap: 4px;
+}
+.aa-user-panel.is-collapsed .aa-user-action-btn-wide {
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  align-self: center;
+}
+.aa-user-panel.is-collapsed .aa-user-action-btn-wide span { display: none; }
+.aa-user-panel.is-collapsed .aa-user-panel-avatar {
+  width: 30px;
+  height: 30px;
+  font-size: 10px;
+}
+
+.aa-user-panel-clickable:focus-visible,
+.aa-user-action-btn:focus-visible,
+.aa-user-action-btn-wide:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aa-sidebar,
+  .aa-sidebar__toggle,
+  .aa-sidebar__item,
+  .aa-sidebar__item-label,
+  .aa-sidebar__item-badge,
+  .aa-sidebar__group-label,
+  .aa-sidebar__brand-text,
+  .aa-sidebar--drawer { transition: none; }
+  .aa-sidebar__toggle:hover,
+  .aa-sidebar__item:active { transform: none; }
 }

@@ -306,8 +306,11 @@ Cumulativo S1: ~70%. Limite seguro pré-/clear.
 
 **Sub-waves (ordem por job frequency):**
 
+> **Pivot 2026-05-06 (#1):** Wave 6.9 (Shell global) movida pra Wave 6.0 ANTES de 6.1. Patrick: lift Sidebar canonical (UserMenu rodapé + theme toggle + collapse + brand) muda layout shell completo — sem isso 6.1+ ficam orbitando tokens em estrutura errada. Histórico §"Histórico de pivots".
+
 | # | Page(s) | Job atendido | Por que essa ordem |
 |---|---|---|---|
+| **6.0** | `AppLayout` + `Sidebar` + `UserMenu` (CRIAR) + ThemeContext (CRIAR) | global | **Shell canonical FIRST** — sidebar com UserMenu rodapé (avatar + theme toggle + config + logout), collapse toggle, brand lockup. Sem isso, lift dashboard interno fica desencaixado. |
 | 6.1 | `DashboardPage.tsx` + `dashboard/*` | J1 (~50x/dia) | Herói. Patrick olha 20-30x/dia. Maior alavancagem. |
 | 6.2 | `SessionsPage.tsx` + `sessions/*` + `SessionDetailPage.tsx` | J2 | Segunda mais frequente. |
 | 6.3 | `AnalyticsPage.tsx` + `analytics/*` | J3 + J4 | Mês + projeto. |
@@ -316,7 +319,6 @@ Cumulativo S1: ~70%. Limite seguro pré-/clear.
 | 6.6 | `SkillsPage.tsx` + `SystemPromptsPage.tsx` + detail pages | J6 | Showcase. Mostra que Artemis sabe das coisas. |
 | 6.7 | `AchievementsPage.tsx` + gamification streaks (se Wave 2 aprovou) | J8 | Motion P2 celebration. |
 | 6.8 | Demais (`ProjectsPage`, `ProjectDetailPage`, `EntriesPage`, `SessionTimePage`) | J4/J5 | Cleanup. |
-| 6.9 | `AppLayout` + `Sidebar` | global | Aplica brand Artemis no shell. |
 
 **Gate per sub-wave:** screenshot before/after + Patrick valida → próxima sub-wave
 
@@ -419,14 +421,26 @@ Plano pode mudar em qualquer ponto se:
 | 3 | ✅ done (gate skipped per autorização) | 2026-05-06 | 2026-05-06 | `audits/03-motion.md` |
 | 4 | ✅ done (1 WCAG fail trade-off documentado) | 2026-05-06 | 2026-05-06 | `audits/04-tokens.{json,css}` + `04-tokens-spec.md` + `04-wcag-report.md` + `scripts/generate-tokens.mjs` |
 | 5 | ✅ done | 2026-05-06 | 2026-05-06 | `audits/05-deltas-and-lift.md` + `05-component-architect.md` |
-| 6 | ⏸ pendente | — | — | — |
+| 6.0 | 🚧 IN PROGRESS (pivot) | 2026-05-06 | — | Shell canonical lift |
+| 6.1-6.8 | ⏸ pendente | — | — | — |
 | 7 | ⏸ pendente (condicional) | — | — | — |
 
 ---
 
 ## Histórico de pivots
 
-(vazio — atualiza quando aplicar primeiro pivot)
+### Pivot #1 — 2026-05-06 — Wave 6.9 → 6.0 (Shell first)
+
+**Motivo:** após Wave 6.1 step 1 aplicar tokens Wave 4, Patrick reportou "não pega cara da Artemis". Investigação revelou que tokens estavam corretos mas Sidebar tracker tem layout estrutural diferente do CRM canonical (sem UserMenu rodapé, sem collapse, sem theme toggle, sem brand lockup top). Sub-wave 6.9 (Shell global) tava planejada pra fim — fazia sentido fazer ANTES porque shell define o invólucro de tudo.
+
+**Mudança:**
+- Wave 6.0 NOVA — Shell canonical lift (AppLayout decompose + Sidebar canonical pattern + UserMenu CRIAR + ThemeContext CRIAR)
+- Wave 6.9 → removida (absorvida em 6.0)
+- 6.1-6.8 inalteradas
+
+**Trabalho preservado:** tokens Wave 4 + bypass auth Wave 6.1 step 2 + bug fixes (hsl wrappers, 401 no-redirect, proxy 3002) ficam. Não regride.
+
+**Risk:** ThemeContext + collapse state machine introduzem state novo em useState — testar persistência localStorage entre reloads.
 
 ---
 
