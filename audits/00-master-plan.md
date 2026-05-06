@@ -437,9 +437,9 @@ Plano pode mudar em qualquer ponto se:
 | 7.2 | ✅ done | 2026-05-06 | 2026-05-06 | Pie chart "Outro" fix + version dot + source Title Case. `displayModelName` merge números consecutivos com "." (Claude Opus 4.7), trunca date suffix. `displayLabel` kebab→Title Case genérico (source). CostByModelChart + ModelPieChart + CostBySourceChart refatorados. Top 6 + "Outros (N)" agrega resto. |
 | 7.4 | ✅ done | 2026-05-06 | 2026-05-06 | Auth bug user teste resolvido: senha de `pet19.rv@gmail.com` resetada via SQL UPDATE pra `AdminArtemis@2026` (bcrypt 12 rounds). Hash anterior não batia com senha que Patrick lembrava. Login via curl confirmou status="active" + token. Auth flow estruturalmente OK. |
 | 7.3 | ⏸ pendente | — | — | Custom pricing input (PricingDrawer F-NEW-8 schema novo) |
-| 7.5 | ⏸ pendente | — | — | LoginPage dark/light toggle |
-| 7.6 | ⏸ pendente | — | — | Analytics heatmap hover→resize |
-| 7.7 | ⏸ pendente | — | — | LoginPage input border light mode polish |
+| 7.5 | ✅ done | 2026-05-06 | 2026-05-06 | LoginPage dark/light toggle (Sun/Moon button fixed top-right + useTheme integration) |
+| 7.6 | ⚠️ partial | 2026-05-06 | 2026-05-06 | HeatmapWeekHour cor `rgba(99,102,241)` indigo legacy → `hsl(var(--chart-1))` brand. Interaction hover→resize NÃO implementado (ambíguo, Patrick precisa definir UX antes). |
+| 7.7 | ✅ done | 2026-05-06 | 2026-05-06 | --input light de `0 0% 100%` (white) → `220 13% 80%` (gray-300) — border visível em fundo branco. |
 
 ---
 

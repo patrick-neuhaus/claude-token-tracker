@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
-import { Activity } from "lucide-react";
+import { Activity, Sun, Moon } from "lucide-react";
 
 /**
  * LoginPage — split-panel canonical (Wave 6.4a lift, anti-ai-design-system
@@ -19,13 +20,23 @@ import { Activity } from "lucide-react";
  */
 export function LoginPage() {
   const { user, loading } = useAuth();
+  const { mode: themeMode, toggle: toggleTheme } = useTheme();
   const [mode, setMode] = useState<"login" | "register">("login");
 
   if (loading) return null;
   if (user) return <Navigate to="/dashboard" replace />;
 
   return (
-    <div className="flex min-h-screen flex-col lg:flex-row">
+    <div className="relative flex min-h-screen flex-col lg:flex-row">
+      {/* Wave 7.5: Theme toggle fixed top-right (above brand panel + form) */}
+      <button
+        type="button"
+        onClick={toggleTheme}
+        aria-label={themeMode === "dark" ? "Mudar para modo claro" : "Mudar para modo escuro"}
+        className="absolute top-4 right-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background/80 text-foreground backdrop-blur transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        {themeMode === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      </button>
       {/* Brand panel (left on lg+, top header on mobile) */}
       <aside
         className="flex items-center justify-center px-6 py-8 lg:flex-1 lg:px-8 lg:py-12"
