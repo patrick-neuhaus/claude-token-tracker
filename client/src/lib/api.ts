@@ -19,8 +19,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { ...options, headers });
 
   if (res.status === 401) {
+    // Wave 6.1 bypass — single-tenant: 401 limpa token mas NÃO hard-redirect,
+    // pra evitar loop com MOCK_USER (LoginPage redireciona /dashboard se user
+    // existe, e MOCK_USER sempre existe em bypass). Wave 7 cleanup formal.
     localStorage.removeItem("token");
-    window.location.href = "/login";
     throw new ApiError(401, "Unauthorized");
   }
 
