@@ -490,6 +490,33 @@ Features identificadas durante S2 mas fora de escopo das waves atuais. Documenta
 
 **Dependências:** Wave 6.7 streaks/achievements ✅, F-NEW-1 Token Editor ✅, sistema XP backend (não existe atual).
 
+### F-NEW-4: Naming overhaul (rename produto + repo)
+
+**Origem:** Patrick S2 Wave 6.0 — "Claude Token Tracker" não comporta multi-LLM (Codex, claude.ai, future LLMs). Brand Artemis vira isca, nome precisa refletir.
+
+**Descrição:**
+- Brainstorm naming options Artemis-branded multi-LLM: "Artemis Tokenizer", "Artemis Tracker", "Artemis Meter", "Artemis Vault" — escolher após dia de pesquisa naming
+- Rename repositório GitHub: `claude-token-tracker` → `<novo-nome>` via `gh repo rename` (GitHub auto-redirect 301)
+- Update `package.json` name field + workspaces refs
+- Update branding strings:
+  - Brand lockup sidebar (`Claude Token Tracker` → novo)
+  - Brand tag diagonal (`TRACKER` → outro signifier melhor)
+  - Page `<title>` em `index.html`
+  - README + docs
+  - LoginPage hero copy
+  - Webhook URLs label (cosmetic, endpoint mantém)
+- Considerar tagline: "Plausible for any LLM. By Artemis."
+- Domain considerations (se houver): `tokenizer.artemis.dev` ou similar
+
+**Por quê backlog:**
+- Naming é decisão estratégica (1 dia research) — não é spec UX
+- Patrick: "só anota ela pra depois, a gente continua no plano principal"
+- Wave 6 prioridade = visual polish core
+- Rename pode esperar pós-launch validation
+- Risk: rename antes do launch dá liberdade de mudar; rename pós-launch quebra SEO/links externos
+
+**Dependências:** F-NEW-1 Token Editor pode ganhar nome alinhado também. Wave 7 single-tenant migration boa janela pra fazer rename junto (DB schema rename safe se feito ali).
+
 ### F-NEW-3: Light mode preset adicional
 
 **Origem:** Wave 4 decisão dark-only puro (Patrick Q5).
