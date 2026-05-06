@@ -429,7 +429,10 @@ Plano pode mudar em qualquer ponto se:
 | 6.4b | ✅ done | 2026-05-06 | 2026-05-06 | OnboardingWizard CRIAR (5 steps + live detection + AppLayout trigger + confetti motion) |
 | 6.4c | ⏸ pendente | — | — | MOCK_USER bypass cleanup (preparar deploy VPS — F-NEW-5 backlog) |
 | 6.5 | ✅ done | 2026-05-06 | 2026-05-06 | FormField canonical + SettingsForm refactor (PricingDrawer pivotou pra F-NEW-8 backlog — requer schema novo) |
-| 6.6-6.8 | ⏸ pendente | — | — | — |
+| 6.6 | ⏸ pendente | — | — | Skills/SystemPrompts (pendency: modelo a/b/c não decidido) |
+| 6.7a | ✅ done | 2026-05-06 | 2026-05-06 | Achievements motion polish (ConfettiBurst shared + BadgeCard ease-spring overshoot + TierProgressBar milestones + AchievementNotifier confetti dispatch) |
+| 6.7b | ⏸ pendente | — | — | StreakCounter + StreakLostScreen CRIAR (depende backend signal streak.lost_pending) |
+| 6.8 | ⏸ pendente | — | — | Cleanup remaining pages |
 | 7 | ⏸ pendente (condicional) | — | — | — |
 
 ---

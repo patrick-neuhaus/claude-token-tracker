@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatUSD } from "@/lib/formatters";
+import { ConfettiBurst } from "@/components/shared/ConfettiBurst";
 
 const STORAGE_KEY = "onboarding_completed";
 const STEPS = ["welcome", "hook", "pricing", "budget", "done"] as const;
@@ -552,7 +553,7 @@ function BudgetStep({ onNext }: { onNext: () => void }) {
 function DoneStep({ onComplete }: { onComplete: () => void }) {
   return (
     <section className="text-center space-y-8 py-12 relative overflow-hidden">
-      {/* Confetti motion via CSS keyframes (Wave 6.7 reusable seed) */}
+      {/* Confetti motion — Wave 6.7a shared component */}
       <ConfettiBurst />
 
       <div
@@ -583,50 +584,3 @@ function DoneStep({ onComplete }: { onComplete: () => void }) {
   );
 }
 
-function ConfettiBurst() {
-  // 12 particles, random positions+colors via CSS vars. Respects reduced-motion.
-  const particles = Array.from({ length: 12 });
-  const colors = [
-    "hsl(var(--chart-1))",
-    "hsl(var(--chart-2))",
-    "hsl(var(--chart-3))",
-    "hsl(var(--chart-4))",
-    "hsl(var(--chart-5))",
-  ];
-  return (
-    <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-      {particles.map((_, i) => (
-        <span
-          key={i}
-          className="onboarding-confetti-particle"
-          style={
-            {
-              "--c": colors[i % colors.length],
-              "--x": `${(i / particles.length) * 100}%`,
-              "--delay": `${i * 50}ms`,
-            } as React.CSSProperties
-          }
-        />
-      ))}
-      <style>{`
-        @keyframes onboarding-confetti-fall {
-          0% { transform: translate(var(--x), -20px) rotate(0deg); opacity: 1; }
-          100% { transform: translate(var(--x), 320px) rotate(540deg); opacity: 0; }
-        }
-        .onboarding-confetti-particle {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 8px;
-          height: 12px;
-          border-radius: 1px;
-          background: var(--c);
-          animation: onboarding-confetti-fall 1.6s var(--delay, 0ms) ease-in forwards;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .onboarding-confetti-particle { display: none; }
-        }
-      `}</style>
-    </div>
-  );
-}
