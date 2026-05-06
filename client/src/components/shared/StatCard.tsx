@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { type LucideIcon } from "lucide-react";
+import { useCountUp } from "@/hooks/useCountUp";
 
 interface Props {
   icon: LucideIcon;
@@ -19,62 +20,6 @@ interface Props {
   iconColor?: string;
 }
 
-// Parse numeric prefix from value string (e.g. "1.247" → 1247, "183" → 183)
-function parseNumeric(v: string | number): number | null {
-  if (v == null) return null;
-  const n = parseFloat(String(v).replace(/\./g, "").replace(",", "."));
-  return isNaN(n) ? null : n;
-}
-
-function formatLike(original: string | number, current: number): string {
-  const orig = String(original);
-  const hasDotThousands = /^\d{1,3}(\.\d{3})+$/.test(orig);
-  if (hasDotThousands) {
-    return current.toLocaleString("pt-BR").replace(",", ".");
-  }
-  return String(current);
-}
-
-function useStatCountUp(
-  ref: React.RefObject<HTMLDivElement | null>,
-  targetStr: string | number,
-  duration = 800,
-): string | number {
-  const [display, setDisplay] = useState<string | number>(targetStr);
-  const hasRun = useRef(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const numeric = parseNumeric(targetStr);
-    if (numeric === null) return;
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasRun.current) {
-          hasRun.current = true;
-          const start = performance.now();
-          const tick = (now: number) => {
-            const elapsed = now - start;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            const current = Math.round(eased * numeric);
-            setDisplay(formatLike(targetStr, current));
-            if (progress < 1) requestAnimationFrame(tick);
-            else setDisplay(targetStr);
-          };
-          requestAnimationFrame(tick);
-          io.unobserve(el);
-        }
-      },
-      { threshold: 0.3 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [targetStr, duration, ref]);
-  return display;
-}
-
 /**
  * StatCard — KPI tile canonical CRM lift (Wave 6.1).
  * Anatomy: accent-tinted icon chip + 28px stat + divider + label/sublabel/trend.
@@ -91,7 +36,7 @@ export function StatCard({
   iconColor = "text-accent",
 }: Props) {
   const valueRef = useRef<HTMLDivElement | null>(null);
-  const displayValue = useStatCountUp(valueRef, value);
+  const displayValue = useCountUp(valueRef, value);
   const finalValue = animate ? displayValue : value;
   const finalSublabel = sublabel ?? hint;
 
