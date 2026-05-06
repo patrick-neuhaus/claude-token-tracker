@@ -26,7 +26,7 @@ export function CostBySourceChart({ data }: Props) {
           <PieChart>
             <Pie data={data} dataKey="cost_usd" nameKey="source" innerRadius={50} outerRadius={90} paddingAngle={2}>
               {data.map((d) => (
-                <Cell key={d.source} fill={SOURCE_COLORS[d.source] || "#6b7280"} />
+                <Cell key={d.source} fill={SOURCE_COLORS[d.source] || "hsl(var(--muted-foreground))"} />
               ))}
             </Pie>
             <Tooltip

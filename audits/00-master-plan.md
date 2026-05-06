@@ -432,7 +432,7 @@ Plano pode mudar em qualquer ponto se:
 | 6.6 | ⏸ pendente | — | — | Skills/SystemPrompts (pendency: modelo a/b/c não decidido) |
 | 6.7a | ✅ done | 2026-05-06 | 2026-05-06 | Achievements motion polish (ConfettiBurst shared + BadgeCard ease-spring overshoot + TierProgressBar milestones + AchievementNotifier confetti dispatch) |
 | 6.7b | ⏸ pendente | — | — | StreakCounter + StreakLostScreen CRIAR (depende backend signal streak.lost_pending) |
-| 6.8 | ⏸ pendente | — | — | Cleanup remaining pages |
+| 6.8 | ✅ done | 2026-05-06 | 2026-05-06 | Cleanup pages (rounded-md → rounded-xl + chart hex hardcoded → tokens em ProjectsPage/ProjectDetailPage/EntriesPage/SessionDetailPage/DailyCostChart/CostBySourceChart/SessionTimeScatterChart/DailyCostAreaChart) |
 | 7 | ⏸ pendente (condicional) | — | — | — |
 
 ---

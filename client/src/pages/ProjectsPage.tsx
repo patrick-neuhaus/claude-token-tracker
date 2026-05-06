@@ -76,7 +76,7 @@ export function ProjectsPage() {
           <Skeleton className="h-8 w-40" />
           <Skeleton className="h-9 w-32" />
         </div>
-        <div className="rounded-md border overflow-hidden">
+        <div className="rounded-xl border border-border overflow-hidden">
           <SkeletonRows count={6} className="space-y-0" />
         </div>
       </div>
@@ -136,7 +136,7 @@ export function ProjectsPage() {
               key={project.id}
               mode="link"
               to={`/projects/${project.id}`}
-              className={`${surface.section} px-5 py-4 rounded-md`}
+              className={`group ${surface.section} px-5 py-4`}
             >
               <div className="flex items-start justify-between gap-3">
                 <h3 className="text-base font-semibold tracking-tight group-hover:text-info transition-colors truncate">{project.name}</h3>
@@ -160,7 +160,7 @@ export function ProjectsPage() {
                 <div className="h-10 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={project.sparkline} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                      <Area type="monotone" dataKey="cost" stroke="hsl(var(--info))" fill="hsl(var(--info))" fillOpacity={0.15} strokeWidth={1.5} dot={false} />
+                      <Area type="monotone" dataKey="cost" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.15} strokeWidth={1.5} dot={false} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -170,10 +170,10 @@ export function ProjectsPage() {
         </div>
       ) : (
         /* List view — compacta para 30+ projetos */
-        <div className="rounded-md border overflow-hidden">
+        <div className="rounded-xl border border-border overflow-hidden bg-card">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/40">
+              <tr className="border-b border-border bg-muted/30">
                 <th className="text-left p-3 font-medium">Projeto</th>
                 <th className="text-right p-3 font-medium">Sessões</th>
                 <th className="text-right p-3 font-medium">Custo</th>
@@ -211,7 +211,7 @@ export function ProjectsPage() {
                         <div className="h-8 w-24">
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={project.sparkline} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                              <Area type="monotone" dataKey="cost" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} strokeWidth={1.5} dot={false} />
+                              <Area type="monotone" dataKey="cost" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.15} strokeWidth={1.5} dot={false} />
                             </AreaChart>
                           </ResponsiveContainer>
                         </div>

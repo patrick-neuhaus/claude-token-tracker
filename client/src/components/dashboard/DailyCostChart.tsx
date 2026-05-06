@@ -41,9 +41,9 @@ export function DailyCostChart({ data }: Props) {
       <div className={surfaceContent}>
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-            <XAxis dataKey="day" tick={{ fontSize: 12, fill: "#999" }} />
-            <YAxis tick={{ fontSize: 12, fill: "#999" }} tickFormatter={(v) => `$${v}`} />
+            <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+            <XAxis dataKey="day" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
+            <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `$${v}`} />
             <Tooltip
               formatter={(value, name) => [formatUSD(Number(value)), String(name)]}
               {...TOOLTIP_PROPS}
