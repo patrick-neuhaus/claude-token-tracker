@@ -1,10 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 import { SessionNameEditor } from "./SessionNameEditor";
 import { formatDate, formatUSD } from "@/lib/formatters";
-import { SortableTableHeader } from "@/components/shared/SortableTableHeader";
-import { ClickableRow } from "@/components/shared/ClickableRow";
+import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
 
 interface Session {
   id: string;
@@ -26,78 +25,127 @@ interface Props {
   sortBy?: string;
   sortDir?: "asc" | "desc";
   onSort?: (col: string) => void;
-  /** Called when user renames a session inline (id + new name). */
+  /** Inline rename (id + new name). */
   onRename: (id: string, name: string) => void;
 }
 
-// Grid columns: name | source | project | first | last | entries | cost | arrow
-const COLS = "minmax(220px,2fr) 100px minmax(140px,1.5fr) 150px 150px 90px 110px 32px";
-
 /**
- * SessionsTable — pure presentational sessions list.
+ * SessionsTable — sessions list lifted to AppTable canonical (Wave 6.2).
  *
- * Boundary fix (B3.5): no longer owns useNavigate or useRenameSession.
- * Receives onRename callback from parent. Navigation now happens via
- * ClickableRow's <Link to>, which is keyboard-accessible natively.
+ * Boundary: pure presentational. Sort is server-controlled (parent owns
+ * sortBy/sortDir state and server query). Click navigates via onRowClick.
+ * SessionNameEditor and project Badge stop propagation locally to preserve
+ * inline interactions.
  */
 export function SessionsTable({ sessions, sortBy, sortDir, onSort, onRename }: Props) {
-  return (
-    <div className="bg-card border border-border rounded-md overflow-hidden">
-      {/* Header */}
-      <div
-        className="grid gap-3 px-5 py-3 border-b border-border bg-muted/30"
-        style={{ gridTemplateColumns: COLS }}
-      >
-        <span className="text-xs font-medium text-muted-foreground">Nome</span>
-        <span className="text-xs font-medium text-muted-foreground">Fonte</span>
-        <span className="text-xs font-medium text-muted-foreground">Projeto</span>
-        <SortableTableHeader col="first_seen" label="Primeira entrada" sortBy={sortBy} sortDir={sortDir} onSort={(c) => onSort?.(c)} />
-        <SortableTableHeader col="last_seen" label="Última atividade" sortBy={sortBy} sortDir={sortDir} onSort={(c) => onSort?.(c)} />
-        <SortableTableHeader col="entry_count" label="Entradas" sortBy={sortBy} sortDir={sortDir} onSort={(c) => onSort?.(c)} align="right" />
-        <SortableTableHeader col="total_cost_usd" label="Custo" sortBy={sortBy} sortDir={sortDir} onSort={(c) => onSort?.(c)} align="right" />
-        <span></span>
-      </div>
+  const navigate = useNavigate();
 
-      {/* Rows */}
-      <div className="divide-y divide-border">
-        {sessions.map((s) => (
-          <ClickableRow
-            key={s.id}
-            mode="link"
-            to={`/sessions/${s.id}`}
-            className="grid gap-3 px-5 py-3 items-center"
-            style={{ gridTemplateColumns: COLS }}
-          >
-            <div onClick={(e) => e.stopPropagation()} className="min-w-0">
-              <SessionNameEditor
-                currentName={s.custom_name}
-                sessionId={s.session_id}
-                onSave={(name) => onRename(s.id, name)}
-                source={s.source}
-                firstSeen={s.first_seen}
-                entryCount={s.entry_count}
-              />
-            </div>
-            <Badge variant="outline" className="text-xs w-fit">{s.source}</Badge>
-            <div onClick={(e) => e.stopPropagation()} className="min-w-0">
-              {s.project_name && s.project_id ? (
-                <Link to={`/projects/${s.project_id}`}>
-                  <Badge variant="secondary" className="text-xs hover:bg-secondary/80 transition-colors w-fit">{s.project_name}</Badge>
-                </Link>
-              ) : s.project_name ? (
-                <Badge variant="secondary" className="text-xs w-fit">{s.project_name}</Badge>
-              ) : (
-                <span className="text-xs text-muted-foreground">—</span>
-              )}
-            </div>
-            <span className="text-sm text-muted-foreground tabular-nums">{formatDate(s.first_seen)}</span>
-            <span className="text-sm text-muted-foreground tabular-nums">{formatDate(s.last_seen)}</span>
-            <span className="text-sm text-right tabular-nums">{s.entry_count}</span>
-            <span className="text-sm text-right tabular-nums font-medium">{formatUSD(s.total_cost_usd)}</span>
-            <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity justify-self-end" />
-          </ClickableRow>
-        ))}
-      </div>
-    </div>
+  const columns: AppTableColumn<Session>[] = [
+    {
+      key: "custom_name",
+      header: "Nome",
+      width: "minmax(220px,2fr)",
+      render: (_v, s) => (
+        <div onClick={(e) => e.stopPropagation()} className="min-w-0">
+          <SessionNameEditor
+            currentName={s.custom_name}
+            sessionId={s.session_id}
+            onSave={(name) => onRename(s.id, name)}
+            source={s.source}
+            firstSeen={s.first_seen}
+            entryCount={s.entry_count}
+          />
+        </div>
+      ),
+    },
+    {
+      key: "source",
+      header: "Fonte",
+      width: "100px",
+      render: (_v, s) => (
+        <Badge variant="outline" className="text-xs w-fit">
+          {s.source}
+        </Badge>
+      ),
+    },
+    {
+      key: "project_name",
+      header: "Projeto",
+      width: "minmax(140px,1.5fr)",
+      render: (_v, s) => (
+        <div onClick={(e) => e.stopPropagation()} className="min-w-0">
+          {s.project_name && s.project_id ? (
+            <Link to={`/projects/${s.project_id}`}>
+              <Badge
+                variant="secondary"
+                className="text-xs hover:bg-secondary/80 transition-colors w-fit"
+              >
+                {s.project_name}
+              </Badge>
+            </Link>
+          ) : s.project_name ? (
+            <Badge variant="secondary" className="text-xs w-fit">
+              {s.project_name}
+            </Badge>
+          ) : (
+            <span className="text-xs text-muted-foreground">—</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "first_seen",
+      header: "Primeira entrada",
+      width: "150px",
+      sortable: true,
+      render: (v) => (
+        <span className="text-sm text-muted-foreground tabular-nums">{formatDate(v)}</span>
+      ),
+    },
+    {
+      key: "last_seen",
+      header: "Última atividade",
+      width: "150px",
+      sortable: true,
+      render: (v) => (
+        <span className="text-sm text-muted-foreground tabular-nums">{formatDate(v)}</span>
+      ),
+    },
+    {
+      key: "entry_count",
+      header: "Entradas",
+      width: "90px",
+      align: "right",
+      sortable: true,
+      mono: true,
+    },
+    {
+      key: "total_cost_usd",
+      header: "Custo",
+      width: "110px",
+      align: "right",
+      sortable: true,
+      render: (v) => <span className="font-medium tabular-nums">{formatUSD(v)}</span>,
+    },
+    {
+      key: "_arrow",
+      header: "",
+      width: "32px",
+      render: () => (
+        <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity justify-self-end" />
+      ),
+    },
+  ];
+
+  return (
+    <AppTable<Session>
+      columns={columns}
+      data={sessions}
+      rowKey="id"
+      sortKey={sortBy}
+      sortDir={sortDir ?? null}
+      onSort={onSort}
+      onRowClick={(row) => navigate(`/sessions/${row.id}`)}
+    />
   );
 }
