@@ -621,6 +621,34 @@ Features identificadas durante S2 mas fora de escopo das waves atuais. Documenta
 
 **Dependências:** F-NEW-5 deploy VPS ✅, F-NEW-6 multi-tenant SaaS (LGPD parte) ✅.
 
+### F-NEW-9: Auto-sync pricing via LiteLLM (substitui hardcoded config)
+
+**Origem:** Patrick 2026-05-06 — "input não, API que consome o preço e ja salva. Tabela pricing, modelo novo busca/cria linha."
+
+**Descrição:**
+- Cron diário 3am BR fetch `https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json`
+- Parse + insert/update tabela `model_pricing_cache` (model_key, input_rate, output_rate, cache_read, cache_write, source="litellm", synced_at)
+- Refactor `getEffectivePricing` cascata:
+  1. user_pricing_overrides (Wave 7.3 override pessoal) → ganha
+  2. model_pricing_cache (LiteLLM auto-sync) → fallback
+  3. config/pricing.ts hardcoded → fallback final
+- Settings toggle "Sync rates LiteLLM" on/off (boolean em user_settings)
+- Models novos detected pelo webhook auto-criam linha cache via lookup-or-fetch
+- PricingDrawer mostra rates "default" do cache em placeholder + permite override
+
+**Por quê backlog (não Wave 7.3):**
+- Wave 7.3 entregou drawer + override manual sem dependency externa
+- LiteLLM sync requer cron job + DB schema novo + error handling rede
+- Validar primeiro se override manual atende uso real antes de auto-sync
+
+**Considerações:**
+- LiteLLM tem ~500 models, atualiza community. URL alternativa fallback.
+- OpenCode AI `/zen/v1/models` só retorna IDs — não serve pricing
+- OpenRouter `/api/v1/models` alternativa secundária
+- Risk: drift entre LiteLLM e Anthropic/OpenAI oficial (community-maintained)
+
+**Dependências:** Wave 7.3 ✅, schema migration `011_create_model_pricing_cache.sql`, cron infra (node-cron OR external scheduler).
+
 ### F-NEW-8: PricingDrawer (custom rates per-model UI)
 
 **Origem:** Wave 6.5 — pivotou pra backlog porque backend não suporta custom pricing.
