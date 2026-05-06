@@ -1,6 +1,6 @@
 # WCAG Validation Report — Wave 4
 
-**Generated:** 2026-05-06T16:34:42.944Z
+**Generated:** 2026-05-06T17:00:41.790Z
 **Total pairs:** 19 | **Passing:** 18 | **Failing:** 1
 
 ## Pairs

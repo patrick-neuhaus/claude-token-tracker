@@ -131,6 +131,83 @@ const ARTEMIS_PALETTE = {
   gray900: '#0C111D',         // gray-900 (deepest)
 };
 
+// ── Light theme (Patrick decisão revista: light + dark mantidos, não dark-only) ──
+//
+// Light mode usa Untitled hue 218° (Artemis-fitted) + navy #003899 como primary
+// efetivo (passa AAA contra light bg gray050). Sidebar drama via primary fill
+// (igual CRM canonical template). Foreground SEMPRE hue-tinted Untitled.
+
+const LIGHT_THEME = {
+  // Surface tier (light mode: card lift via white, bg = light gray)
+  '--background':           ARTEMIS_PALETTE.gray050,   // #F2F4F7 — light cool gray Untitled
+  '--foreground':           ARTEMIS_PALETTE.gray900,   // #0C111D — dark cocoa hue Untitled
+  '--card':                 ARTEMIS_PALETTE.gray025,   // #FFFFFF — white card lift
+  '--card-foreground':      null,                       // ← pickFg dinâmico
+  '--popover':              ARTEMIS_PALETTE.gray025,
+  '--popover-foreground':   null,                       // ← pickFg dinâmico
+
+  '--muted':                ARTEMIS_PALETTE.gray100,   // #EAECF0 — light muted
+  '--muted-foreground':     ARTEMIS_PALETTE.gray500,   // #475467 — secondary text dark hue
+
+  '--border':               ARTEMIS_PALETTE.gray400,   // #667085 — bumped p/ passar 3:1 vs white card (gray300 falhou 2.58:1)
+  '--input':                ARTEMIS_PALETTE.gray050,
+  '--ring':                 ARTEMIS_PALETTE.accent,    // #005EFF — focus accent (cross-mode)
+
+  // Brand — light mode: navy #003899 funciona AAA em light bg (alta contraste)
+  '--primary':              ARTEMIS_PALETTE.primary,   // #003899 navy — primary efetivo light mode
+  '--primary-foreground':   null,                       // ← pickFg dinâmico (= white em primary navy)
+  '--accent':               ARTEMIS_PALETTE.accent,    // #005EFF vibrant
+  '--accent-foreground':    null,                       // ← pickFg dinâmico
+
+  '--secondary':            ARTEMIS_PALETTE.gray100,
+  '--secondary-foreground': null,                       // ← pickFg dinâmico
+
+  // Brand extras
+  '--brand-navy':           ARTEMIS_PALETTE.primary,
+  '--brand-blue-vivid':     ARTEMIS_PALETTE.accent,
+  '--brand-blue-deep':      ARTEMIS_PALETTE.blueDeep,
+  '--brand-blue-dark':      ARTEMIS_PALETTE.blueDark,
+  '--brand-blue-mid':       ARTEMIS_PALETTE.blueMid,
+  '--brand-blue-light':     ARTEMIS_PALETTE.blueLight,
+
+  // Status — Untitled 600-tier (mid contrast pra light bg)
+  '--destructive':          '#D92D20',
+  '--destructive-foreground': ARTEMIS_PALETTE.gray050,
+  '--success':              '#039855',
+  '--success-foreground':   ARTEMIS_PALETTE.gray050,
+  '--warning':              '#DC6803',
+  '--warning-foreground':   ARTEMIS_PALETTE.gray050,
+  '--info':                 ARTEMIS_PALETTE.accent,
+  '--info-foreground':      ARTEMIS_PALETTE.gray050,
+
+  // Sidebar — light mode CRM canonical: drama via primary fill (navy bg + white fg)
+  '--sidebar-background':   ARTEMIS_PALETTE.primary,    // navy #003899 — drama via brand
+  '--sidebar-foreground':   null,                        // ← pickFg dinâmico (= white)
+  '--sidebar-primary':      ARTEMIS_PALETTE.blueDeep,   // hover state lift
+  '--sidebar-primary-foreground': null,
+  '--sidebar-accent':       ARTEMIS_PALETTE.blueDeep,   // hover state
+  '--sidebar-accent-foreground': null,
+  '--sidebar-border':       ARTEMIS_PALETTE.blueDark,
+  '--sidebar-ring':         ARTEMIS_PALETTE.accent,
+  '--sidebar-indicator':    ARTEMIS_PALETTE.accent,     // active item indicator vibrant
+
+  // Status pill foregrounds
+  '--status-pending-bg':    ARTEMIS_PALETTE.gray100,
+  '--status-pending-fg':    ARTEMIS_PALETTE.gray700,
+  '--status-success-fg':    '#027A48',                   // 700-tier (escuro pra AA vs white card — 600 falhou 3.73:1)
+  '--status-warning-fg':    '#B54708',                   // 700-tier
+  '--status-error-fg':      '#B42318',                   // 700-tier
+  '--status-info-fg':       ARTEMIS_PALETTE.primary,     // navy
+
+  // Sidebar indicator: branco contraste alto vs sidebar-bg navy (accent vibrant
+  // blue tem similaridade visual com navy = falha 3:1). White indicator em
+  // sidebar dark fill = drama efetivo + a11y compliance.
+  // Override do default LIGHT_THEME indicator definido acima
+};
+
+// Light sidebar indicator override (white pra contraste vs navy fill)
+LIGHT_THEME['--sidebar-indicator'] = ARTEMIS_PALETTE.gray025;
+
 // ── Mapeamento semantic-role pra DARK MODE ────────────────────────────
 //
 // REFINEMENT (Wave 4 round 2): pickFg dinâmico em todos foregrounds (igual
@@ -601,37 +678,216 @@ function generateWcagReport(wcagResults) {
   return lines.join('\n');
 }
 
+// ── Dual-theme CSS generator (light :root + dark .dark) ──────────────
+
+function generateCssDual({ light, dark, motion, typography, spacing, radius, shadows }) {
+  const buildSection = (theme) => Object.entries(theme)
+    .map(([k, v]) => {
+      const triplet = v && v.startsWith('#') ? hexToCssTriplet(v) : v;
+      return `  ${k}: ${triplet};`;
+    })
+    .join('\n');
+
+  const lightSection = buildSection(light);
+  const darkSection = buildSection(dark);
+
+  const sectionMotion = Object.entries(motion)
+    .map(([k, v]) => `  ${k}: ${v};`)
+    .join('\n');
+  const sectionTypography = Object.entries(typography)
+    .map(([k, v]) => `  ${k}: ${v};`)
+    .join('\n');
+  const sectionSpacing = Object.entries(spacing)
+    .map(([k, v]) => `  ${k}: ${v};`)
+    .join('\n');
+  const sectionRadius = Object.entries(radius)
+    .map(([k, v]) => `  ${k}: ${v};`)
+    .join('\n');
+  const sectionShadows = Object.entries(shadows)
+    .map(([k, v]) => `  ${k}: ${v};`)
+    .join('\n');
+
+  return `/* ============================================================
+   audits/04-tokens.css — Wave 4 (Sessão 2, dual-theme)
+   Generated by audits/scripts/generate-tokens.mjs
+   Brand: Studio Artemis (navy #003899 + vibrant blue #005EFF + Untitled UI gray)
+   Modes: light + dark (Patrick decisão revista — light mode mantido)
+   ============================================================ */
+
+/* ── LIGHT MODE (default :root) ─────────────────────────────── */
+:root {
+${lightSection}
+
+  /* ── Motion tokens (cross-mode) ── */
+${sectionMotion}
+
+  /* ── Typography (cross-mode) ── */
+${sectionTypography}
+
+  /* ── Spacing (cross-mode) ── */
+${sectionSpacing}
+
+  /* ── Radius (cross-mode) ── */
+${sectionRadius}
+}
+
+/* ── Light shadows (tinted by dark foreground) ── */
+:root {
+${sectionShadows.replace(/rgb\(0 0 0 \/ \.\d+\)/g, m => m.replace(/\.(\d+)/, (_, n) => '.' + Math.max(0, parseInt(n) - 20).toString().padStart(2, '0')))}
+}
+
+/* ── DARK MODE (.dark class) ─────────────────────────────────── */
+.dark {
+${darkSection}
+}
+
+/* ============================================================
+   REDUCED MOTION — global a11y (WCAG 2.2.2 + 2.3.3)
+   Patrick decisão: middle ground calibrado.
+   Gate global mantido pra compliance + cada componente Wave 6
+   implementa fallback chamativo individual (cor/saturação/static).
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   FOCUS RING — cross-cutting a11y (WCAG 2.4.7)
+   Two-layer ring: 2px offset + 3px primary halo via accent
+   ============================================================ */
+:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px hsl(var(--background)),
+    0 0 0 5px hsl(var(--ring) / .55);
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: hsl(var(--ring));
+  box-shadow:
+    0 0 0 2px hsl(var(--background)),
+    0 0 0 5px hsl(var(--ring) / .25);
+}
+`;
+}
+
+function generateDesignJsonDual({ light, dark, motion, typography, spacing, radius, shadows, wcagResultsLight, wcagResultsDark, deriveLogLight, deriveLogDark }) {
+  const summarize = (results) => ({
+    total: results.length,
+    passing: results.filter(r => r.badge.pass).length,
+    failing: results.filter(r => !r.badge.pass).length,
+  });
+  const mapResults = (results) => results.map(r => ({
+    label: r.label, fg: r.fg, bg: r.bg,
+    fgHex: r.fgHex, bgHex: r.bgHex,
+    type: r.type, ratio: r.ratio,
+    level: r.badge.level, pass: r.badge.pass,
+  }));
+
+  return {
+    name: 'claude-token-tracker / Studio Artemis',
+    version: '2.0.0',
+    generated: new Date().toISOString(),
+    brand: {
+      primary: ARTEMIS_PALETTE.primary,
+      accent: ARTEMIS_PALETTE.accent,
+      family: 'Studio Artemis',
+      tagline: 'Plausible pra Claude',
+    },
+    modes: ['light', 'dark'],
+    typography: {
+      display: 'IBM Plex Sans',
+      body: 'Inter',
+      mono: 'Geist Mono',
+    },
+    palette: ARTEMIS_PALETTE,
+    semantic: {
+      light,
+      dark,
+    },
+    motion,
+    spacing,
+    radius,
+    shadows,
+    pickFgDerivations: {
+      light: deriveLogLight,
+      dark: deriveLogDark,
+    },
+    wcag: {
+      validatedAt: new Date().toISOString(),
+      light: { pairs: mapResults(wcagResultsLight), summary: summarize(wcagResultsLight) },
+      dark:  { pairs: mapResults(wcagResultsDark),  summary: summarize(wcagResultsDark) },
+    },
+    extensions: {
+      artemis: {
+        '--motion-celebration': MOTION_TOKENS['--motion-celebration'],
+        '--motion-pulse-loop': MOTION_TOKENS['--motion-pulse-loop'],
+        '--brand-navy': ARTEMIS_PALETTE.primary,
+        '--brand-blue-vivid': ARTEMIS_PALETTE.accent,
+      },
+    },
+    reducedMotionStrategy: 'middle-ground-calibrated', // Patrick Wave 6.1 decisão
+  };
+}
+
 // ── Main ──────────────────────────────────────────────────────────────
 
 function main() {
-  console.log('🎨 Generating Artemis tokens for tracker dark mode...\n');
+  console.log('🎨 Generating Artemis tokens (light + dark) for tracker...\n');
 
-  // Resolve foregrounds via pickFg dinâmico (mesma lógica TokenEditorPreview)
-  const { resolved: resolvedTheme, deriveLog } = resolveForegrounds(DARK_THEME);
+  // Resolve foregrounds via pickFg dinâmico em AMBOS themes
+  const { resolved: resolvedLight, deriveLog: deriveLogLight } = resolveForegrounds(LIGHT_THEME);
+  const { resolved: resolvedDark, deriveLog: deriveLogDark } = resolveForegrounds(DARK_THEME);
 
-  console.log('PickFg derivations:');
-  deriveLog.forEach(d => {
+  console.log('LIGHT PickFg derivations:');
+  deriveLogLight.forEach(d => {
+    console.log(`  ${d.fgKey.padEnd(35)} ← pickFg(${d.bgHex}) = ${d.picked} @ ${d.ratio}:1`);
+  });
+  console.log('\nDARK PickFg derivations:');
+  deriveLogDark.forEach(d => {
     console.log(`  ${d.fgKey.padEnd(35)} ← pickFg(${d.bgHex}) = ${d.picked} @ ${d.ratio}:1`);
   });
   console.log('');
 
-  // Run WCAG validation
-  const wcagResults = runWcagValidation(resolvedTheme, WCAG_PAIRS);
+  // Mantém backward compat: resolvedTheme + deriveLog refer DARK (uso primário tracker)
+  const resolvedTheme = resolvedDark;
+  const deriveLog = deriveLogDark;
 
-  // Print summary to console
-  console.log('WCAG Pairs:');
-  wcagResults.forEach(r => {
+  // Run WCAG validation em ambos
+  const wcagResultsLight = runWcagValidation(resolvedLight, WCAG_PAIRS);
+  const wcagResultsDark = runWcagValidation(resolvedDark, WCAG_PAIRS);
+  const wcagResults = wcagResultsDark; // backward compat (primário)
+
+  // Print summary console — ambos themes
+  console.log('WCAG Pairs LIGHT:');
+  wcagResultsLight.forEach(r => {
     const sym = r.badge.pass ? '✅' : '❌';
     console.log(`  ${sym} ${r.label.padEnd(40)} ${r.ratio.toString().padStart(5)}:1  ${r.badge.level}`);
   });
+  const passingLight = wcagResultsLight.filter(r => r.badge.pass).length;
+  const failingLight = wcagResultsLight.length - passingLight;
+  console.log(`\nLIGHT total: ${wcagResultsLight.length} | Passing: ${passingLight} | Failing: ${failingLight}\n`);
 
-  const passing = wcagResults.filter(r => r.badge.pass).length;
-  const failing = wcagResults.length - passing;
-  console.log(`\nTotal: ${wcagResults.length} | Passing: ${passing} | Failing: ${failing}`);
+  console.log('WCAG Pairs DARK:');
+  wcagResultsDark.forEach(r => {
+    const sym = r.badge.pass ? '✅' : '❌';
+    console.log(`  ${sym} ${r.label.padEnd(40)} ${r.ratio.toString().padStart(5)}:1  ${r.badge.level}`);
+  });
+  const passingDark = wcagResultsDark.filter(r => r.badge.pass).length;
+  const failingDark = wcagResultsDark.length - passingDark;
+  console.log(`\nDARK total: ${wcagResultsDark.length} | Passing: ${passingDark} | Failing: ${failingDark}\n`);
 
-  // Generate outputs
-  const css = generateCss({
-    theme: resolvedTheme,
+  // Generate outputs (dual-theme)
+  const css = generateCssDual({
+    light: resolvedLight,
+    dark: resolvedDark,
     motion: MOTION_TOKENS,
     typography: TYPOGRAPHY,
     spacing: SPACING,
@@ -639,16 +895,23 @@ function main() {
     shadows: SHADOWS,
   });
 
-  const designJson = generateDesignJson({
-    theme: resolvedTheme,
+  const designJson = generateDesignJsonDual({
+    light: resolvedLight,
+    dark: resolvedDark,
     motion: MOTION_TOKENS,
     typography: TYPOGRAPHY,
     spacing: SPACING,
     radius: RADIUS,
     shadows: SHADOWS,
-    wcagResults,
-    deriveLog,
+    wcagResultsLight,
+    wcagResultsDark,
+    deriveLogLight,
+    deriveLogDark,
   });
+
+  // Backward compat aliases pra restante do código
+  const passing = passingDark;
+  const failing = failingDark;
 
   const wcagReport = generateWcagReport(wcagResults);
 

@@ -8,6 +8,14 @@
       "port": 3001,
       "autoPort": false,
       "cwd": "claude-token-tracker/server"
+    },
+    {
+      "name": "token-tracker-anti-ai-ds",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--port", "3333", "--host"],
+      "port": 3333,
+      "autoPort": false,
+      "cwd": "claude-token-tracker/client"
     }
   ]
 }
