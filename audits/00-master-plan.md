@@ -425,7 +425,9 @@ Plano pode mudar em qualquer ponto se:
 | 6.1 | ✅ done | 2026-05-06 | 2026-05-06 | Dashboard internals (StatCard canonical + WebhookPing + chart tokens + surface rounded-xl) |
 | 6.2 | ✅ done | 2026-05-06 | 2026-05-06 | Sessions lift (AppTable canonical port + SessionsTable refactor + drop ClickableRow/SortableTableHeader) |
 | 6.3 | ✅ done | 2026-05-06 | 2026-05-06 | Analytics lift (KpiBox MetricCard anatomy + useCountUp shared + DeltaBadge tokens fix + TOOLTIP_PROPS tokens + textH2 canonical) |
-| 6.4 | ⏸ pendente | — | — | Login + Onboarding wizard |
+| 6.4a | ✅ done | 2026-05-06 | 2026-05-06 | LoginPage 50/50 split canonical (brand panel + form panel + Artemis tagline) |
+| 6.4b | ✅ done | 2026-05-06 | 2026-05-06 | OnboardingWizard CRIAR (5 steps + live detection + AppLayout trigger + confetti motion) |
+| 6.4c | ⏸ pendente | — | — | MOCK_USER bypass cleanup (preparar deploy VPS — F-NEW-5 backlog) |
 | 6.5-6.8 | ⏸ pendente | — | — | — |
 | 7 | ⏸ pendente (condicional) | — | — | — |
 
@@ -535,6 +537,79 @@ Features identificadas durante S2 mas fora de escopo das waves atuais. Documenta
 - Light mode = expansão pós-launch validação demanda
 
 **Dependências:** F-NEW-1 Token Editor (que tem light mode toggle nativo) OU implementação separada.
+
+### F-NEW-5: Deploy VPS hosted (Patrick instance oficial)
+
+**Origem:** Patrick 2026-05-06 — "passa do local pra VPS, Docker com Postgres apontado pra esse servidor".
+
+**Descrição:**
+- Provisiona VPS Hostinger 72.60.152.11 (já existente) com Docker Compose tracker:
+  - Service `db` Postgres já rodando local — port mapeada do servidor
+  - Service `server` Express tsx — port 3002
+  - Service `client` Vite build static → nginx OR servir via Express
+- Migration data existente Patrick (~256 sessions, $15k cost) do Docker local pra VPS:
+  - `pg_dump` local + `psql` restore VPS
+  - OR mantém local + sync periodic (mais complexo)
+- Domain: `tokenizer.artemis.dev` ou subdomain TBD (depende F-NEW-4 naming)
+- HTTPS via Let's Encrypt (certbot ou Caddy)
+- Hooks Patrick locais (Claude Code) ajustam webhook URL pro novo domain
+- CI/CD: GitHub Action push → SSH deploy script
+
+**Por quê backlog:**
+- Wave 6.x foco visual polish — deploy é infra, fora de UX scope
+- Wave 6.4c (intermediária) prepara remove MOCK_USER bypass + valida login real ANTES de deploy
+- Deploy em VPS com data real = teste de fogo — quer estar visualmente pronto antes
+
+**Dependências:** Wave 6.x ✅ (visual completo), Wave 6.4c MOCK_USER cleanup ✅, eventualmente F-NEW-4 naming (pra escolher domain final).
+
+### F-NEW-6: Multi-tenant SaaS (terceiros usam tracker hosted Patrick)
+
+**Origem:** Patrick 2026-05-06 — "usuário poderia ter o meu banco rodando e só manda pra lá sempre".
+
+**Descrição:**
+- Schema multi-tenant: cada user tem `tenant_id` em todas as tabelas (sessions, entries, hooks)
+- RLS Postgres OU filtragem app-layer em todas queries (Drizzle middleware)
+- User isolation: webhooks autenticados via JWT user-scoped (não trocar global secret)
+- Free tier limits: max sessions/mês, max retention 30/60/90 dias
+- Paid tier: unlimited + custom alerts (futuro monetização)
+- Encryption design opcional:
+  - **Server-side AES-256:** Patrick custódio (mais simples, responsabilidade legal)
+  - **Client-side zero-knowledge:** user perde senha = perde dados (Bitwarden-style, mais complexo)
+  - Recomendação: server-side com encrypted-at-rest Postgres + TLS in-transit + opt-in zero-knowledge premium
+- Backup strategy: daily snapshots S3 + retention 30d
+- Monitoring: Grafana dashboards + alerting (Patrick oncall)
+
+**Por quê backlog:**
+- Decisão estratégica (alinha Willy ANTES de iniciar — custo $$/mês infra + tempo Patrick + responsabilidade legal LGPD)
+- Wave 6.x visual polish + Wave 7 single-tenant migration são pré-requisito (cleanup admin/multi-user code first)
+- Validação demanda: SE 100+ self-hosters em 3 meses pós-launch, multi-tenant justifica. SE <20, mantém self-host puro.
+
+**Dependências:** F-NEW-5 deploy VPS ✅, Wave 7 single-tenant cleanup ✅, decisão estratégica Willy ✅.
+
+### F-NEW-7: Google OAuth + LGPD compliance
+
+**Origem:** Patrick 2026-05-06 — "login com Google é interessante ter".
+
+**Descrição:**
+- Google OAuth via passport-google-oauth20 (Express) OR @react-oauth/google (client-side flow):
+  - Recomendação: passport server-side (mais seguro, refresh tokens)
+  - Setup: Google Cloud Console → OAuth Consent Screen + Authorized Redirect URI
+  - Patrick instructions: criar projeto Cloud Console, OAuth client ID, copiar client_id+secret pra `.env` server
+- Backend endpoint `/auth/google/callback` cria user OR link to existing email
+- Schema: column `users.google_id` UNIQUE NULLABLE (link multiple identity providers)
+- LGPD compliance docs (se hosted multi-tenant F-NEW-6):
+  - Termos de uso + política de privacidade (template adapted)
+  - Consentimento explícito antes de coletar token logs
+  - Direito de exclusão: user requests "delete account" → cascade delete all data
+  - Data export: GDPR/LGPD portability (JSON dump on request)
+  - Encarregado de Dados (DPO) email se >250 users (lei brasileira)
+
+**Por quê backlog:**
+- Email/password auth atual ja funciona — Google OAuth é convenience
+- LGPD só ativa se hosted multi-tenant (F-NEW-6 dependência)
+- Wave 6.x foco visual — auth providers fora de scope
+
+**Dependências:** F-NEW-5 deploy VPS ✅, F-NEW-6 multi-tenant SaaS (LGPD parte) ✅.
 
 ---
 
