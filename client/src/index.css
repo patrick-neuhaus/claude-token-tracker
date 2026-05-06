@@ -146,7 +146,7 @@ body {
   --info-display: 218 100% 30%;
 
   --border: 221 13% 46%;              /* gray-400 #667085 — 3:1 */
-  --input: 0 0% 100%;
+  --input: 220 13% 80%;               /* Wave 7.7: gray-300 visible em light bg branco (era white = invisível) */
   --ring: 218 100% 50%;
   --ring-offset: 0 0% 100%;
 
