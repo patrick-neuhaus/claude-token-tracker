@@ -13,6 +13,8 @@
    Typography: IBM Plex Sans (display) + Inter (body) + Geist Mono
    WCAG: light 19/19 pass, dark 18/19 pass (1 trade-off físico documentado)
    Reduced motion: middle ground calibrado (Patrick decisão Wave 6.1)
+   Note: vars usam hsl() wrapper (Tailwind v4 + @theme inline mapping
+   resolve invalid color sem wrapper — bug Wave 6.1 step 1 corrigido).
    ============================================================ */
 
 body {
@@ -96,127 +98,122 @@ body {
    LIGHT MODE (:root default) — Studio Artemis paleta literal
    ============================================================ */
 :root {
-  --background: 216 24% 96%;          /* Untitled gray-050 #F2F4F7 — light cool gray */
-  --foreground: 222 41% 8%;           /* Untitled gray-900 #0C111D — dark cocoa hue */
-  --card: 0 0% 100%;                  /* white card lift */
-  --card-foreground: 222 41% 8%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222 41% 8%;
-  --primary: 218 100% 30%;            /* navy #003899 — primary efetivo light mode */
-  --primary-foreground: 216 24% 96%;
-  --secondary: 220 17% 93%;
-  --secondary-foreground: 222 41% 8%;
-  --muted: 220 17% 93%;               /* Untitled gray-100 */
-  --muted-foreground: 216 18% 34%;    /* Untitled gray-500 */
-  --accent: 218 100% 50%;             /* vibrant blue #005EFF */
-  --accent-foreground: 216 24% 96%;
-  --destructive: 4 74% 49%;           /* Untitled red-600 */
-  --destructive-foreground: 216 24% 96%;
-  --destructive-display: 4 74% 49%;
-  --success: 153 96% 30%;             /* Untitled green-600 */
-  --success-foreground: 216 24% 96%;
-  --success-display: 155 97% 24%;     /* green-700 (escuro pra AA vs white card) */
-  --warning: 28 97% 44%;              /* Untitled amber-600 */
-  --warning-foreground: 216 24% 96%;
-  --info: 218 100% 50%;               /* = accent */
-  --info-foreground: 216 24% 96%;
-  --info-display: 218 100% 30%;       /* navy primary */
-  --border: 221 13% 46%;              /* Untitled gray-400 #667085 — bumped p/ 3:1 */
-  --input: 216 24% 96%;
-  --ring: 218 100% 50%;               /* accent vibrant — focus */
+  --background: hsl(216 24% 96%);          /* Untitled gray-050 #F2F4F7 */
+  --foreground: hsl(222 41% 8%);           /* Untitled gray-900 #0C111D */
+  --card: hsl(0 0% 100%);                  /* white card lift */
+  --card-foreground: hsl(222 41% 8%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(222 41% 8%);
+  --primary: hsl(218 100% 30%);            /* navy #003899 */
+  --primary-foreground: hsl(216 24% 96%);
+  --secondary: hsl(220 17% 93%);
+  --secondary-foreground: hsl(222 41% 8%);
+  --muted: hsl(220 17% 93%);               /* Untitled gray-100 */
+  --muted-foreground: hsl(216 18% 34%);    /* Untitled gray-500 */
+  --accent: hsl(218 100% 50%);             /* vibrant blue #005EFF */
+  --accent-foreground: hsl(216 24% 96%);
+  --destructive: hsl(4 74% 49%);
+  --destructive-foreground: hsl(216 24% 96%);
+  --destructive-display: hsl(4 74% 49%);
+  --success: hsl(153 96% 30%);
+  --success-foreground: hsl(216 24% 96%);
+  --success-display: hsl(155 97% 24%);     /* green-700 AA vs white */
+  --warning: hsl(28 97% 44%);
+  --warning-foreground: hsl(216 24% 96%);
+  --info: hsl(218 100% 50%);
+  --info-foreground: hsl(216 24% 96%);
+  --info-display: hsl(218 100% 30%);
+  --border: hsl(221 13% 46%);              /* gray-400 #667085 — 3:1 */
+  --input: hsl(216 24% 96%);
+  --ring: hsl(218 100% 50%);
 
-  /* Charts harmônicos com brand Artemis (220° navy + variações) */
-  --chart-1: 218 100% 50%;            /* accent vibrant */
-  --chart-2: 153 96% 30%;             /* green */
-  --chart-3: 28 97% 44%;              /* amber */
-  --chart-4: 280 60% 55%;             /* purple */
-  --chart-5: 4 74% 49%;               /* red */
+  --chart-1: hsl(218 100% 50%);
+  --chart-2: hsl(153 96% 30%);
+  --chart-3: hsl(28 97% 44%);
+  --chart-4: hsl(280 60% 55%);
+  --chart-5: hsl(4 74% 49%);
 
-  /* Brand extras */
-  --brand-navy: 218 100% 30%;
-  --brand-blue-vivid: 218 100% 50%;
-  --brand-blue-deep: 218 85% 33%;
-  --brand-blue-dark: 220 92% 40%;
-  --brand-blue-mid: 209 100% 56%;
-  --brand-blue-light: 204 100% 64%;
+  --brand-navy: hsl(218 100% 30%);
+  --brand-blue-vivid: hsl(218 100% 50%);
+  --brand-blue-deep: hsl(218 85% 33%);
+  --brand-blue-dark: hsl(220 92% 40%);
+  --brand-blue-mid: hsl(209 100% 56%);
+  --brand-blue-light: hsl(204 100% 64%);
 
-  /* Radius */
   --radius: 0.5rem;
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
 
-  /* Sidebar — light mode CRM canonical: drama via primary navy fill + white fg */
-  --sidebar: 218 100% 30%;            /* navy bg */
-  --sidebar-foreground: 216 24% 96%;
-  --sidebar-primary: 218 85% 33%;     /* hover state */
-  --sidebar-primary-foreground: 216 24% 96%;
-  --sidebar-accent: 218 85% 33%;
-  --sidebar-accent-foreground: 216 24% 96%;
-  --sidebar-border: 220 92% 40%;
-  --sidebar-ring: 218 100% 50%;
-  --sidebar-indicator: 0 0% 100%;     /* white pra contraste vs navy */
+  /* Sidebar light mode — drama via navy fill + white fg (CRM canonical) */
+  --sidebar: hsl(218 100% 30%);
+  --sidebar-foreground: hsl(216 24% 96%);
+  --sidebar-primary: hsl(218 85% 33%);
+  --sidebar-primary-foreground: hsl(216 24% 96%);
+  --sidebar-accent: hsl(218 85% 33%);
+  --sidebar-accent-foreground: hsl(216 24% 96%);
+  --sidebar-border: hsl(220 92% 40%);
+  --sidebar-ring: hsl(218 100% 50%);
+  --sidebar-indicator: hsl(0 0% 100%);
 }
 
 /* ============================================================
    DARK MODE (.dark class) — tracker default behavior
    ============================================================ */
 .dark {
-  --background: 222 41% 8%;           /* gray-900 #0C111D */
-  --foreground: 216 24% 96%;          /* gray-050 #F2F4F7 — hue Untitled */
-  --card: 220 43% 11%;                /* gray-800 lift */
-  --card-foreground: 216 24% 96%;
-  --popover: 220 43% 11%;
-  --popover-foreground: 216 24% 96%;
-  --primary: 220 92% 40%;             /* blueDark #0848C5 — efetivo dark mode */
-  --primary-foreground: 216 24% 96%;
-  --secondary: 215 33% 14%;
-  --secondary-foreground: 216 24% 96%;
-  --muted: 215 33% 14%;               /* gray-700 */
-  --muted-foreground: 218 15% 65%;    /* gray-300 */
-  --accent: 218 100% 50%;             /* vibrant blue */
-  --accent-foreground: 216 24% 96%;
-  --destructive: 4 74% 49%;
-  --destructive-foreground: 216 24% 96%;
-  --destructive-display: 4 86% 58%;   /* red-500 (mais claro pra dark) */
-  --success: 153 96% 30%;
-  --success-foreground: 216 24% 96%;
-  --success-display: 152 82% 39%;     /* green-500 */
-  --warning: 28 97% 44%;
-  --warning-foreground: 216 24% 96%;
-  --info: 218 100% 50%;
-  --info-foreground: 216 24% 96%;
-  --info-display: 209 100% 56%;       /* blueMid */
-  --border: 221 13% 46%;              /* gray-400 — bumped */
-  --input: 215 33% 14%;
-  --ring: 218 100% 50%;               /* accent vibrant */
+  --background: hsl(222 41% 8%);           /* gray-900 #0C111D */
+  --foreground: hsl(216 24% 96%);          /* gray-050 #F2F4F7 */
+  --card: hsl(220 43% 11%);                /* gray-800 lift */
+  --card-foreground: hsl(216 24% 96%);
+  --popover: hsl(220 43% 11%);
+  --popover-foreground: hsl(216 24% 96%);
+  --primary: hsl(220 92% 40%);             /* blueDark #0848C5 */
+  --primary-foreground: hsl(216 24% 96%);
+  --secondary: hsl(215 33% 14%);
+  --secondary-foreground: hsl(216 24% 96%);
+  --muted: hsl(215 33% 14%);
+  --muted-foreground: hsl(218 15% 65%);
+  --accent: hsl(218 100% 50%);
+  --accent-foreground: hsl(216 24% 96%);
+  --destructive: hsl(4 74% 49%);
+  --destructive-foreground: hsl(216 24% 96%);
+  --destructive-display: hsl(4 86% 58%);
+  --success: hsl(153 96% 30%);
+  --success-foreground: hsl(216 24% 96%);
+  --success-display: hsl(152 82% 39%);
+  --warning: hsl(28 97% 44%);
+  --warning-foreground: hsl(216 24% 96%);
+  --info: hsl(218 100% 50%);
+  --info-foreground: hsl(216 24% 96%);
+  --info-display: hsl(209 100% 56%);
+  --border: hsl(221 13% 46%);
+  --input: hsl(215 33% 14%);
+  --ring: hsl(218 100% 50%);
 
-  /* Charts dark mode */
-  --chart-1: 218 100% 50%;
-  --chart-2: 152 82% 39%;
-  --chart-3: 34 94% 50%;
-  --chart-4: 280 55% 65%;
-  --chart-5: 4 86% 58%;
+  --chart-1: hsl(218 100% 50%);
+  --chart-2: hsl(152 82% 39%);
+  --chart-3: hsl(34 94% 50%);
+  --chart-4: hsl(280 55% 65%);
+  --chart-5: hsl(4 86% 58%);
 
-  /* Brand extras (consistent across modes) */
-  --brand-navy: 218 100% 30%;
-  --brand-blue-vivid: 218 100% 50%;
-  --brand-blue-deep: 218 85% 33%;
-  --brand-blue-dark: 220 92% 40%;
-  --brand-blue-mid: 209 100% 56%;
-  --brand-blue-light: 204 100% 64%;
+  --brand-navy: hsl(218 100% 30%);
+  --brand-blue-vivid: hsl(218 100% 50%);
+  --brand-blue-deep: hsl(218 85% 33%);
+  --brand-blue-dark: hsl(220 92% 40%);
+  --brand-blue-mid: hsl(209 100% 56%);
+  --brand-blue-light: hsl(204 100% 64%);
 
   /* Sidebar dark — gray-900 + accent vibrant indicator */
-  --sidebar: 222 41% 8%;
-  --sidebar-foreground: 216 24% 96%;
-  --sidebar-primary: 218 100% 30%;    /* navy primary */
-  --sidebar-primary-foreground: 216 24% 96%;
-  --sidebar-accent: 220 43% 11%;
-  --sidebar-accent-foreground: 216 24% 96%;
-  --sidebar-border: 215 33% 14%;
-  --sidebar-ring: 218 100% 50%;
-  --sidebar-indicator: 218 100% 50%;  /* accent vibrant */
+  --sidebar: hsl(222 41% 8%);
+  --sidebar-foreground: hsl(216 24% 96%);
+  --sidebar-primary: hsl(218 100% 30%);
+  --sidebar-primary-foreground: hsl(216 24% 96%);
+  --sidebar-accent: hsl(220 43% 11%);
+  --sidebar-accent-foreground: hsl(216 24% 96%);
+  --sidebar-border: hsl(215 33% 14%);
+  --sidebar-ring: hsl(218 100% 50%);
+  --sidebar-indicator: hsl(218 100% 50%);
 }
 
 /* ============================================================
@@ -224,7 +221,6 @@ body {
    + Artemis extensions Wave 4)
    ============================================================ */
 :root {
-  /* Canonical anti-ai-ds */
   --motion-instant: 80ms;
   --motion-fast: 150ms;
   --motion-normal: 200ms;
@@ -238,15 +234,13 @@ body {
 
   --motion-stagger: 15ms;
 
-  /* Tracker aliases híbridos (preserva refs Wave 3 specs) */
   --motion-base: var(--motion-normal);
   --motion-decorative: var(--motion-page);
   --ease-in-out: var(--ease-standard);
   --ease-emphasized: var(--ease-out);
 
-  /* Artemis extensions (não-canonical) */
-  --motion-celebration: 800ms;        /* FirstHit confetti single-shot */
-  --motion-pulse-loop: 2s;            /* WebhookPing breathing */
+  --motion-celebration: 800ms;
+  --motion-pulse-loop: 2s;
 }
 
 @theme inline {
@@ -260,8 +254,6 @@ body {
 /* ============================================================
    Reduced motion gate global (WCAG 2.2.2 + 2.3.3)
    Patrick decisão Wave 6.1: middle ground calibrado.
-   Gate global mantém compliance + componentes Wave 6 implementam
-   fallback chamativo individual (cor/saturação/static).
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -274,7 +266,7 @@ body {
   }
   [data-slot="skeleton"] {
     animation: none !important;
-    background-color: hsl(var(--muted) / 0.6);
+    background-color: hsl(from var(--muted) h s l / 0.6);
   }
   [class*="hover:scale-"]:hover {
     transform: scale(1) !important;
@@ -293,13 +285,11 @@ body {
   }
 }
 
-/* Display font (headings, hero) */
 h1, h2, h3, h4 {
   font-family: var(--font-heading);
   font-feature-settings: 'ss01';
 }
 
-/* Mono font para dados tabulares (USD, tokens) */
 .font-mono,
 [data-font="mono"],
 code, kbd, samp, pre {
