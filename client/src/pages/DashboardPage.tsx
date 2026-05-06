@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSummary, useCharts, type DashboardFilters } from "@/hooks/useDashboard";
+import { presetToRange } from "@/components/shared/DateRangeFilter";
 import { useAuth } from "@/contexts/AuthContext";
 import { MonthNarrative } from "@/components/dashboard/MonthNarrative";
 import { PlanIndicator } from "@/components/dashboard/PlanIndicator";
@@ -37,7 +38,12 @@ function DashboardSkeleton() {
 }
 
 export function DashboardPage() {
-  const [filters, setFilters] = useState<DashboardFilters>({ period: "month" });
+  // Wave 7.1: resolver preset → from/to ISO no mount evita server fallback bug
+  // (parsePeriod no Node UTC computava midnight errado quando cliente só mandava preset).
+  const [filters, setFilters] = useState<DashboardFilters>(() => ({
+    period: "month",
+    ...presetToRange("month"),
+  }));
   const { user } = useAuth();
   const planCost = Number(user?.plan_cost_usd) || 200;
   const dailyBudget = user?.daily_budget_usd ?? null;
