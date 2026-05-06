@@ -1,0 +1,439 @@
+# Master Plan — Claude Token Tracker Redesign
+
+> **Branch:** `redesign/motion-ds-audit`
+> **Criado:** 2026-05-06
+> **Estado:** Wave 0 pendente (aguardando arranque)
+> **Goal:** transformar tracker de ferramenta interna do Patrick em **free tool isca pra Artemis** (público, single-tenant, prospect-facing) com visual de produto polido.
+
+---
+
+## Contexto
+
+### O que é
+Tracker = dashboard self-host pra rastrear uso de tokens Claude/Codex. Stack React+Vite + Express + PostgreSQL Docker. 16 pages. Já tem Geist + tokens 222° azul-cinza + reduced-motion gate.
+
+### O que muda
+| Antes | Agora |
+|---|---|
+| Ferramenta interna do Patrick | Isca de marketing pra Artemis |
+| Single-user (Patrick) | Single-tenant público (qualquer dev baixa) |
+| Audiência: power user | Audiência: prospect Artemis primeira vez |
+| Admin necessário | Retira admin (cada um é dono próprio data) |
+| Visual operational | Cara de aplicativo de verdade |
+| Tokens 222° dark-only | Brand Artemis (navy #003899 + accent #005EFF + Untitled UI gray) |
+
+### Constraints
+- Visual primeiro (Waves 0-6)
+- Refactor lógica/admin **no fim** (Wave 7, opcional sessão separada)
+- Reuso máximo de components canonical do `anti-ai-design-system/ui_kits/default/` (61 components prontos)
+- 3-4 sessões com handoff entre elas
+
+### Brand Artemis confirmado
+- **Primary:** `#003899` (navy)
+- **Accent:** `#005EFF` (vibrant blue)
+- **Secondary:** `#000000` (black)
+- **Text:** `#667085` (gray-500)
+- **Gray scale (Untitled UI):** `#F2F4F7`, `#EAECF0`, `#D0D5DD`, `#98A2B3`, `#667085`, `#475467`, `#344054`, `#182230`, `#101828`, `#0C111D`
+- **Variantes blue:** `#0D419B`, `#0848C5`, `#1E93FF`, `#48B7FF`
+- **Typography:** A confirmar via WebFetch `studioartemis.co` (Wave 0). Hipótese: IBM Plex Sans + Inter (idem `charming-solutions`).
+
+---
+
+## Princípios
+
+1. **Plano vivo.** Cada wave fecha com gate Patrick. Pivot documentado se descoberta exigir mudança.
+2. **Gates bloqueantes.** Skill nunca pula GATE. Patrick aprova antes de prosseguir.
+3. **Handoff entre sessões.** `context-guardian --handoff` antes de `/clear`. Sessão N+1 abre fresh + lê `audits/HANDOFF-Sx.md`.
+4. **Skill > opinião.** Decisões fundamentadas em rubric/heurística, não gosto.
+5. **Reuso > criar.** Component canonical do CRM template antes de criar novo.
+6. **Cara de IA.** Foreground sempre carrega hue. Pure `0 0% L%` proibido. Status pills hue-aligned.
+
+---
+
+## Visão geral — sessões e waves
+
+| Sessão | Waves | Skills | Budget | Output principal |
+|---|---|---|---|---|
+| **S1** | 0, 1, 2, 3 | reference-finder, free-tool-strategy, ux-audit, motion-design | ~70% | strategy + ux findings + motion spec |
+| **S2** | 4, 5 | ui-design-system, design-system-audit, component-architect | ~50% | tokens Artemis + lift map |
+| **S3** | 6 | ui-design-system --apply | ~70% | implementação visual page-by-page |
+| **S4 (cond.)** | 7 | trident, sdd | ~50% | refactor admin out + lógica fix |
+
+---
+
+## SESSÃO 1 — Strategy + Discovery
+
+### Wave 0 — Brand confirm + reference scouting
+
+**Objetivo:** travar identidade visual (typography Artemis) + mapear competidores (free claude trackers existentes) pra calibrar positioning depois.
+
+**Inputs:**
+- Paleta Artemis (já dada)
+- URL `studioartemis.co`
+- Memória project_crm_gaps_plan.md (charming-solutions usa IBM Plex Sans)
+
+**Tools/skills:**
+- WebFetch `studioartemis.co` (extrair font-family declarado, screenshot tom visual)
+- `reference-finder --solution-scout "free claude codex token tracker dashboard public"` (1 query — CCSeva, ccusage, Plausible, Umami, Tinybird)
+
+**Output:**
+- `audits/00-references.md` — brand kit confirmado (paleta + typography) + 5 reference apps com prints + 3 padrões aplicáveis
+
+**Gate:** Patrick valida brand confirmado → entra Wave 1
+
+**Budget:** ~15%
+
+**Pivot points:**
+- Se studioartemis.co usa fonte ≠ IBM Plex/Inter → Wave 4 carrega font diferente
+- Se reference apps revelam padrão crítico não previsto (ex: dark/light toggle) → adiciona ao escopo Wave 6
+
+---
+
+### Wave 1 — Strategy lock-in
+
+**Objetivo:** definir ICP prospect, funnel tracker→Artemis, branding rules sutis (não invasivo), métricas de sucesso, positioning. Sem estratégia clara, audit visual fica especulativo.
+
+**Inputs:**
+- `audits/00-references.md`
+- Paleta Artemis
+- Estado atual tracker (16 pages, dark-only)
+
+**Skill:** `free-tool-strategy`
+
+**Output:** `audits/01-strategy.md` contendo:
+- ICP prospect (dev/tech-lead que usa Claude Code intensivo)
+- Funnel: download tracker → setup webhook → footer "by Artemis" link → site Artemis → contato
+- Branding rules: footer fixo, accent color sutil, login screen com Artemis presence, sem CTA invasivo
+- Success metrics: GitHub stars/forks, downloads, site visits via tracker, leads convertidos
+- Positioning: "Artemis dá free tier técnico antes de pitch" (tipo Plausible vs Google Analytics)
+
+**Gate:** Patrick valida positioning → entra Wave 2
+
+**Budget:** ~15%
+
+**Modelo:** Opus high + ultrathink (decisão estratégica cara)
+
+**Pivot points:**
+- Se ICP definido for muito nichado (ex: só CTOs) → Wave 2 ux-audit calibra pra esse público
+- Se positioning aceitar gamification streaks como diferencial → Wave 2 recomenda implementar
+
+---
+
+### Wave 2 — UX audit prospect-first
+
+**Objetivo:** auditar 16 pages com lente "dev prospect abrindo primeira vez, sem contexto Patrick". Identificar fricções de first-time experience, recomendar onboarding wizard sim/não, achar empty states que viram pitch.
+
+**Inputs:**
+- `audits/01-strategy.md` (ICP)
+- 16 pages do tracker (Dashboard, Sessions, Analytics, Settings, Skills, SystemPrompts, Achievements, Login, etc.)
+- README.md (atualmente é onde setup acontece)
+
+**Skill:** `ux-audit` modo **Cognitive Walkthrough** (foco: novo usuário, learnability)
+
+**Workflow:**
+- Phase 1 contexto + triagem (skip — já mapeei narrative)
+- Phase 2 percorrer 5 fluxos críticos (J0 onboarding, J1 olhar dashboard, J2 ver sessão cara, J3 entender mês, J7 configurar coletor)
+- Phase 3 heurísticas Nielsen
+- Phase 4 WCAG 2.2 AA
+- Phase 5 estados (empty, error, loading, first-time, recurring)
+- Phase 6 síntese severidade Nielsen 0-4 + critério aceite por finding
+
+**Output:** `audits/02-ux.md` contendo:
+- 5 fluxos percorridos com veredicto ✅/⚠️/❌
+- Findings ordenados por severidade
+- **Recomendação onboarding wizard** sim/não com justificativa
+- **Recomendação gamification streaks** sim/não (responde pergunta da Sessão atual)
+- Estados que viram pitch sutil (empty + onboarding)
+- Findings encaminhados pra outras skills (motion-design / DS / component-architect)
+
+**Gate:** Patrick valida findings P0/P1 → entra Wave 3
+
+**Budget:** ~20%
+
+**Modelo:** Sonnet high + think hard
+
+**Pivot points:**
+- Se onboarding wizard for recomendado → Wave 6 ganha sub-wave dedicada
+- Se gamification streaks for sim → Wave 3 motion adiciona spec celebration motion + Wave 6 ganha sub-wave
+- Se finding P0 atinge lógica (não visual) → escala pra Wave 7 (refactor)
+
+---
+
+### Wave 3 — Motion spec
+
+**Objetivo:** spec executável de motion calibrada pra prospect-facing operational SaaS. P1 funcional dominante + P2 brand-heavy permitido em onboarding/login/celebrations.
+
+**Inputs:**
+- `audits/02-ux.md` (findings encaminhados pra motion)
+- `index.css` atual (já tem motion tokens fast/base/slow/decorative + reduced-motion gate)
+- Paleta Artemis
+
+**Skill:** `motion-design --full`
+
+**Workflow:**
+- Phase 0 fast-forward (narrative validada Wave 0-2)
+- Phase 1 lookup → SaaS operacional → references/01-funcional + references/13-microinteractions-canonical (Wave 9.1) + references/06-theoretical-foundations
+- Phase 2 decision per padrão
+- Phase 3 proposal embasamento teorico (gestalt + attention + scroll + easing)
+- Phase 4 validation gate (BLOCKING — Patrick aprova)
+- Phase 5 spec canonical executável
+
+**Output:** `audits/03-motion.md` contendo:
+- Specs por padrão (button-press, form-field-label-float, modal easeReverse, drawer, toast Sonner, tooltip)
+- Charts entry (KPIs counter + chart line draw)
+- Onboarding wizard motion (se Wave 2 recomendou)
+- Achievement unlock motion (se gamification entrou)
+- Login screen motion (P2 brand-heavy permitido)
+- Reduced-motion fallback por padrão (Iron Law 3)
+- Browser baseline + bundle cost por padrão
+
+**Gate:** Patrick aprova specs → handoff S1→S2
+
+**Budget:** ~15%
+
+**Modelo:** Opus high + ultrathink (research-first consultivo)
+
+**Pivot points:**
+- Se Patrick rejeitar embasamento teorico Phase 3 → loop Phase 2 com novo modo (encaixar/modificar/criar)
+- Se bundle cost estourar (ex: GSAP só pra fade) → Phase 4 corta
+
+---
+
+### ⏸ Handoff S1→S2
+
+Após Wave 3 aprovada, gerar `audits/HANDOFF-S1.md`:
+- Estado de cada wave
+- Decisões tomadas (positioning, onboarding sim/não, gamification sim/não)
+- Inputs pra S2 (paleta confirmada + typography + tokens existentes)
+- Próximo passo: Wave 4 ui-design-system --generate
+
+Cumulativo S1: ~70%. Limite seguro pré-/clear.
+
+---
+
+## SESSÃO 2 — Design system + lift plan
+
+### Wave 4 — Design tokens Artemis-fitted
+
+**Objetivo:** gerar `design.json` com tokens semantic-role baseados na paleta Artemis. Validar contraste WCAG nos pares reais. Definir motion-as-system (já existe, audita + adapta).
+
+**Inputs:**
+- Paleta Artemis confirmada Wave 0
+- Typography confirmada Wave 0
+- `audits/01-strategy.md` (constraints branding)
+- `audits/03-motion.md` (motion-as-system já speccado)
+- DS reference: `~/Documents/Github/anti-ai-design-system/colors_and_type.css` + `presets/default/tokens.css`
+
+**Skill:** `ui-design-system --generate`
+
+**Workflow:**
+- Phase 1 inputs (seed = navy #003899, accent = vibrant blue, gray scale = Untitled UI, fonts = Wave 0, product type = operational SaaS public)
+- Phase 2 color space OKLCH + 5 semantic role groups (action / brand / focus / surface / decorative)
+- Phase 3 token generation: design.json + Tailwind config + CSS variables + breakpoints rem + 9 layout primitives
+- Phase 4 states + motion (importa de Wave 3) + microinteractions
+- Phase 5 review BLOCKING (contrast em todos pares + hit target 24×24 + reflow 320 + zoom 200%/400% + reduced motion + visual QA matrix)
+
+**Output:**
+- `audits/04-tokens.json` (design.json)
+- `audits/04-tokens-spec.md` (scorecard maturity + contrast pairs measured + decisões registradas)
+
+**Gate:** Patrick aprova scorecard → entra Wave 5
+
+**Budget:** ~25% (heavyweight skill)
+
+**Modelo:** Opus high + ultrathink
+
+**Pivot points:**
+- Se algum par bg+fg falhar AA → ajusta token, re-mede, registra delta
+- Se navy `#003899` for muito escuro pra ser primary em dark mode tracker → bump pra `#0848C5` ou usa accent
+- Se tracker fica forçado dark-only ou abre light mode também → decisão Patrick (hipótese: continua dark-only por job atual)
+
+---
+
+### Wave 5 — DS audit + component lift map
+
+**Objetivo:** auditar tracker contra novo DS Artemis-fitted (Wave 4). Mapear pra cada page tracker quais components canonical do CRM template substituem inline.
+
+**Inputs:**
+- `audits/04-tokens.json` (DS Wave 4)
+- Tracker atual (16 pages)
+- 61 components canonical em `anti-ai-design-system/ui_kits/default/components/`
+- `audit-snapshots/crm-2026-05-03/07-component-inventory.md` (inventory existente)
+
+**Skills:** `design-system-audit --audit` + `component-architect --plan`
+
+**Workflow:**
+- Phase 1 context (já feito)
+- Phase 2 inventory (tracker components vs DS components)
+- Phase 3 spec diff
+- Phase 4 coherence (tracker uso vs DS spec — adapta vs aplica vs skip)
+- Phase 4.5 contrast audit (re-validar com tokens Wave 4)
+- Phase 5 delta report
+- Lift map: tracker `StatCard` → DS `dashboard/StatCard.jsx` etc.
+
+**Output:**
+- `audits/05-ds-deltas.md` — deltas com WHY HERE + apply/adapt/skip
+- `audits/05-lift-map.md` — tabela "tracker component X → DS component Y" com signature mismatches anotadas
+
+**Gate:** Patrick aprova deltas (per-delta) + lift map → handoff S2→S3
+
+**Budget:** ~25%
+
+**Modelo:** Sonnet high + think hard
+
+**Pivot points:**
+- Se signature mismatch crítico (ex: AppTable do DS usa grid CSS, tracker usa shadcn Table) → escolhe: adapta DS pro tracker OU adapta tracker pro DS
+- Se mais de 5 components precisam adapter → Wave 6 ganha sub-wave de "component adapter layer"
+
+---
+
+### ⏸ Handoff S2→S3
+
+`audits/HANDOFF-S2.md`. Cumulativo S2: ~50%.
+
+---
+
+## SESSÃO 3 — Implementação visual
+
+### Wave 6 — Visual page-by-page
+
+**Objetivo:** aplicar tokens Wave 4 + lift components Wave 5 nos arquivos do tracker. Page-by-page por **prioridade de jobs** (do mais frequente pro menos).
+
+**Inputs:**
+- Tudo de S1 + S2
+
+**Skill:** `ui-design-system --apply` + edits diretos
+
+**Sub-waves (ordem por job frequency):**
+
+| # | Page(s) | Job atendido | Por que essa ordem |
+|---|---|---|---|
+| 6.1 | `DashboardPage.tsx` + `dashboard/*` | J1 (~50x/dia) | Herói. Patrick olha 20-30x/dia. Maior alavancagem. |
+| 6.2 | `SessionsPage.tsx` + `sessions/*` + `SessionDetailPage.tsx` | J2 | Segunda mais frequente. |
+| 6.3 | `AnalyticsPage.tsx` + `analytics/*` | J3 + J4 | Mês + projeto. |
+| 6.4 | `LoginPage.tsx` + onboarding wizard (se Wave 2 aprovou) | J0 onboarding | Primeira impressão prospect. P2 brand-heavy permitido. |
+| 6.5 | `SettingsPage.tsx` + `settings/*` | J7 | Configurar coletor. Empty state vira pitch. |
+| 6.6 | `SkillsPage.tsx` + `SystemPromptsPage.tsx` + detail pages | J6 | Showcase. Mostra que Artemis sabe das coisas. |
+| 6.7 | `AchievementsPage.tsx` + gamification streaks (se Wave 2 aprovou) | J8 | Motion P2 celebration. |
+| 6.8 | Demais (`ProjectsPage`, `ProjectDetailPage`, `EntriesPage`, `SessionTimePage`) | J4/J5 | Cleanup. |
+| 6.9 | `AppLayout` + `Sidebar` | global | Aplica brand Artemis no shell. |
+
+**Gate per sub-wave:** screenshot before/after + Patrick valida → próxima sub-wave
+
+**Output:** edits aplicados na branch `redesign/motion-ds-audit` + commits atomicos por sub-wave (`feat(ux): wave 6.X <page> redesign`)
+
+**Budget:** ~70% S3 (pode estourar — divide em mais sessões se necessário)
+
+**Modelo:** Sonnet medium + default (mechanical edits) | Sonnet high se sub-wave complexa
+
+**Pivot points:**
+- Se sub-wave 6.1 quebrar layout → pause + diagnóstico antes de seguir
+- Se contrast falhar em runtime (DevTools) → volta Wave 4, ajusta token, re-aplica
+- Se page rejeitada pelo Patrick (visualmente) → volta Wave 5, re-decide lift, re-aplica
+
+---
+
+### ⏸ Handoff S3→S4 (condicional)
+
+Se Patrick decidir pular S4 (Wave 7), branch fica pronta pra merge. Senão handoff.
+
+---
+
+## SESSÃO 4 — Refactor + lógica (CONDICIONAL)
+
+### Wave 7 — Admin out + lógica fix
+
+**Objetivo:** remover admin/multi-user. Fix bugs de lógica (modelos não puxam, preço fixo → custom input). Cross-check com PLAN-B-SPEC.md (descarta findings agora cobertos).
+
+**Inputs:**
+- Branch S3 com visual completo
+- `PLAN-B-SPEC.md` (audit prévio 2026-04-30)
+- Tracker server (auth, routes/admin, role checks)
+
+**Skills:** `sdd` Phase 1+2 (research → spec) + `trident --mode all-local` final review
+
+**Workflow:**
+- 7.1 SDD spec: refactor remoção admin + multi-user → single-tenant público
+- 7.2 Implementação SDD waves
+- 7.3 Lógica fix:
+  - Modelos não puxam (debug código, DB, normalizer)
+  - Preço fixo → user pode inputar próprio preço
+- 7.4 trident review final
+- 7.5 Cross-check PLAN-B-SPEC.md: cada finding antigo → mantém / cobertos / descarta
+
+**Output:**
+- Spec SDD em `docs/audits/07-refactor-spec.md`
+- Edits server (auth, routes, schema)
+- Edits client (admin page removed, settings ganha custom pricing)
+- `audits/07-final-review.md`
+
+**Gate:** trident final aprova + Patrick valida → branch ready pra merge master
+
+**Budget:** ~50% S4
+
+**Modelo:** Opus high (planning) + Sonnet (implement) — `/model opusplan`
+
+**Pivot points:**
+- Se SDD detectar refactor maior que esperado → divide em mais sessões
+- Se lógica fix revelar bug crítico downstream → pausa, P0 fix isolado
+
+---
+
+## Pontos de pivot globais
+
+Plano pode mudar em qualquer ponto se:
+
+1. Patrick mudar premissa (ex: "não vai mais ser público")
+2. Skill descobrir P0 não previsto
+3. Budget de sessão estourar (divide wave em mais sessões)
+4. Brand Artemis evoluir (ex: typography decidida nova)
+5. Reference scouting (Wave 0) revelar competidor com feature crítica não prevista
+
+**Como aplicar pivot:**
+1. Documento aqui (seção "Histórico de pivots")
+2. Confronto vocal com Patrick: "ajusta wave X porque Y. Aceita?"
+3. Atualiza tabelas relevantes
+4. Continua
+
+---
+
+## Cross-references
+
+- `PLAN.md` — plano A original (audits paralelos 8 skills, 2026-05-03)
+- `PLAN-B-SPEC.md` — SDD consolidou 115 findings em 8 waves B0-B7 (2026-04-30)
+- `UX_AUDIT_SPEC.md` — UX comparado a Umami/Dub/OpenStatus (F1-F16)
+- `~/Documents/Github/anti-ai-design-system/ui_kits/default/` — 61 components canonical CRM template
+- `~/Documents/Github/anti-ai-design-system/audit-snapshots/crm-2026-05-03/` — chain audit prévia (5 skills)
+- `~/Documents/Github/anti-ai-design-system/colors_and_type.css` — token sheet preset default
+- `studioartemis.co` — site Artemis (typography reference Wave 0)
+
+---
+
+## Estado atual
+
+| Wave | Status | Started | Completed | Output |
+|---|---|---|---|---|
+| 0 | ✅ done (approved) | 2026-05-06 | 2026-05-06 | `audits/00-references.md` |
+| 1 | ✅ done (approved) | 2026-05-06 | 2026-05-06 | `audits/01-strategy.md` |
+| 2 | ✅ done (approved) | 2026-05-06 | 2026-05-06 | `audits/02-ux.md` |
+| 3 | ✅ done (gate skipped per autorização) | 2026-05-06 | 2026-05-06 | `audits/03-motion.md` |
+| 4 | ⏸ pendente | — | — | — |
+| 5 | ⏸ pendente | — | — | — |
+| 6 | ⏸ pendente | — | — | — |
+| 7 | ⏸ pendente (condicional) | — | — | — |
+
+---
+
+## Histórico de pivots
+
+(vazio — atualiza quando aplicar primeiro pivot)
+
+---
+
+## Próximo passo imediato
+
+Arrancar **Wave 0** com:
+- WebFetch `studioartemis.co` (typography + tom visual)
+- `reference-finder --solution-scout "free claude codex token tracker dashboard"` (5 reference apps)
+
+Output em `audits/00-references.md`. Gate: Patrick valida brand confirmed.
