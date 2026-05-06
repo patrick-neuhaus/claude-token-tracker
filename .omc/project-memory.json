@@ -181,8 +181,8 @@
     },
     {
       "path": "audits\\00-master-plan.md",
-      "accessCount": 1,
-      "lastAccessed": 1778088332232,
+      "accessCount": 2,
+      "lastAccessed": 1778090617935,
       "type": "file"
     },
     {
@@ -201,6 +201,12 @@
       "path": "client\\src\\App.tsx",
       "accessCount": 1,
       "lastAccessed": 1778088785430,
+      "type": "file"
+    },
+    {
+      "path": "audits\\HANDOFF-WAVE-6-2.md",
+      "accessCount": 1,
+      "lastAccessed": 1778090668573,
       "type": "file"
     }
   ],
