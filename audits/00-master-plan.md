@@ -418,7 +418,7 @@ Plano pode mudar em qualquer ponto se:
 | 2 | ✅ done (approved) | 2026-05-06 | 2026-05-06 | `audits/02-ux.md` |
 | 3 | ✅ done (gate skipped per autorização) | 2026-05-06 | 2026-05-06 | `audits/03-motion.md` |
 | 4 | ✅ done (1 WCAG fail trade-off documentado) | 2026-05-06 | 2026-05-06 | `audits/04-tokens.{json,css}` + `04-tokens-spec.md` + `04-wcag-report.md` + `scripts/generate-tokens.mjs` |
-| 5 | ⏸ pendente | — | — | — |
+| 5 | ✅ done | 2026-05-06 | 2026-05-06 | `audits/05-deltas-and-lift.md` + `05-component-architect.md` |
 | 6 | ⏸ pendente | — | — | — |
 | 7 | ⏸ pendente (condicional) | — | — | — |
 
@@ -427,6 +427,78 @@ Plano pode mudar em qualquer ponto se:
 ## Histórico de pivots
 
 (vazio — atualiza quando aplicar primeiro pivot)
+
+---
+
+## Backlog Wave futura (Wave 8+)
+
+Features identificadas durante S2 mas fora de escopo das waves atuais. Documentadas pra não esquecer.
+
+### F-NEW-1: Token Editor in-app (user pode customizar paleta)
+
+**Origem:** Patrick S2 Wave 4 — "se a pessoa quiser mudar a cor dele, ela consegue".
+
+**Descrição:**
+- Component TokenEditor embutido em /settings (ou /appearance) page
+- User troca accent color → auto-deriva primary/ring/sidebar/decorative + WCAG validation real-time + preview live
+- Reusa lógica `TokenEditorPreview` canonical (`anti-ai-design-system/ui_kits/default/components/showcase/TokenEditorPreview.jsx`):
+  - `pickFg`, `contrastRatio`, `wcagBadge`, `hexToHsl`, `deriveFromAccent`, `clampForContrast`, `classifySeed`
+- Persistência via localStorage (single-tenant) ou DB (Wave 7 single-tenant migration)
+- Modo Basic (1 input → deriva tudo) + Advanced (todos tokens individualmente)
+- Light/Dark/Auto toggle (Wave 4 dark-only foi MVP — Token Editor permite expandir)
+
+**Por quê backlog (não Wave 6):**
+- Wave 6 foco implementação visual core (16 pages + 6 components a criar)
+- Token Editor é feature MAJOR (~3-4h dev) — desvia do core "tornar isca prospect-ready"
+- Pode ser Wave 8 dedicada após launch inicial (validação de demanda)
+
+**Dependências:** Wave 4 tokens semantic ✅, Wave 6 implementação visual base ✅, Wave 7 single-tenant migration (se persistência DB).
+
+### F-NEW-2: Gamification XP unlock features
+
+**Origem:** Patrick S2 Wave 4 — "daria pra fazer de um jeito que ele é travado e libera com tantos niveis de XP".
+
+**Descrição:**
+- Sistema XP gating progressive features:
+  - **XP Lv 1-5 (default):** core tracker funcional (Dashboard, Sessions, Settings)
+  - **XP Lv 5+:** Token Editor Basic mode unlock
+  - **XP Lv 10+:** Token Editor Advanced mode unlock
+  - **XP Lv 15+:** custom themes presets save/load
+  - **XP Lv 20+:** export theme as CSS download
+- XP earned via: streaks Duolingo-style (Wave 6.7) + sessions counted + days active
+- UI: badge "Locked — Lv X to unlock" em tabs/buttons gated
+- Empty state CTA "Track 5 days to unlock theme customization"
+
+**Por quê backlog:**
+- Gamification streaks core (Wave 6.7) é PILAR principal — sem ele não tem XP earning
+- XP gating é "second-order delight" — funcionar core primeiro
+- Patrick: "isso pode entrar depois"
+
+**Dependências:** Wave 6.7 streaks/achievements ✅, F-NEW-1 Token Editor ✅, sistema XP backend (não existe atual).
+
+### F-NEW-3: Light mode preset adicional
+
+**Origem:** Wave 4 decisão dark-only puro (Patrick Q5).
+
+**Descrição:**
+- Adicionar preset light mode pra LoginPage hero ou tracker inteiro
+- Reusa `_te_SURFACE_THEMES.light` do TokenEditorPreview canonical
+- Toggle Light/Dark/Auto (Auto = system pref)
+
+**Por quê backlog:**
+- Wave 4 MVP é dark-only (developer tool noturno)
+- Light mode = expansão pós-launch validação demanda
+
+**Dependências:** F-NEW-1 Token Editor (que tem light mode toggle nativo) OU implementação separada.
+
+---
+
+### Como promover backlog → wave ativa
+
+1. Patrick valida que feature paga aluguel pós-launch inicial
+2. Adiciona como Wave 8/9/etc em este master-plan §"Visão geral"
+3. Cria `audits/08-feature-X-spec.md` via skill apropriada (component-architect / sdd / etc)
+4. Cumulativo S5+ planeja budget
 
 ---
 
