@@ -111,7 +111,7 @@ export function SystemPromptsPage() {
           <EmptyState message="Nenhum system prompt encontrado" />
         )
       ) : (
-        <div className="bg-card border border-border rounded-md overflow-hidden">
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
           <div
             className="grid gap-3 px-5 py-3 border-b border-border bg-muted/30"
             style={{ gridTemplateColumns: COLS }}
