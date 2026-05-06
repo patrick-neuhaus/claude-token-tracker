@@ -421,8 +421,10 @@ Plano pode mudar em qualquer ponto se:
 | 3 | ✅ done (gate skipped per autorização) | 2026-05-06 | 2026-05-06 | `audits/03-motion.md` |
 | 4 | ✅ done (1 WCAG fail trade-off documentado) | 2026-05-06 | 2026-05-06 | `audits/04-tokens.{json,css}` + `04-tokens-spec.md` + `04-wcag-report.md` + `scripts/generate-tokens.mjs` |
 | 5 | ✅ done | 2026-05-06 | 2026-05-06 | `audits/05-deltas-and-lift.md` + `05-component-architect.md` |
-| 6.0 | 🚧 IN PROGRESS (pivot) | 2026-05-06 | — | Shell canonical lift |
-| 6.1-6.8 | ⏸ pendente | — | — | — |
+| 6.0 | ✅ done | 2026-05-06 | 2026-05-06 | Shell canonical lift (Sidebar + UserMenu + ThemeContext) |
+| 6.1 | ✅ done | 2026-05-06 | 2026-05-06 | Dashboard internals (StatCard canonical + WebhookPing + chart tokens + surface rounded-xl) |
+| 6.2 | ⏸ pendente | — | — | Sessions lift (SessionsTable → AppTable canonical) |
+| 6.3-6.8 | ⏸ pendente | — | — | — |
 | 7 | ⏸ pendente (condicional) | — | — | — |
 
 ---
