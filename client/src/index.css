@@ -8,20 +8,21 @@
 
 /* ============================================================
    Tracker Tokens — Wave 4 (Sessão 2) Studio Artemis brand-fitted
-   Brand: navy #003899 + vibrant blue #005EFF + Untitled UI gray scale
+   FULL CRM TEMPLATE TOKEN MAP — every token from anti-ai-design-system
+   colors_and_type.css + presets/default/tokens.css redefined with
+   Artemis paleta (navy #003899 + vibrant #005EFF + Untitled UI gray).
+
+   Brand: navy + vibrant blue + blueDark + Untitled UI gray scale
    Modes: light + dark (auto-applied via .dark class on body/html)
    Typography: IBM Plex Sans (display) + Inter (body) + Geist Mono
-   WCAG: light 19/19 pass, dark 18/19 pass (1 trade-off físico documentado)
-   Reduced motion: middle ground calibrado (Patrick decisão Wave 6.1)
-   Note: vars usam hsl() wrapper (Tailwind v4 + @theme inline mapping
-   resolve invalid color sem wrapper — bug Wave 6.1 step 1 corrigido).
+   Sidebar: navy fill in BOTH modes (CRM drama convention)
    ============================================================ */
 
 body {
   margin: 0;
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -30,10 +31,311 @@ body {
   min-height: 100vh;
 }
 
+/* ============================================================
+   SHARED PRIMITIVES (CRM canonical — same across modes)
+   ============================================================ */
+:root {
+  /* Spacing scale (4-base) — F-UI-001 */
+  --space-1:    4px;
+  --space-1-5:  6px;
+  --space-2:    8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+
+  /* Type scale */
+  --text-xs:     13px;
+  --text-sm:     15px;
+  --text-base:   17px;
+  --text-lg:     19px;
+  --text-xl:     22px;
+  --text-2xl:    26px;
+  --text-3xl:    32px;
+
+  /* Weights — never 700 */
+  --weight-normal:    400;
+  --weight-medium:    500;
+  --weight-semibold:  600;
+
+  /* Line heights */
+  --leading-tight:    1.25;
+  --leading-normal:   1.5;
+  --leading-relaxed:  1.625;
+
+  /* Tracking */
+  --track-tight:  -0.025em;
+  --track-normal: 0;
+
+  /* Type families */
+  --font-body:    'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    'Geist Mono', ui-monospace, monospace;
+  /* Backwards-compat aliases */
+  --font-heading: var(--font-display);
+  --font-sans:    var(--font-body);
+
+  /* Radius */
+  --radius:     0.5rem;
+  --radius-sm:  6px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+  --radius-2xl: 20px;
+
+  /* Motion tokens */
+  --motion-instant:  80ms;
+  --motion-fast:    150ms;
+  --motion-normal:  200ms;
+  --motion-slow:    300ms;
+  --motion-page:    400ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out:      cubic-bezier(0, 0, 0.2, 1);
+  --ease-in:       cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --motion-stagger: 15ms;
+
+  /* Tracker aliases */
+  --motion-base: var(--motion-normal);
+  --motion-decorative: var(--motion-page);
+  --ease-in-out: var(--ease-standard);
+  --ease-emphasized: var(--ease-out);
+  --motion-celebration: 800ms;
+  --motion-pulse-loop: 2s;
+
+  /* Animation duration aliases */
+  --dur-150: 150ms;
+  --dur-200: 200ms;
+  --dur-300: 300ms;
+  --ease: var(--ease-standard);
+
+  /* Backdrop overlay */
+  --overlay-backdrop: hsl(0 0% 0% / .55);
+}
+
+/* ============================================================
+   LIGHT MODE (:root) — Studio Artemis
+   Background: gray-050 cool. Card: white lift. Sidebar: navy drama.
+   ============================================================ */
+:root {
+  --background: hsl(216 24% 96%);          /* gray-050 #F2F4F7 */
+  --foreground: hsl(222 41% 8%);           /* gray-900 #0C111D */
+  --card: hsl(0 0% 100%);                  /* white card */
+  --card-foreground: hsl(222 41% 8%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(222 41% 8%);
+
+  --primary: hsl(218 100% 30%);            /* navy #003899 */
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(220 17% 93%);           /* gray-200 #E4E7EC */
+  --secondary-foreground: hsl(222 41% 8%);
+  --muted: hsl(220 17% 93%);               /* gray-200 */
+  --muted-foreground: hsl(216 18% 34%);    /* gray-600 #475467 — 7.5:1 vs bg */
+  --accent: hsl(218 100% 50%);             /* vibrant blue #005EFF */
+  --accent-foreground: hsl(0 0% 100%);
+  --accent-decorative: hsl(209 100% 56%);  /* blueMid #1E93FF */
+
+  --destructive: hsl(4 74% 49%);           /* red-600 #D92D20 */
+  --destructive-foreground: hsl(0 0% 100%);
+  --destructive-display: hsl(4 74% 49%);
+  --success: hsl(153 96% 30%);             /* green-600 #039855 */
+  --success-foreground: hsl(0 0% 100%);
+  --success-display: hsl(155 97% 24%);     /* green-700 — AA on white card */
+  --warning: hsl(28 97% 44%);              /* amber-600 #DC6803 */
+  --warning-foreground: hsl(0 0% 100%);
+  --info: hsl(218 100% 50%);               /* = accent */
+  --info-foreground: hsl(0 0% 100%);
+  --info-display: hsl(218 100% 30%);       /* navy AA on white card */
+
+  --border: hsl(221 13% 46%);              /* gray-400 #667085 — 3:1 UI AA */
+  --input: hsl(0 0% 100%);                 /* white input bg */
+  --ring: hsl(218 100% 50%);               /* vibrant blue focus */
+  --ring-offset: hsl(0 0% 100%);           /* white gap */
+
+  /* Charts brand-aligned */
+  --chart-1: hsl(218 100% 50%);
+  --chart-2: hsl(153 96% 30%);
+  --chart-3: hsl(28 97% 44%);
+  --chart-4: hsl(280 60% 55%);
+  --chart-5: hsl(4 74% 49%);
+
+  /* Sidebar — CRM canonical drama via navy fill (light mode) */
+  --sidebar-background: hsl(218 100% 30%);  /* navy */
+  --sidebar-foreground: hsl(0 0% 100%);
+  --sidebar-primary: hsl(220 92% 40%);      /* blueDark hover */
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(220 92% 40%);       /* blueDark hover state */
+  --sidebar-accent-foreground: hsl(0 0% 100%);
+  --sidebar-border: hsl(218 85% 33%);       /* blueDeep — subtle on navy */
+  --sidebar-ring: hsl(218 100% 50%);
+  --sidebar-indicator: hsl(218 100% 50%);   /* vibrant blue indicator */
+  /* Tracker alias (legacy --sidebar) */
+  --sidebar: var(--sidebar-background);
+
+  /* Status pairs — bg = color/0.1, fg = full color (CRM canonical) */
+  --status-pending-bg: hsl(220 17% 93%);
+  --status-pending-fg: hsl(222 41% 8%);
+  --status-success-bg: hsl(153 96% 30% / 0.1);
+  --status-success-fg: hsl(155 97% 24%);
+  --status-warning-bg: hsl(28 97% 44% / 0.1);
+  --status-warning-fg: hsl(28 97% 44%);
+  --status-error-bg: hsl(4 74% 49% / 0.1);
+  --status-error-fg: hsl(4 74% 49%);
+  --status-info-bg: hsl(218 100% 50% / 0.1);
+  --status-info-fg: hsl(218 100% 30%);
+
+  /* Status text foreground (CRM canonical names — alt to --*-display) */
+  --success-text: hsl(155 97% 24%);
+  --warning-text: hsl(35 75% 28%);
+  --destructive-text: hsl(4 74% 49%);
+  --info-text: hsl(218 100% 30%);
+
+  /* Brand extensions (Artemis-specific) */
+  --brand-navy: hsl(218 100% 30%);
+  --brand-blue-vivid: hsl(218 100% 50%);
+  --brand-blue-deep: hsl(218 85% 33%);
+  --brand-blue-dark: hsl(220 92% 40%);
+  --brand-blue-mid: hsl(209 100% 56%);
+  --brand-blue-light: hsl(204 100% 64%);
+}
+
+/* ============================================================
+   DARK MODE (.dark) — Studio Artemis
+   Background: gray-900. Card: gray-800 lift. Sidebar: NAVY drama
+   (mesma cor do light mode pra brand consistency e contraste forte
+   contra background gray-900).
+   ============================================================ */
+.dark {
+  --background: hsl(222 41% 8%);           /* gray-900 #0C111D */
+  --foreground: hsl(216 24% 96%);          /* gray-050 #F2F4F7 */
+  --card: hsl(220 43% 11%);                /* gray-800 #182230 — lift */
+  --card-foreground: hsl(216 24% 96%);
+  --popover: hsl(220 43% 11%);
+  --popover-foreground: hsl(216 24% 96%);
+
+  --primary: hsl(220 92% 40%);             /* blueDark #0848C5 — efetivo dark */
+  --primary-foreground: hsl(216 24% 96%);
+  --secondary: hsl(215 33% 14%);           /* gray-700 #1F2A37 */
+  --secondary-foreground: hsl(216 24% 96%);
+  --muted: hsl(215 33% 14%);
+  --muted-foreground: hsl(218 15% 65%);    /* gray-300 #98A2B3 */
+  --accent: hsl(218 100% 50%);
+  --accent-foreground: hsl(216 24% 96%);
+  --accent-decorative: hsl(209 100% 56%);  /* blueMid */
+
+  --destructive: hsl(4 74% 49%);
+  --destructive-foreground: hsl(216 24% 96%);
+  --destructive-display: hsl(4 86% 58%);   /* red-500 brighter for dark */
+  --success: hsl(153 96% 30%);
+  --success-foreground: hsl(216 24% 96%);
+  --success-display: hsl(152 82% 39%);     /* green-500 */
+  --warning: hsl(28 97% 44%);
+  --warning-foreground: hsl(216 24% 96%);
+  --info: hsl(218 100% 50%);
+  --info-foreground: hsl(216 24% 96%);
+  --info-display: hsl(209 100% 56%);       /* blueMid */
+
+  --border: hsl(221 13% 46%);              /* gray-400 — 3:1 vs bg */
+  --input: hsl(215 33% 14%);
+  --ring: hsl(218 100% 50%);
+  --ring-offset: hsl(222 41% 8%);          /* dark bg gap */
+
+  /* Charts dark-tuned */
+  --chart-1: hsl(218 100% 50%);
+  --chart-2: hsl(152 82% 39%);
+  --chart-3: hsl(34 94% 50%);
+  --chart-4: hsl(280 55% 65%);
+  --chart-5: hsl(4 86% 58%);
+
+  /* Sidebar dark — KEEP navy fill (CRM drama convention) */
+  --sidebar-background: hsl(218 100% 30%);  /* navy SAME as light */
+  --sidebar-foreground: hsl(216 24% 96%);
+  --sidebar-primary: hsl(220 92% 40%);
+  --sidebar-primary-foreground: hsl(216 24% 96%);
+  --sidebar-accent: hsl(220 92% 40%);       /* blueDark hover */
+  --sidebar-accent-foreground: hsl(216 24% 96%);
+  --sidebar-border: hsl(218 85% 33%);
+  --sidebar-ring: hsl(218 100% 50%);
+  --sidebar-indicator: hsl(218 100% 50%);   /* vibrant blue */
+  --sidebar: var(--sidebar-background);
+
+  /* Status pairs dark — use *_500 brighter foregrounds + 0.15 alpha */
+  --status-pending-bg: hsl(215 33% 14%);
+  --status-pending-fg: hsl(216 24% 96%);
+  --status-success-bg: hsl(152 82% 39% / 0.15);
+  --status-success-fg: hsl(152 82% 39%);
+  --status-warning-bg: hsl(34 94% 50% / 0.15);
+  --status-warning-fg: hsl(34 94% 50%);
+  --status-error-bg: hsl(4 86% 58% / 0.15);
+  --status-error-fg: hsl(4 86% 58%);
+  --status-info-bg: hsl(218 100% 50% / 0.15);
+  --status-info-fg: hsl(209 100% 56%);
+
+  --success-text: hsl(152 82% 39%);
+  --warning-text: hsl(34 94% 50%);
+  --destructive-text: hsl(4 86% 58%);
+  --info-text: hsl(209 100% 56%);
+
+  --brand-navy: hsl(218 100% 30%);
+  --brand-blue-vivid: hsl(218 100% 50%);
+  --brand-blue-deep: hsl(218 85% 33%);
+  --brand-blue-dark: hsl(220 92% 40%);
+  --brand-blue-mid: hsl(209 100% 56%);
+  --brand-blue-light: hsl(204 100% 64%);
+}
+
+/* ============================================================
+   SHADOW TOKENS (hue-aware — tinted by --foreground)
+   F-UI-002 + F-INT-008 (CRM canonical)
+   ============================================================ */
+:root {
+  --shadow-xs: 0 1px 2px hsl(222 41% 8% / 0.04);
+  --shadow-sm: 0 1px 4px hsl(222 41% 8% / 0.08);
+  --shadow-md: 0 2px 8px hsl(222 41% 8% / 0.12);
+  --shadow-lg: 0 4px 16px hsl(222 41% 8% / 0.16);
+  --shadow-xl: 0 8px 32px hsl(222 41% 8% / 0.20);
+
+  /* Semantic shadows */
+  --shadow-card:    0 1px 2px hsl(222 41% 8% / 0.04);
+  --shadow-popover: 0 8px 24px -4px hsl(222 41% 8% / 0.15);
+  --shadow-dialog:  0 24px 48px -12px hsl(222 41% 8% / 0.30);
+  --shadow-drawer:  0 0 24px hsl(222 41% 8% / 0.15);
+  --shadow-sidebar: 0 1px 3px hsl(222 41% 8% / 0.08);
+  --shadow-toast:   0 6px 20px -4px hsl(222 41% 8% / 0.15);
+  --shadow-tooltip: 0 2px 8px hsl(222 41% 8% / 0.20);
+  --shadow-control: 0 1px 2px 0 hsl(222 41% 8% / 0.05);
+}
+
+.dark {
+  /* Dark mode shadows: deeper alpha for visibility on gray-900 */
+  --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.30);
+  --shadow-sm: 0 1px 4px hsl(0 0% 0% / 0.40);
+  --shadow-md: 0 2px 8px hsl(0 0% 0% / 0.50);
+  --shadow-lg: 0 4px 16px hsl(0 0% 0% / 0.55);
+  --shadow-xl: 0 8px 32px hsl(0 0% 0% / 0.60);
+
+  --shadow-card:    0 1px 2px hsl(0 0% 0% / 0.30);
+  --shadow-popover: 0 8px 24px -4px hsl(0 0% 0% / 0.55);
+  --shadow-dialog:  0 24px 48px -12px hsl(0 0% 0% / 0.70);
+  --shadow-drawer:  0 0 24px hsl(0 0% 0% / 0.55);
+  --shadow-sidebar: 0 1px 3px hsl(0 0% 0% / 0.40);
+  --shadow-toast:   0 6px 20px -4px hsl(0 0% 0% / 0.55);
+  --shadow-tooltip: 0 2px 8px hsl(0 0% 0% / 0.60);
+  --shadow-control: 0 1px 2px 0 hsl(0 0% 0% / 0.30);
+}
+
+/* ============================================================
+   TAILWIND v4 @theme inline mapping
+   Maps custom vars → Tailwind utilities (bg-X, text-X, etc.)
+   ============================================================ */
 @theme inline {
-  --font-heading: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --font-heading: var(--font-display);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -49,8 +351,10 @@ body {
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-decorative: var(--accent-decorative);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-display: var(--destructive-display);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -63,9 +367,8 @@ body {
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
   --color-info-display: var(--info-display);
-  --color-destructive-display: var(--destructive-display);
 
-  --color-sidebar: var(--sidebar);
+  --color-sidebar: var(--sidebar-background);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
@@ -74,7 +377,7 @@ body {
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Brand extras (Artemis-specific Wave 4) */
+  /* Brand extras */
   --color-brand-navy: var(--brand-navy);
   --color-brand-blue-vivid: var(--brand-blue-vivid);
   --color-brand-blue-deep: var(--brand-blue-deep);
@@ -92,158 +395,8 @@ body {
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
   --radius-xl: var(--radius-xl);
-}
+  --radius-2xl: var(--radius-2xl);
 
-/* ============================================================
-   LIGHT MODE (:root default) — Studio Artemis paleta literal
-   ============================================================ */
-:root {
-  --background: hsl(216 24% 96%);          /* Untitled gray-050 #F2F4F7 */
-  --foreground: hsl(222 41% 8%);           /* Untitled gray-900 #0C111D */
-  --card: hsl(0 0% 100%);                  /* white card lift */
-  --card-foreground: hsl(222 41% 8%);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(222 41% 8%);
-  --primary: hsl(218 100% 30%);            /* navy #003899 */
-  --primary-foreground: hsl(216 24% 96%);
-  --secondary: hsl(220 17% 93%);
-  --secondary-foreground: hsl(222 41% 8%);
-  --muted: hsl(220 17% 93%);               /* Untitled gray-100 */
-  --muted-foreground: hsl(216 18% 34%);    /* Untitled gray-500 */
-  --accent: hsl(218 100% 50%);             /* vibrant blue #005EFF */
-  --accent-foreground: hsl(216 24% 96%);
-  --destructive: hsl(4 74% 49%);
-  --destructive-foreground: hsl(216 24% 96%);
-  --destructive-display: hsl(4 74% 49%);
-  --success: hsl(153 96% 30%);
-  --success-foreground: hsl(216 24% 96%);
-  --success-display: hsl(155 97% 24%);     /* green-700 AA vs white */
-  --warning: hsl(28 97% 44%);
-  --warning-foreground: hsl(216 24% 96%);
-  --info: hsl(218 100% 50%);
-  --info-foreground: hsl(216 24% 96%);
-  --info-display: hsl(218 100% 30%);
-  --border: hsl(221 13% 46%);              /* gray-400 #667085 — 3:1 */
-  --input: hsl(216 24% 96%);
-  --ring: hsl(218 100% 50%);
-
-  --chart-1: hsl(218 100% 50%);
-  --chart-2: hsl(153 96% 30%);
-  --chart-3: hsl(28 97% 44%);
-  --chart-4: hsl(280 60% 55%);
-  --chart-5: hsl(4 74% 49%);
-
-  --brand-navy: hsl(218 100% 30%);
-  --brand-blue-vivid: hsl(218 100% 50%);
-  --brand-blue-deep: hsl(218 85% 33%);
-  --brand-blue-dark: hsl(220 92% 40%);
-  --brand-blue-mid: hsl(209 100% 56%);
-  --brand-blue-light: hsl(204 100% 64%);
-
-  --radius: 0.5rem;
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-
-  /* Sidebar light mode — drama via navy fill + white fg (CRM canonical) */
-  --sidebar: hsl(218 100% 30%);
-  --sidebar-foreground: hsl(216 24% 96%);
-  --sidebar-primary: hsl(218 85% 33%);
-  --sidebar-primary-foreground: hsl(216 24% 96%);
-  --sidebar-accent: hsl(218 85% 33%);
-  --sidebar-accent-foreground: hsl(216 24% 96%);
-  --sidebar-border: hsl(220 92% 40%);
-  --sidebar-ring: hsl(218 100% 50%);
-  --sidebar-indicator: hsl(0 0% 100%);
-}
-
-/* ============================================================
-   DARK MODE (.dark class) — tracker default behavior
-   ============================================================ */
-.dark {
-  --background: hsl(222 41% 8%);           /* gray-900 #0C111D */
-  --foreground: hsl(216 24% 96%);          /* gray-050 #F2F4F7 */
-  --card: hsl(220 43% 11%);                /* gray-800 lift */
-  --card-foreground: hsl(216 24% 96%);
-  --popover: hsl(220 43% 11%);
-  --popover-foreground: hsl(216 24% 96%);
-  --primary: hsl(220 92% 40%);             /* blueDark #0848C5 */
-  --primary-foreground: hsl(216 24% 96%);
-  --secondary: hsl(215 33% 14%);
-  --secondary-foreground: hsl(216 24% 96%);
-  --muted: hsl(215 33% 14%);
-  --muted-foreground: hsl(218 15% 65%);
-  --accent: hsl(218 100% 50%);
-  --accent-foreground: hsl(216 24% 96%);
-  --destructive: hsl(4 74% 49%);
-  --destructive-foreground: hsl(216 24% 96%);
-  --destructive-display: hsl(4 86% 58%);
-  --success: hsl(153 96% 30%);
-  --success-foreground: hsl(216 24% 96%);
-  --success-display: hsl(152 82% 39%);
-  --warning: hsl(28 97% 44%);
-  --warning-foreground: hsl(216 24% 96%);
-  --info: hsl(218 100% 50%);
-  --info-foreground: hsl(216 24% 96%);
-  --info-display: hsl(209 100% 56%);
-  --border: hsl(221 13% 46%);
-  --input: hsl(215 33% 14%);
-  --ring: hsl(218 100% 50%);
-
-  --chart-1: hsl(218 100% 50%);
-  --chart-2: hsl(152 82% 39%);
-  --chart-3: hsl(34 94% 50%);
-  --chart-4: hsl(280 55% 65%);
-  --chart-5: hsl(4 86% 58%);
-
-  --brand-navy: hsl(218 100% 30%);
-  --brand-blue-vivid: hsl(218 100% 50%);
-  --brand-blue-deep: hsl(218 85% 33%);
-  --brand-blue-dark: hsl(220 92% 40%);
-  --brand-blue-mid: hsl(209 100% 56%);
-  --brand-blue-light: hsl(204 100% 64%);
-
-  /* Sidebar dark — gray-900 + accent vibrant indicator */
-  --sidebar: hsl(222 41% 8%);
-  --sidebar-foreground: hsl(216 24% 96%);
-  --sidebar-primary: hsl(218 100% 30%);
-  --sidebar-primary-foreground: hsl(216 24% 96%);
-  --sidebar-accent: hsl(220 43% 11%);
-  --sidebar-accent-foreground: hsl(216 24% 96%);
-  --sidebar-border: hsl(215 33% 14%);
-  --sidebar-ring: hsl(218 100% 50%);
-  --sidebar-indicator: hsl(218 100% 50%);
-}
-
-/* ============================================================
-   Motion tokens (canonical anti-ai-ds + tracker aliases híbridos
-   + Artemis extensions Wave 4)
-   ============================================================ */
-:root {
-  --motion-instant: 80ms;
-  --motion-fast: 150ms;
-  --motion-normal: 200ms;
-  --motion-slow: 300ms;
-  --motion-page: 400ms;
-
-  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  --motion-stagger: 15ms;
-
-  --motion-base: var(--motion-normal);
-  --motion-decorative: var(--motion-page);
-  --ease-in-out: var(--ease-standard);
-  --ease-emphasized: var(--ease-out);
-
-  --motion-celebration: 800ms;
-  --motion-pulse-loop: 2s;
-}
-
-@theme inline {
   --duration-fast: var(--motion-fast);
   --duration-base: var(--motion-base);
   --duration-slow: var(--motion-slow);
@@ -252,8 +405,27 @@ body {
 }
 
 /* ============================================================
-   Reduced motion gate global (WCAG 2.2.2 + 2.3.3)
-   Patrick decisão Wave 6.1: middle ground calibrado.
+   FOCUS RING (CRM canonical 2-layer — F-UI-007 / F-CA-008)
+   ============================================================ */
+:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--ring-offset),
+    0 0 0 5px hsl(218 100% 50% / 0.55);
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.field-input:focus-visible {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow:
+    0 0 0 2px var(--ring-offset),
+    0 0 0 5px hsl(218 100% 50% / 0.25);
+}
+
+/* ============================================================
+   REDUCED MOTION (WCAG 2.2.2 + 2.3.3 — middle ground calibrado)
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -273,6 +445,9 @@ body {
   }
 }
 
+/* ============================================================
+   BASE LAYER
+   ============================================================ */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -286,13 +461,39 @@ body {
 }
 
 h1, h2, h3, h4 {
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
   font-feature-settings: 'ss01';
+  letter-spacing: var(--track-tight);
 }
 
 .font-mono,
 [data-font="mono"],
 code, kbd, samp, pre {
-  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-feature-settings: 'tnum';
+}
+
+/* Semantic typography classes (CRM canonical) */
+.t-h1 { font-size: var(--text-3xl); font-weight: var(--weight-semibold); line-height: var(--leading-tight); letter-spacing: var(--track-tight); }
+.t-h2 { font-size: var(--text-xl);  font-weight: var(--weight-semibold); line-height: var(--leading-tight); letter-spacing: var(--track-tight); }
+.t-h3 { font-size: var(--text-sm);  font-weight: var(--weight-medium);   line-height: var(--leading-tight); }
+.t-body         { font-size: var(--text-sm);     line-height: var(--leading-normal); }
+.t-body-lg      { font-size: var(--text-base);   line-height: var(--leading-normal); }
+.t-label        { font-size: var(--text-xs);     color: var(--muted-foreground); font-weight: var(--weight-medium); }
+.t-meta         { font-size: 10px;               color: hsl(from var(--muted-foreground) h s l / 0.7); }
+.t-mono         { font-family: var(--font-mono); font-feature-settings: 'tnum'; }
+.t-display      { font-family: var(--font-display); }
+
+.text-2xs  { font-size: 10px; line-height: 1.3; letter-spacing: 0.06em; text-transform: uppercase; }
+.text-stat { font-size: 28px; line-height: 1.1; font-weight: 500; }
+
+.muted { color: var(--muted-foreground); }
+.mono  { font-family: var(--font-mono); }
+
+.eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: hsl(0 0% 100% / 0.4);
 }
