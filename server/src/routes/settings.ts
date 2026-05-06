@@ -1,6 +1,12 @@
 import { Router } from "express";
+import { z } from "zod";
 import { authMiddleware } from "../middleware/auth.js";
 import { getSettings, updateSettings } from "../services/settingsService.js";
+import {
+  listOverrides,
+  upsertOverride,
+  deleteOverride,
+} from "../services/pricingOverrideService.js";
 import { getUserId } from "../utils/routeHelpers.js";
 
 const router = Router();
@@ -114,6 +120,47 @@ router.patch("/", async (req, res) => {
   }
 
   res.json(result);
+});
+
+// Wave 7.3 (F-NEW-8) — Custom pricing per-model overrides.
+
+const overrideSchema = z.object({
+  input_rate: z.number().min(0),
+  output_rate: z.number().min(0),
+  cache_read_rate: z.number().min(0),
+  cache_write_rate: z.number().min(0),
+});
+
+router.get("/pricing", async (req, res) => {
+  const overrides = await listOverrides(getUserId(req));
+  res.json({ overrides });
+});
+
+router.put("/pricing/:modelKey", async (req, res) => {
+  const parsed = overrideSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({
+      status: "error",
+      message: parsed.error.issues.map((i) => i.message).join(", "),
+    });
+    return;
+  }
+  const { modelKey } = req.params;
+  if (!modelKey || modelKey.length > 64) {
+    res.status(400).json({ status: "error", message: "modelKey required (max 64 chars)" });
+    return;
+  }
+  const override = await upsertOverride(getUserId(req), modelKey, parsed.data);
+  res.json({ override });
+});
+
+router.delete("/pricing/:modelKey", async (req, res) => {
+  const ok = await deleteOverride(getUserId(req), req.params.modelKey);
+  if (!ok) {
+    res.status(404).json({ status: "error", message: "Override not found" });
+    return;
+  }
+  res.json({ status: "ok" });
 });
 
 export default router;

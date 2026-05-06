@@ -1,17 +1,30 @@
+import { useState } from "react";
+import { DollarSign } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { SettingsForm } from "@/components/settings/SettingsForm";
 import { WebhookInfo } from "@/components/settings/WebhookInfo";
 import { CsvImport } from "@/components/settings/CsvImport";
+import { PricingDrawer } from "@/components/settings/PricingDrawer";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { Button } from "@/components/ui/button";
 
 export function SettingsPage() {
   const { user } = useAuth();
+  const [pricingOpen, setPricingOpen] = useState(false);
 
   if (!user) return null;
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Configurações" />
+      <PageHeader
+        title="Configurações"
+        actions={
+          <Button variant="outline" onClick={() => setPricingOpen(true)} className="gap-2">
+            <DollarSign className="h-4 w-4" />
+            Customizar pricing
+          </Button>
+        }
+      />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Coluna esquerda: Configurações + Referência de preços */}
         <div className="space-y-6">
@@ -31,6 +44,7 @@ export function SettingsPage() {
           <WebhookInfo webhookToken={user.webhook_token} />
         </div>
       </div>
+      <PricingDrawer open={pricingOpen} onClose={() => setPricingOpen(false)} />
     </div>
   );
 }
