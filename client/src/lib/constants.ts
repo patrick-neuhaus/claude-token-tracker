@@ -58,19 +58,40 @@ export function getModelColor(raw: string): string {
 }
 
 /**
- * displayModelName — Wave 7.2: nome bruto kebab→Title Case sem fallback "Outro".
- * Hook envia model bruto (claude-opus-4-7, gpt-5.5). Patrick prefere preservar
- * o nome do modelo no front em vez de agrupar em família.
- *
- * Ex: "claude-opus-4-7" → "Claude Opus 4 7"
- *     "gpt-5.5"          → "Gpt 5.5"
- *     "claude-haiku-4-5-20251001" → trunca data: "Claude Haiku 4 5"
+ * displayLabel — kebab→Title Case genérico (source, generic categorical fields).
+ * Ex: "claude-code" → "Claude Code", "claude.ai" → "Claude.ai", "codex" → "Codex"
  */
-export function displayModelName(raw: string): string {
-  // Tira sufixo de data tipo -20251001 (8 dígitos no final, comum no Anthropic API)
-  const cleaned = raw.replace(/-\d{8}$/, "");
-  return cleaned
+export function displayLabel(raw: string): string {
+  return raw
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+/**
+ * displayModelName — Wave 7.2: nome bruto kebab→Title Case + merge versão.
+ * Anthropic separa versão por "-" (claude-opus-4-7); usuário lê com "." (4.7).
+ * Detecta números consecutivos e une com ".". Trunca date suffix Anthropic.
+ *
+ * Ex: "claude-opus-4-7"             → "Claude Opus 4.7"
+ *     "claude-haiku-4-5-20251001"   → "Claude Haiku 4.5" (date stripped)
+ *     "gpt-5.5"                     → "Gpt 5.5"
+ *     "claude-sonnet-4-6"           → "Claude Sonnet 4.6"
+ */
+export function displayModelName(raw: string): string {
+  const cleaned = raw.replace(/-\d{8}$/, "");
+  const parts = cleaned.split("-");
+  const merged: string[] = [];
+  const isNumeric = (s: string) => /^\d+(\.\d+)?$/.test(s);
+  for (const part of parts) {
+    const last = merged[merged.length - 1];
+    if (isNumeric(part) && last !== undefined && isNumeric(last)) {
+      merged[merged.length - 1] = `${last}.${part}`;
+    } else {
+      merged.push(part);
+    }
+  }
+  return merged
+    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
     .join(" ");
 }
