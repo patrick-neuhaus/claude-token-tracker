@@ -22,6 +22,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { usePlanStatus } from "@/hooks/usePlanStatus";
 import { UserMenu } from "@/components/navigation/UserMenu";
+import { StreakCounter } from "@/components/layout/StreakCounter";
 import { formatUSD } from "@/lib/formatters";
 
 // Sidebar canonical CRM lift (Wave 6.0)
@@ -251,6 +252,7 @@ export function Sidebar({ onSearchOpen }: Props) {
 
   const renderFooter = (compact: boolean) => (
     <div className="aa-sidebar__footer">
+      {!compact && <StreakCounter collapsed={compact} />}
       {!compact && <PlanCountdown collapsed={compact} />}
       <UserMenu
         user={{ name: user?.display_name || user?.email || "Usuário", avatarUrl: null }}
