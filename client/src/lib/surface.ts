@@ -9,13 +9,14 @@
  * Reference: anti-ai-design-system anti-pattern #1 (Card soup).
  */
 
+// Wave 6.1 lift: rounded-xl canonical + hover border accent transition
 export const surface = {
   /** Primary container — full surface for major page sections (charts, summary). */
-  primary: "bg-card border border-border rounded-lg",
+  primary: "bg-card border border-border rounded-xl transition-colors hover:border-accent/40",
   /** Section container with header+content split (titled blocks). */
-  section: "bg-card border border-border rounded-md",
+  section: "bg-card border border-border rounded-xl transition-colors hover:border-accent/40",
   /** Inline emphasis — lightweight box for nested data (rows, mini-stats). */
-  inline: "bg-card/50 border border-border/50 rounded-sm px-4 py-3",
+  inline: "bg-card/50 border border-border/50 rounded-md px-4 py-3",
   /** Subdued — backgrounds for grouped controls (filter bars, footer info). */
   subdued: "bg-muted/40 border border-border/40 rounded-md px-4 py-3",
 } as const;

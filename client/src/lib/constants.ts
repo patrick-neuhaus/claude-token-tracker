@@ -22,23 +22,24 @@ export const DOW_LABELS_FULL = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"
 export const DOW_LABELS_SPARSE = ["", "Seg", "", "Qua", "", "Sex", ""];
 export const MONTH_LABELS = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
+// Wave 6.1 — Artemis brand-aligned chart palette via tokens
 export const MODEL_COLORS: Record<string, string> = {
-  opus: "#a855f7",
-  sonnet: "#3b82f6",
-  haiku: "#22c55e",
-  outro: "#6b7280",
+  opus: "hsl(var(--chart-4))",      // purple
+  sonnet: "hsl(var(--chart-1))",    // vibrant blue (brand)
+  haiku: "hsl(var(--chart-2))",     // green
+  outro: "hsl(var(--muted-foreground))",
 };
 
 export const SOURCE_COLORS: Record<string, string> = {
-  "claude-code": "#f59e0b",
-  "claude.ai": "#06b6d4",
-  codex: "#10b981",
+  "claude-code": "hsl(var(--chart-3))",         // amber
+  "claude.ai": "hsl(var(--brand-blue-mid))",    // brand
+  codex: "hsl(var(--chart-2))",                 // green
 };
 
 export const VALUE_COLORS = {
-  good: "#22c55e",
-  medium: "#eab308",
-  poor: "#ef4444",
+  good: "hsl(var(--success-display))",
+  medium: "hsl(var(--warning))",
+  poor: "hsl(var(--destructive))",
 };
 
 export function normalizeModelFamily(raw: string): string {
