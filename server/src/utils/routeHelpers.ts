@@ -1,5 +1,6 @@
 import type { Request } from "express";
 import type { AuthRequest } from "../types/index.js";
+import { startOfTodayBR, startOfMonthBR, startOfNDaysAgoBR } from "./dateBR.js";
 
 export const MS_PER_DAY = 86_400_000;
 
@@ -16,7 +17,13 @@ export function getDateRange(req: Request): { from?: string; to?: string } {
   };
 }
 
-/** Converte preset ou from/to em range de timestamps ISO */
+/**
+ * Converte preset ou from/to em range de timestamps ISO.
+ *
+ * Wave 7.1 fix: presets calculados em America/Sao_Paulo (não UTC do container Docker).
+ * Antes: `setHours(0,0,0,0)` no Node = midnight UTC = 21h ontem BR.
+ * Agora: helpers dateBR usam fromZonedTime/toZonedTime pra wall-clock BR correto.
+ */
 export function parsePeriod(
   period: string | undefined,
   from?: string,
@@ -29,23 +36,20 @@ export function parsePeriod(
     };
   }
 
-  const now = new Date();
-  const end = now.toISOString();
+  const end = new Date().toISOString();
 
   if (period === "today") {
-    const start = new Date(now);
-    start.setHours(0, 0, 0, 0);
-    return { start: start.toISOString(), end };
+    return { start: startOfTodayBR(), end };
   }
   if (period === "7d") {
-    return { start: new Date(now.getTime() - 7 * MS_PER_DAY).toISOString(), end };
+    return { start: startOfNDaysAgoBR(7), end };
   }
   if (period === "month") {
-    return { start: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), end };
+    return { start: startOfMonthBR(), end };
   }
   if (period === "all") {
     return { start: "1970-01-01T00:00:00.000Z", end };
   }
   // Default: 30d
-  return { start: new Date(now.getTime() - 30 * MS_PER_DAY).toISOString(), end };
+  return { start: startOfNDaysAgoBR(30), end };
 }

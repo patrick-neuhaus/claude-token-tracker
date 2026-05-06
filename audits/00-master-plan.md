@@ -433,7 +433,13 @@ Plano pode mudar em qualquer ponto se:
 | 6.7a | ✅ done | 2026-05-06 | 2026-05-06 | Achievements motion polish (ConfettiBurst shared + BadgeCard ease-spring overshoot + TierProgressBar milestones + AchievementNotifier confetti dispatch) |
 | 6.7b | ⏸ pendente | — | — | StreakCounter + StreakLostScreen CRIAR (depende backend signal streak.lost_pending) |
 | 6.8 | ✅ done | 2026-05-06 | 2026-05-06 | Cleanup pages (rounded-md → rounded-xl + chart hex hardcoded → tokens em ProjectsPage/ProjectDetailPage/EntriesPage/SessionDetailPage/DailyCostChart/CostBySourceChart/SessionTimeScatterChart/DailyCostAreaChart) |
-| 7 | ⏸ pendente (condicional) | — | — | — |
+| 7.1 | ✅ done | 2026-05-06 | 2026-05-06 | Timezone fix (server `parsePeriod` usa America/Sao_Paulo via `dateBR.ts` helpers + DashboardPage initial state resolve preset → from/to no mount) |
+| 7.2 | ⏸ pendente | — | — | Modelos não puxam (PLAN-B-SPEC finding) |
+| 7.3 | ⏸ pendente | — | — | Custom pricing input (PricingDrawer F-NEW-8 schema novo) |
+| 7.4 | ⏸ pendente | — | — | Auth bug user teste (status pending OR role middleware) |
+| 7.5 | ⏸ pendente | — | — | LoginPage dark/light toggle |
+| 7.6 | ⏸ pendente | — | — | Analytics heatmap hover→resize |
+| 7.7 | ⏸ pendente | — | — | LoginPage input border light mode polish |
 
 ---
 
