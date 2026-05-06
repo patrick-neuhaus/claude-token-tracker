@@ -54,7 +54,10 @@ export function AppLayout() {
     );
   }
 
-  if (!user) return <Navigate to="/login" replace />;
+  // Wave 6.1 bypass — single-tenant. Auth redirect comentado; AuthContext
+  // injeta MOCK_USER quando sem backend. Wave 7 cleanup formal (drop auth
+  // routes server + AuthProvider + LoginPage).
+  // if (!user) return <Navigate to="/login" replace />;
 
   return (
     <div className="flex h-screen">
