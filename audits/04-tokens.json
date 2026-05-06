@@ -1,14 +1,17 @@
 {
   "name": "claude-token-tracker / Studio Artemis",
-  "version": "1.0.0",
-  "generated": "2026-05-06T16:34:42.941Z",
+  "version": "2.0.0",
+  "generated": "2026-05-06T17:00:41.786Z",
   "brand": {
     "primary": "#003899",
     "accent": "#005EFF",
     "family": "Studio Artemis",
     "tagline": "Plausible pra Claude"
   },
-  "mode": "dark",
+  "modes": [
+    "light",
+    "dark"
+  ],
   "typography": {
     "display": "IBM Plex Sans",
     "body": "Inter",
@@ -36,52 +39,102 @@
     "gray900": "#0C111D"
   },
   "semantic": {
-    "--background": "#0C111D",
-    "--foreground": "#F2F4F7",
-    "--card": "#101828",
-    "--card-foreground": "#F2F4F7",
-    "--popover": "#101828",
-    "--popover-foreground": "#F2F4F7",
-    "--muted": "#182230",
-    "--muted-foreground": "#98A2B3",
-    "--border": "#667085",
-    "--input": "#182230",
-    "--ring": "#005EFF",
-    "--primary": "#0848C5",
-    "--primary-foreground": "#F2F4F7",
-    "--accent": "#005EFF",
-    "--accent-foreground": "#F2F4F7",
-    "--secondary": "#182230",
-    "--secondary-foreground": "#F2F4F7",
-    "--brand-navy": "#003899",
-    "--brand-blue-vivid": "#005EFF",
-    "--brand-blue-deep": "#0D419B",
-    "--brand-blue-dark": "#0848C5",
-    "--brand-blue-mid": "#1E93FF",
-    "--brand-blue-light": "#48B7FF",
-    "--destructive": "#D92D20",
-    "--destructive-foreground": "#F2F4F7",
-    "--success": "#039855",
-    "--success-foreground": "#F2F4F7",
-    "--warning": "#DC6803",
-    "--warning-foreground": "#F2F4F7",
-    "--info": "#005EFF",
-    "--info-foreground": "#F2F4F7",
-    "--sidebar-background": "#0C111D",
-    "--sidebar-foreground": "#F2F4F7",
-    "--sidebar-primary": "#003899",
-    "--sidebar-primary-foreground": "#F2F4F7",
-    "--sidebar-accent": "#101828",
-    "--sidebar-accent-foreground": "#F2F4F7",
-    "--sidebar-border": "#182230",
-    "--sidebar-ring": "#005EFF",
-    "--sidebar-indicator": "#005EFF",
-    "--status-pending-bg": "#182230",
-    "--status-pending-fg": "#D0D5DD",
-    "--status-success-fg": "#12B76A",
-    "--status-warning-fg": "#F79009",
-    "--status-error-fg": "#F04438",
-    "--status-info-fg": "#1E93FF"
+    "light": {
+      "--background": "#F2F4F7",
+      "--foreground": "#0C111D",
+      "--card": "#FFFFFF",
+      "--card-foreground": "#0C111D",
+      "--popover": "#FFFFFF",
+      "--popover-foreground": "#0C111D",
+      "--muted": "#EAECF0",
+      "--muted-foreground": "#475467",
+      "--border": "#667085",
+      "--input": "#F2F4F7",
+      "--ring": "#005EFF",
+      "--primary": "#003899",
+      "--primary-foreground": "#F2F4F7",
+      "--accent": "#005EFF",
+      "--accent-foreground": "#F2F4F7",
+      "--secondary": "#EAECF0",
+      "--secondary-foreground": "#0C111D",
+      "--brand-navy": "#003899",
+      "--brand-blue-vivid": "#005EFF",
+      "--brand-blue-deep": "#0D419B",
+      "--brand-blue-dark": "#0848C5",
+      "--brand-blue-mid": "#1E93FF",
+      "--brand-blue-light": "#48B7FF",
+      "--destructive": "#D92D20",
+      "--destructive-foreground": "#F2F4F7",
+      "--success": "#039855",
+      "--success-foreground": "#F2F4F7",
+      "--warning": "#DC6803",
+      "--warning-foreground": "#F2F4F7",
+      "--info": "#005EFF",
+      "--info-foreground": "#F2F4F7",
+      "--sidebar-background": "#003899",
+      "--sidebar-foreground": "#F2F4F7",
+      "--sidebar-primary": "#0D419B",
+      "--sidebar-primary-foreground": "#F2F4F7",
+      "--sidebar-accent": "#0D419B",
+      "--sidebar-accent-foreground": "#F2F4F7",
+      "--sidebar-border": "#0848C5",
+      "--sidebar-ring": "#005EFF",
+      "--sidebar-indicator": "#FFFFFF",
+      "--status-pending-bg": "#EAECF0",
+      "--status-pending-fg": "#182230",
+      "--status-success-fg": "#027A48",
+      "--status-warning-fg": "#B54708",
+      "--status-error-fg": "#B42318",
+      "--status-info-fg": "#003899"
+    },
+    "dark": {
+      "--background": "#0C111D",
+      "--foreground": "#F2F4F7",
+      "--card": "#101828",
+      "--card-foreground": "#F2F4F7",
+      "--popover": "#101828",
+      "--popover-foreground": "#F2F4F7",
+      "--muted": "#182230",
+      "--muted-foreground": "#98A2B3",
+      "--border": "#667085",
+      "--input": "#182230",
+      "--ring": "#005EFF",
+      "--primary": "#0848C5",
+      "--primary-foreground": "#F2F4F7",
+      "--accent": "#005EFF",
+      "--accent-foreground": "#F2F4F7",
+      "--secondary": "#182230",
+      "--secondary-foreground": "#F2F4F7",
+      "--brand-navy": "#003899",
+      "--brand-blue-vivid": "#005EFF",
+      "--brand-blue-deep": "#0D419B",
+      "--brand-blue-dark": "#0848C5",
+      "--brand-blue-mid": "#1E93FF",
+      "--brand-blue-light": "#48B7FF",
+      "--destructive": "#D92D20",
+      "--destructive-foreground": "#F2F4F7",
+      "--success": "#039855",
+      "--success-foreground": "#F2F4F7",
+      "--warning": "#DC6803",
+      "--warning-foreground": "#F2F4F7",
+      "--info": "#005EFF",
+      "--info-foreground": "#F2F4F7",
+      "--sidebar-background": "#0C111D",
+      "--sidebar-foreground": "#F2F4F7",
+      "--sidebar-primary": "#003899",
+      "--sidebar-primary-foreground": "#F2F4F7",
+      "--sidebar-accent": "#101828",
+      "--sidebar-accent-foreground": "#F2F4F7",
+      "--sidebar-border": "#182230",
+      "--sidebar-ring": "#005EFF",
+      "--sidebar-indicator": "#005EFF",
+      "--status-pending-bg": "#182230",
+      "--status-pending-fg": "#D0D5DD",
+      "--status-success-fg": "#12B76A",
+      "--status-warning-fg": "#F79009",
+      "--status-error-fg": "#F04438",
+      "--status-info-fg": "#1E93FF"
+    }
   },
   "motion": {
     "--motion-instant": "80ms",
@@ -138,281 +191,561 @@
     "--shadow-control": "0 1px 2px 0 rgb(0 0 0 / .35)",
     "--overlay-backdrop": "rgb(0 0 0 / .60)"
   },
-  "pickFgDerivations": [
-    {
-      "fgKey": "--card-foreground",
-      "bgKey": "--card",
-      "bgHex": "#101828",
-      "picked": "#F2F4F7",
-      "ratio": "17.75"
-    },
-    {
-      "fgKey": "--popover-foreground",
-      "bgKey": "--popover",
-      "bgHex": "#101828",
-      "picked": "#F2F4F7",
-      "ratio": "17.75"
-    },
-    {
-      "fgKey": "--primary-foreground",
-      "bgKey": "--primary",
-      "bgHex": "#0848C5",
-      "picked": "#F2F4F7",
-      "ratio": "7.65"
-    },
-    {
-      "fgKey": "--accent-foreground",
-      "bgKey": "--accent",
-      "bgHex": "#005EFF",
-      "picked": "#F2F4F7",
-      "ratio": "5.19"
-    },
-    {
-      "fgKey": "--secondary-foreground",
-      "bgKey": "--secondary",
-      "bgHex": "#182230",
-      "picked": "#F2F4F7",
-      "ratio": "16.03"
-    },
-    {
-      "fgKey": "--sidebar-foreground",
-      "bgKey": "--sidebar-background",
-      "bgHex": "#0C111D",
-      "picked": "#F2F4F7",
-      "ratio": "18.86"
-    },
-    {
-      "fgKey": "--sidebar-primary-foreground",
-      "bgKey": "--sidebar-primary",
-      "bgHex": "#003899",
-      "picked": "#F2F4F7",
-      "ratio": "10.37"
-    },
-    {
-      "fgKey": "--sidebar-accent-foreground",
-      "bgKey": "--sidebar-accent",
-      "bgHex": "#101828",
-      "picked": "#F2F4F7",
-      "ratio": "17.75"
-    }
-  ],
-  "wcag": {
-    "validatedAt": "2026-05-06T16:34:42.943Z",
-    "pairs": [
+  "pickFgDerivations": {
+    "light": [
       {
-        "label": "Foreground / Background",
-        "fg": "--foreground",
-        "bg": "--background",
-        "fgHex": "#F2F4F7",
-        "bgHex": "#0C111D",
-        "type": "text",
-        "ratio": "17.12",
-        "level": "AAA",
-        "pass": true
+        "fgKey": "--card-foreground",
+        "bgKey": "--card",
+        "bgHex": "#FFFFFF",
+        "picked": "#0C111D",
+        "ratio": "19.80"
       },
       {
-        "label": "Foreground / Card",
-        "fg": "--card-foreground",
-        "bg": "--card",
-        "fgHex": "#F2F4F7",
-        "bgHex": "#101828",
-        "type": "text",
-        "ratio": "16.11",
-        "level": "AAA",
-        "pass": true
+        "fgKey": "--popover-foreground",
+        "bgKey": "--popover",
+        "bgHex": "#FFFFFF",
+        "picked": "#0C111D",
+        "ratio": "19.80"
       },
       {
-        "label": "Muted-fg / Background",
-        "fg": "--muted-foreground",
-        "bg": "--background",
-        "fgHex": "#98A2B3",
-        "bgHex": "#0C111D",
-        "type": "text",
-        "ratio": "7.32",
-        "level": "AAA",
-        "pass": true
+        "fgKey": "--primary-foreground",
+        "bgKey": "--primary",
+        "bgHex": "#003899",
+        "picked": "#F2F4F7",
+        "ratio": "10.37"
       },
       {
-        "label": "Muted-fg / Card",
-        "fg": "--muted-foreground",
-        "bg": "--card",
-        "fgHex": "#98A2B3",
-        "bgHex": "#101828",
-        "type": "text",
-        "ratio": "6.89",
-        "level": "AA",
-        "pass": true
-      },
-      {
-        "label": "Muted-fg / Muted",
-        "fg": "--muted-foreground",
-        "bg": "--muted",
-        "fgHex": "#98A2B3",
-        "bgHex": "#182230",
-        "type": "text",
-        "ratio": "6.22",
-        "level": "AA",
-        "pass": true
-      },
-      {
-        "label": "Primary-fg / Primary",
-        "fg": "--primary-foreground",
-        "bg": "--primary",
-        "fgHex": "#F2F4F7",
-        "bgHex": "#0848C5",
-        "type": "text",
-        "ratio": "6.95",
-        "level": "AA",
-        "pass": true
-      },
-      {
-        "label": "Accent-fg / Accent",
-        "fg": "--accent-foreground",
-        "bg": "--accent",
-        "fgHex": "#F2F4F7",
+        "fgKey": "--accent-foreground",
+        "bgKey": "--accent",
         "bgHex": "#005EFF",
-        "type": "text",
-        "ratio": "4.71",
-        "level": "AA",
-        "pass": true
+        "picked": "#F2F4F7",
+        "ratio": "5.19"
       },
       {
-        "label": "Accent vs Background (UI)",
-        "fg": "--accent",
-        "bg": "--background",
-        "fgHex": "#005EFF",
-        "bgHex": "#0C111D",
-        "type": "ui",
-        "ratio": "3.63",
-        "level": "OK",
-        "pass": true
+        "fgKey": "--secondary-foreground",
+        "bgKey": "--secondary",
+        "bgHex": "#EAECF0",
+        "picked": "#0C111D",
+        "ratio": "16.74"
       },
       {
-        "label": "Primary vs Background (UI)",
-        "fg": "--primary",
-        "bg": "--background",
-        "fgHex": "#0848C5",
-        "bgHex": "#0C111D",
-        "type": "ui",
-        "ratio": "2.46",
-        "level": "FAIL",
-        "pass": false
+        "fgKey": "--sidebar-foreground",
+        "bgKey": "--sidebar-background",
+        "bgHex": "#003899",
+        "picked": "#F2F4F7",
+        "ratio": "10.37"
       },
       {
-        "label": "Border vs Card (UI)",
-        "fg": "--border",
-        "bg": "--card",
-        "fgHex": "#667085",
-        "bgHex": "#101828",
-        "type": "ui",
-        "ratio": "3.57",
-        "level": "OK",
-        "pass": true
+        "fgKey": "--sidebar-primary-foreground",
+        "bgKey": "--sidebar-primary",
+        "bgHex": "#0D419B",
+        "picked": "#F2F4F7",
+        "ratio": "9.35"
       },
       {
-        "label": "Border vs Background (UI)",
-        "fg": "--border",
-        "bg": "--background",
-        "fgHex": "#667085",
-        "bgHex": "#0C111D",
-        "type": "ui",
-        "ratio": "3.79",
-        "level": "OK",
-        "pass": true
-      },
-      {
-        "label": "Ring vs Background (UI)",
-        "fg": "--ring",
-        "bg": "--background",
-        "fgHex": "#005EFF",
-        "bgHex": "#0C111D",
-        "type": "ui",
-        "ratio": "3.63",
-        "level": "OK",
-        "pass": true
-      },
-      {
-        "label": "Status info-fg / Card",
-        "fg": "--status-info-fg",
-        "bg": "--card",
-        "fgHex": "#1E93FF",
-        "bgHex": "#101828",
-        "type": "text",
-        "ratio": "5.64",
-        "level": "AA",
-        "pass": true
-      },
-      {
-        "label": "Status success-fg / Card",
-        "fg": "--status-success-fg",
-        "bg": "--card",
-        "fgHex": "#12B76A",
-        "bgHex": "#101828",
-        "type": "text",
-        "ratio": "6.77",
-        "level": "AA",
-        "pass": true
-      },
-      {
-        "label": "Status warning-fg / Card",
-        "fg": "--status-warning-fg",
-        "bg": "--card",
-        "fgHex": "#F79009",
-        "bgHex": "#101828",
-        "type": "text",
-        "ratio": "7.56",
-        "level": "AAA",
-        "pass": true
-      },
-      {
-        "label": "Status error-fg / Card",
-        "fg": "--status-error-fg",
-        "bg": "--card",
-        "fgHex": "#F04438",
-        "bgHex": "#101828",
-        "type": "text",
-        "ratio": "4.72",
-        "level": "AA",
-        "pass": true
-      },
-      {
-        "label": "Sidebar-fg / Sidebar-bg",
-        "fg": "--sidebar-foreground",
-        "bg": "--sidebar-background",
-        "fgHex": "#F2F4F7",
-        "bgHex": "#0C111D",
-        "type": "text",
-        "ratio": "17.12",
-        "level": "AAA",
-        "pass": true
-      },
-      {
-        "label": "Sidebar-fg / Sidebar-accent",
-        "fg": "--sidebar-accent-foreground",
-        "bg": "--sidebar-accent",
-        "fgHex": "#F2F4F7",
-        "bgHex": "#101828",
-        "type": "text",
-        "ratio": "16.11",
-        "level": "AAA",
-        "pass": true
-      },
-      {
-        "label": "Sidebar-indicator vs bg (UI)",
-        "fg": "--sidebar-indicator",
-        "bg": "--sidebar-background",
-        "fgHex": "#005EFF",
-        "bgHex": "#0C111D",
-        "type": "ui",
-        "ratio": "3.63",
-        "level": "OK",
-        "pass": true
+        "fgKey": "--sidebar-accent-foreground",
+        "bgKey": "--sidebar-accent",
+        "bgHex": "#0D419B",
+        "picked": "#F2F4F7",
+        "ratio": "9.35"
       }
     ],
-    "summary": {
-      "total": 19,
-      "passing": 18,
-      "failing": 1
+    "dark": [
+      {
+        "fgKey": "--card-foreground",
+        "bgKey": "--card",
+        "bgHex": "#101828",
+        "picked": "#F2F4F7",
+        "ratio": "17.75"
+      },
+      {
+        "fgKey": "--popover-foreground",
+        "bgKey": "--popover",
+        "bgHex": "#101828",
+        "picked": "#F2F4F7",
+        "ratio": "17.75"
+      },
+      {
+        "fgKey": "--primary-foreground",
+        "bgKey": "--primary",
+        "bgHex": "#0848C5",
+        "picked": "#F2F4F7",
+        "ratio": "7.65"
+      },
+      {
+        "fgKey": "--accent-foreground",
+        "bgKey": "--accent",
+        "bgHex": "#005EFF",
+        "picked": "#F2F4F7",
+        "ratio": "5.19"
+      },
+      {
+        "fgKey": "--secondary-foreground",
+        "bgKey": "--secondary",
+        "bgHex": "#182230",
+        "picked": "#F2F4F7",
+        "ratio": "16.03"
+      },
+      {
+        "fgKey": "--sidebar-foreground",
+        "bgKey": "--sidebar-background",
+        "bgHex": "#0C111D",
+        "picked": "#F2F4F7",
+        "ratio": "18.86"
+      },
+      {
+        "fgKey": "--sidebar-primary-foreground",
+        "bgKey": "--sidebar-primary",
+        "bgHex": "#003899",
+        "picked": "#F2F4F7",
+        "ratio": "10.37"
+      },
+      {
+        "fgKey": "--sidebar-accent-foreground",
+        "bgKey": "--sidebar-accent",
+        "bgHex": "#101828",
+        "picked": "#F2F4F7",
+        "ratio": "17.75"
+      }
+    ]
+  },
+  "wcag": {
+    "validatedAt": "2026-05-06T17:00:41.789Z",
+    "light": {
+      "pairs": [
+        {
+          "label": "Foreground / Background",
+          "fg": "--foreground",
+          "bg": "--background",
+          "fgHex": "#0C111D",
+          "bgHex": "#F2F4F7",
+          "type": "text",
+          "ratio": "17.12",
+          "level": "AAA",
+          "pass": true
+        },
+        {
+          "label": "Foreground / Card",
+          "fg": "--card-foreground",
+          "bg": "--card",
+          "fgHex": "#0C111D",
+          "bgHex": "#FFFFFF",
+          "type": "text",
+          "ratio": "18.86",
+          "level": "AAA",
+          "pass": true
+        },
+        {
+          "label": "Muted-fg / Background",
+          "fg": "--muted-foreground",
+          "bg": "--background",
+          "fgHex": "#475467",
+          "bgHex": "#F2F4F7",
+          "type": "text",
+          "ratio": "6.98",
+          "level": "AA",
+          "pass": true
+        },
+        {
+          "label": "Muted-fg / Card",
+          "fg": "--muted-foreground",
+          "bg": "--card",
+          "fgHex": "#475467",
+          "bgHex": "#FFFFFF",
+          "type": "text",
+          "ratio": "7.69",
+          "level": "AAA",
+          "pass": true
+        },
+        {
+          "label": "Muted-fg / Muted",
+          "fg": "--muted-foreground",
+          "bg": "--muted",
+          "fgHex": "#475467",
+          "bgHex": "#EAECF0",
+          "type": "text",
+          "ratio": "6.50",
+          "level": "AA",
+          "pass": true
+        },
+        {
+          "label": "Primary-fg / Primary",
+          "fg": "--primary-foreground",
+          "bg": "--primary",
+          "fgHex": "#F2F4F7",
+          "bgHex": "#003899",
+          "type": "text",
+          "ratio": "9.41",
+          "level": "AAA",
+          "pass": true
+        },
+        {
+          "label": "Accent-fg / Accent",
+          "fg": "--accent-foreground",
+          "bg": "--accent",
+          "fgHex": "#F2F4F7",
+          "bgHex": "#005EFF",
+          "type": "text",
+          "ratio": "4.71",
+          "level": "AA",
+          "pass": true
+        },
+        {
+          "label": "Accent vs Background (UI)",
+          "fg": "--accent",
+          "bg": "--background",
+          "fgHex": "#005EFF",
+          "bgHex": "#F2F4F7",
+          "type": "ui",
+          "ratio": "4.71",
+          "level": "OK",
+          "pass": true
+        },
+        {
+          "label": "Primary vs Background (UI)",
+          "fg": "--primary",
+          "bg": "--background",
+          "fgHex": "#003899",
+          "bgHex": "#F2F4F7",
+          "type": "ui",
+          "ratio": "9.41",
+          "level": "OK",
+          "pass": true
+        },
+        {
+          "label": "Border vs Card (UI)",
+          "fg": "--border",
+          "bg": "--card",
+          "fgHex": "#667085",
+          "bgHex": "#FFFFFF",
+          "type": "ui",
+          "ratio": "4.97",
+          "level": "OK",
+          "pass": true
+        },
+        {
+          "label": "Border vs Background (UI)",
+          "fg": "--border",
+          "bg": "--background",
+          "fgHex": "#667085",
+          "bgHex": "#F2F4F7",
+          "type": "ui",
+          "ratio": "4.51",
+          "level": "OK",
+          "pass": true
+        },
+        {
+          "label": "Ring vs Background (UI)",
+          "fg": "--ring",
+          "bg": "--background",
+          "fgHex": "#005EFF",
+          "bgHex": "#F2F4F7",
+          "type": "ui",
+          "ratio": "4.71",
+          "level": "OK",
+          "pass": true
+        },
+        {
+          "label": "Status info-fg / Card",
+          "fg": "--status-info-fg",
+          "bg": "--card",
+          "fgHex": "#003899",
+          "bgHex": "#FFFFFF",
+          "type": "text",
+          "ratio": "10.37",
+          "level": "AAA",
+          "pass": true
+        },
+        {
+          "label": "Status success-fg / Card",
+          "fg": "--status-success-fg",
+          "bg": "--card",
+          "fgHex": "#027A48",
+          "bgHex": "#FFFFFF",
+          "type": "text",
+          "ratio": "5.41",
+          "level": "AA",
+          "pass": true
+        },
+        {
+          "label": "Status warning-fg / Card",
+          "fg": "--status-warning-fg",
+          "bg": "--card",
+          "fgHex": "#B54708",
+          "bgHex": "#FFFFFF",
+          "type": "text",
+          "ratio": "5.43",
+          "level": "AA",
+          "pass": true
+        },
+        {
+          "label": "Status error-fg / Card",
+          "fg": "--status-error-fg",
+          "bg": "--card",
+          "fgHex": "#B42318",
+          "bgHex": "#FFFFFF",
+          "type": "text",
+          "ratio": "6.57",
+          "level": "AA",
+          "pass": true
+        },
+        {
+          "label": "Sidebar-fg / Sidebar-bg",
+          "fg": "--sidebar-foreground",
+          "bg": "--sidebar-background",
+          "fgHex": "#F2F4F7",
+          "bgHex": "#003899",
+          "type": "text",
+          "ratio": "9.41",
+          "level": "AAA",
+          "pass": true
+        },
+        {
+          "label": "Sidebar-fg / Sidebar-accent",
+          "fg": "--sidebar-accent-foreground",
+          "bg": "--sidebar-accent",
+          "fgHex": "#F2F4F7",
+          "bgHex": "#0D419B",
+          "type": "text",
+          "ratio": "8.48",
+          "level": "AAA",
+          "pass": true
+        },
+        {
+          "label": "Sidebar-indicator vs bg (UI)",
+          "fg": "--sidebar-indicator",
+          "bg": "--sidebar-background",
+          "fgHex": "#FFFFFF",
+          "bgHex": "#003899",
+          "type": "ui",
+          "ratio": "10.37",
+          "level": "OK",
+          "pass": true
+        }
+      ],
+      "summary": {
+        "total": 19,
+        "passing": 19,
+        "failing": 0
+      }
+    },
+    "dark": {
+      "pairs": [
+        {
+          "label": "Foreground / Background",
+          "fg": "--foreground",
+          "bg": "--background",
+          "fgHex": "#F2F4F7",
+          "bgHex": "#0C111D",
+          "type": "text",
+          "ratio": "17.12",
+          "level": "AAA",
+          "pass": true
+        },
+        {
+          "label": "Foreground / Card",
+          "fg": "--card-foreground",
+          "bg": "--card",
+          "fgHex": "#F2F4F7",
+          "bgHex": "#101828",
+          "type": "text",
+          "ratio": "16.11",
+          "level": "AAA",
+          "pass": true
+        },
+        {
+          "label": "Muted-fg / Background",
+          "fg": "--muted-foreground",
+          "bg": "--background",
+          "fgHex": "#98A2B3",
+          "bgHex": "#0C111D",
+          "type": "text",
+          "ratio": "7.32",
+          "level": "AAA",
+          "pass": true
+        },
+        {
+          "label": "Muted-fg / Card",
+          "fg": "--muted-foreground",
+          "bg": "--card",
+          "fgHex": "#98A2B3",
+          "bgHex": "#101828",
+          "type": "text",
+          "ratio": "6.89",
+          "level": "AA",
+          "pass": true
+        },
+        {
+          "label": "Muted-fg / Muted",
+          "fg": "--muted-foreground",
+          "bg": "--muted",
+          "fgHex": "#98A2B3",
+          "bgHex": "#182230",
+          "type": "text",
+          "ratio": "6.22",
+          "level": "AA",
+          "pass": true
+        },
+        {
+          "label": "Primary-fg / Primary",
+          "fg": "--primary-foreground",
+          "bg": "--primary",
+          "fgHex": "#F2F4F7",
+          "bgHex": "#0848C5",
+          "type": "text",
+          "ratio": "6.95",
+          "level": "AA",
+          "pass": true
+        },
+        {
+          "label": "Accent-fg / Accent",
+          "fg": "--accent-foreground",
+          "bg": "--accent",
+          "fgHex": "#F2F4F7",
+          "bgHex": "#005EFF",
+          "type": "text",
+          "ratio": "4.71",
+          "level": "AA",
+          "pass": true
+        },
+        {
+          "label": "Accent vs Background (UI)",
+          "fg": "--accent",
+          "bg": "--background",
+          "fgHex": "#005EFF",
+          "bgHex": "#0C111D",
+          "type": "ui",
+          "ratio": "3.63",
+          "level": "OK",
+          "pass": true
+        },
+        {
+          "label": "Primary vs Background (UI)",
+          "fg": "--primary",
+          "bg": "--background",
+          "fgHex": "#0848C5",
+          "bgHex": "#0C111D",
+          "type": "ui",
+          "ratio": "2.46",
+          "level": "FAIL",
+          "pass": false
+        },
+        {
+          "label": "Border vs Card (UI)",
+          "fg": "--border",
+          "bg": "--card",
+          "fgHex": "#667085",
+          "bgHex": "#101828",
+          "type": "ui",
+          "ratio": "3.57",
+          "level": "OK",
+          "pass": true
+        },
+        {
+          "label": "Border vs Background (UI)",
+          "fg": "--border",
+          "bg": "--background",
+          "fgHex": "#667085",
+          "bgHex": "#0C111D",
+          "type": "ui",
+          "ratio": "3.79",
+          "level": "OK",
+          "pass": true
+        },
+        {
+          "label": "Ring vs Background (UI)",
+          "fg": "--ring",
+          "bg": "--background",
+          "fgHex": "#005EFF",
+          "bgHex": "#0C111D",
+          "type": "ui",
+          "ratio": "3.63",
+          "level": "OK",
+          "pass": true
+        },
+        {
+          "label": "Status info-fg / Card",
+          "fg": "--status-info-fg",
+          "bg": "--card",
+          "fgHex": "#1E93FF",
+          "bgHex": "#101828",
+          "type": "text",
+          "ratio": "5.64",
+          "level": "AA",
+          "pass": true
+        },
+        {
+          "label": "Status success-fg / Card",
+          "fg": "--status-success-fg",
+          "bg": "--card",
+          "fgHex": "#12B76A",
+          "bgHex": "#101828",
+          "type": "text",
+          "ratio": "6.77",
+          "level": "AA",
+          "pass": true
+        },
+        {
+          "label": "Status warning-fg / Card",
+          "fg": "--status-warning-fg",
+          "bg": "--card",
+          "fgHex": "#F79009",
+          "bgHex": "#101828",
+          "type": "text",
+          "ratio": "7.56",
+          "level": "AAA",
+          "pass": true
+        },
+        {
+          "label": "Status error-fg / Card",
+          "fg": "--status-error-fg",
+          "bg": "--card",
+          "fgHex": "#F04438",
+          "bgHex": "#101828",
+          "type": "text",
+          "ratio": "4.72",
+          "level": "AA",
+          "pass": true
+        },
+        {
+          "label": "Sidebar-fg / Sidebar-bg",
+          "fg": "--sidebar-foreground",
+          "bg": "--sidebar-background",
+          "fgHex": "#F2F4F7",
+          "bgHex": "#0C111D",
+          "type": "text",
+          "ratio": "17.12",
+          "level": "AAA",
+          "pass": true
+        },
+        {
+          "label": "Sidebar-fg / Sidebar-accent",
+          "fg": "--sidebar-accent-foreground",
+          "bg": "--sidebar-accent",
+          "fgHex": "#F2F4F7",
+          "bgHex": "#101828",
+          "type": "text",
+          "ratio": "16.11",
+          "level": "AAA",
+          "pass": true
+        },
+        {
+          "label": "Sidebar-indicator vs bg (UI)",
+          "fg": "--sidebar-indicator",
+          "bg": "--sidebar-background",
+          "fgHex": "#005EFF",
+          "bgHex": "#0C111D",
+          "type": "ui",
+          "ratio": "3.63",
+          "level": "OK",
+          "pass": true
+        }
+      ],
+      "summary": {
+        "total": 19,
+        "passing": 18,
+        "failing": 1
+      }
     }
   },
   "extensions": {
@@ -422,5 +755,6 @@
       "--brand-navy": "#003899",
       "--brand-blue-vivid": "#005EFF"
     }
-  }
+  },
+  "reducedMotionStrategy": "middle-ground-calibrated"
 }
