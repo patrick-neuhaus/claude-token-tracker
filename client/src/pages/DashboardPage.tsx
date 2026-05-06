@@ -11,10 +11,8 @@ import { DailyCostChart } from "@/components/dashboard/DailyCostChart";
 import { DashboardFilters as DashboardFiltersBar } from "@/components/dashboard/DashboardFilters";
 import { BudgetAlert } from "@/components/dashboard/BudgetAlert";
 import { DailyBudgetProgress } from "@/components/dashboard/DailyBudgetProgress";
+import { WebhookPing } from "@/components/dashboard/WebhookPing";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BarChart3, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -64,23 +62,7 @@ export function DashboardPage() {
   }
 
   if (!s || s.entry_count === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <div className="rounded-full bg-muted p-4">
-          <BarChart3 className="h-12 w-12 text-muted-foreground" />
-        </div>
-        <p className="text-lg font-medium">Nenhum dado ainda</p>
-        <p className="text-sm text-muted-foreground text-center max-w-md">
-          Configure o webhook nos seus scripts ou importe um CSV com dados históricos para começar a rastrear.
-        </p>
-        <Link to="/settings">
-          <Button variant="outline" className="gap-2">
-            <Settings className="h-4 w-4" />
-            Ir para Configurações
-          </Button>
-        </Link>
-      </div>
-    );
+    return <WebhookPing />;
   }
 
   const periodLabel = filters.period === "month"
