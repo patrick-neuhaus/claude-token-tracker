@@ -423,8 +423,9 @@ Plano pode mudar em qualquer ponto se:
 | 5 | ✅ done | 2026-05-06 | 2026-05-06 | `audits/05-deltas-and-lift.md` + `05-component-architect.md` |
 | 6.0 | ✅ done | 2026-05-06 | 2026-05-06 | Shell canonical lift (Sidebar + UserMenu + ThemeContext) |
 | 6.1 | ✅ done | 2026-05-06 | 2026-05-06 | Dashboard internals (StatCard canonical + WebhookPing + chart tokens + surface rounded-xl) |
-| 6.2 | ⏸ pendente | — | — | Sessions lift (SessionsTable → AppTable canonical) |
-| 6.3-6.8 | ⏸ pendente | — | — | — |
+| 6.2 | ✅ done | 2026-05-06 | 2026-05-06 | Sessions lift (AppTable canonical port + SessionsTable refactor + drop ClickableRow/SortableTableHeader) |
+| 6.3 | ⏸ pendente | — | — | Analytics page lift |
+| 6.4-6.8 | ⏸ pendente | — | — | — |
 | 7 | ⏸ pendente (condicional) | — | — | — |
 
 ---
