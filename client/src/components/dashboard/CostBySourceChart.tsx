@@ -1,5 +1,5 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { SOURCE_COLORS } from "@/lib/constants";
+import { SOURCE_COLORS, displayLabel } from "@/lib/constants";
 import { formatUSD } from "@/lib/formatters";
 import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 import { surface, surfaceHeader, surfaceContent } from "@/lib/surface";
@@ -13,8 +13,17 @@ interface Props {
   data: SourceData[];
 }
 
+/**
+ * CostBySourceChart — Wave 7.2: source label kebab→Title Case via displayLabel.
+ * "claude-code" → "Claude Code", "codex" → "Codex". Color lookup via raw key.
+ */
 export function CostBySourceChart({ data }: Props) {
-  const total = data.reduce((s, d) => s + d.cost_usd, 0);
+  const chartData = data.map((d) => ({
+    name: displayLabel(d.source),
+    value: d.cost_usd,
+    fill: SOURCE_COLORS[d.source] || "hsl(var(--muted-foreground))",
+  }));
+  const total = chartData.reduce((s, d) => s + d.value, 0);
 
   return (
     <div className={surface.section}>
@@ -24,9 +33,9 @@ export function CostBySourceChart({ data }: Props) {
       <div className={surfaceContent}>
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
-            <Pie data={data} dataKey="cost_usd" nameKey="source" innerRadius={50} outerRadius={90} paddingAngle={2}>
-              {data.map((d) => (
-                <Cell key={d.source} fill={SOURCE_COLORS[d.source] || "hsl(var(--muted-foreground))"} />
+            <Pie data={chartData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={2}>
+              {chartData.map((d) => (
+                <Cell key={d.name} fill={d.fill} />
               ))}
             </Pie>
             <Tooltip
