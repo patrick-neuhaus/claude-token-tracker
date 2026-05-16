@@ -97,6 +97,11 @@ export const qk = {
       ["compactions", "stats", sessionId] as const,
     inefficient: () => ["compactions", "inefficient"] as const,
   },
+  toolInvocations: {
+    all: () => ["toolInvocations"] as const,
+    stats: (from?: string, to?: string) =>
+      ["toolInvocations", "stats", from, to] as const,
+  },
   settings: () => ["settings"] as const,
   achievements: () => ["achievements"] as const,
   planStatus: () => ["plan-status"] as const,
