@@ -1,5 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useSummary, useCharts, type DashboardFilters } from "@/hooks/useDashboard";
+import { useInefficientSessions } from "@/hooks/useCompactions";
+import { useProjects } from "@/hooks/useProjects";
 import { presetToRange } from "@/components/shared/DateRangeFilter";
 import { useAuth } from "@/contexts/AuthContext";
 import { MonthNarrative } from "@/components/dashboard/MonthNarrative";
@@ -19,9 +22,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { formatUSD, formatNumber } from "@/lib/formatters";
 import { Section } from "@/components/shared/Section";
-import { useProjects } from "@/hooks/useProjects";
+import { formatUSD, formatNumber } from "@/lib/formatters";
+import { Zap } from "lucide-react";
 
 function TopProjectsWeekCard() {
   const { data: projects, isLoading } = useProjects();
@@ -93,6 +96,8 @@ export function DashboardPage() {
 
   const { data: summary, isLoading: loadingSummary, isError: errorSummary, refetch: refetchSummary } = useSummary(filters);
   const { data: charts, isLoading: loadingCharts, isError: errorCharts, refetch: refetchCharts } = useCharts(filters);
+  const { data: compactionData } = useInefficientSessions();
+
   const s = summary;
   const c = charts;
 
@@ -180,6 +185,37 @@ export function DashboardPage() {
       <TopProjectsWeekCard />
 
       <CacheHitTrendChart data={c?.daily || []} />
+
+      {/* Inefficient sessions (>3 compactions or <30% reduction) */}
+      {compactionData?.inefficientSessions && compactionData.inefficientSessions.length > 0 && (
+        <div className="rounded-xl border bg-card p-5 space-y-3">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <Zap className="h-4 w-4 text-yellow-500" />
+            Sessions ineficientes (&gt;3 compactações)
+          </div>
+          <ul className="space-y-2">
+            {compactionData.inefficientSessions.slice(0, 5).map((s) => (
+              <li key={s.session_id} className="flex items-center justify-between text-sm">
+                <Link
+                  to={`/sessions?q=${encodeURIComponent(s.session_id)}`}
+                  className="font-mono text-xs text-muted-foreground hover:text-foreground transition-colors truncate max-w-[200px]"
+                  title={s.session_id}
+                >
+                  {s.session_id.slice(0, 16)}…
+                </Link>
+                <div className="flex items-center gap-3 shrink-0 ml-2">
+                  <span className="tabular-nums">{s.compaction_count}x</span>
+                  {s.avg_reduction_pct !== null && (
+                    <span className="text-muted-foreground tabular-nums">
+                      {s.avg_reduction_pct.toFixed(1)}% redução
+                    </span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
