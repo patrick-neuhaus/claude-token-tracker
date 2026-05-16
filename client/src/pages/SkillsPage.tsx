@@ -1,17 +1,16 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import Fuse from "fuse.js";
-import { useSkillsList, type SkillSummary, type SkillSource, type SkillStatus } from "@/hooks/useSkills";
+import { useSkillsList, type SkillSummary, type SkillSource } from "@/hooks/useSkills";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Pill } from "@/components/shared/Pill";
-import { Search, Lock, ArrowRight } from "lucide-react";
+import { Search, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FilterChip, FilterChipGroup } from "@/components/shared/FilterChip";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { SkillCard } from "@/components/skills/SkillCard";
 
 const CATEGORIES = [
   "all", "meta", "code-review", "guard", "implementation", "design",
@@ -20,14 +19,7 @@ const CATEGORIES = [
 
 const SOURCES: ("all" | SkillSource)[] = ["all", "skillforge", "omc", "builtin"];
 
-type StatusFilter = "all" | SkillStatus | "none";
-const STATUSES: StatusFilter[] = ["all", "active", "deprecated", "none"];
-const STATUS_LABEL: Record<StatusFilter, string> = {
-  all: "todas",
-  active: "ativas",
-  deprecated: "deprecated",
-  none: "sem status",
-};
+type StatusTab = "active" | "deprecated" | "none" | "all";
 
 const SOURCE_LABEL: Record<SkillSource, string> = {
   skillforge: "skillforge",
@@ -35,18 +27,13 @@ const SOURCE_LABEL: Record<SkillSource, string> = {
   builtin: "built-in",
 };
 
-type SortCol = "name" | "source" | "category" | "fileCount" | "lockedAt" | "status";
-
 export function SkillsPage() {
-  const navigate = useNavigate();
   const { data: skills, isLoading, isError, refetch } = useSkillsList();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("all");
   const [source, setSource] = useState<"all" | SkillSource>("all");
-  const [status, setStatus] = useState<StatusFilter>("all");
+  const [statusTab, setStatusTab] = useState<StatusTab>("active");
   const [lockedOnly, setLockedOnly] = useState(false);
-  const [sortBy, setSortBy] = useState<SortCol>("name");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   const fuse = useMemo(() => {
     if (!skills) return null;
@@ -57,7 +44,8 @@ export function SkillsPage() {
     });
   }, [skills]);
 
-  const filtered = useMemo(() => {
+  // Filtra por tudo EXCETO status (status vira via tab)
+  const filteredBase = useMemo(() => {
     if (!skills) return [];
     let list: SkillSummary[] = skills;
     if (search.trim() && fuse) {
@@ -69,124 +57,24 @@ export function SkillsPage() {
     if (source !== "all") {
       list = list.filter((s) => s.source === source);
     }
-    if (status !== "all") {
-      if (status === "none") {
-        list = list.filter((s) => s.status == null);
-      } else {
-        list = list.filter((s) => s.status === status);
-      }
-    }
     if (lockedOnly) {
       list = list.filter((s) => !!s.lockedAt);
     }
-    list = [...list].sort((a, b) => {
-      const dir = sortDir === "asc" ? 1 : -1;
-      switch (sortBy) {
-        case "name": return a.name.localeCompare(b.name) * dir;
-        case "source": return a.source.localeCompare(b.source) * dir;
-        case "category": return ((a.category || "zzz").localeCompare(b.category || "zzz")) * dir;
-        case "fileCount": return (a.fileCount - b.fileCount) * dir;
-        case "lockedAt": return ((a.lockedAt || "").localeCompare(b.lockedAt || "")) * dir;
-        case "status": return ((a.status || "zzz").localeCompare(b.status || "zzz")) * dir;
-      }
-    });
     return list;
-  }, [skills, search, category, source, status, lockedOnly, fuse, sortBy, sortDir]);
+  }, [skills, search, category, source, lockedOnly, fuse]);
 
-  function toggleSort(col: string) {
-    if (sortBy === col) {
-      setSortDir(sortDir === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(col as SortCol);
-      setSortDir("asc");
+  // Filtra adicionalmente pela tab de status
+  const filtered = useMemo(() => {
+    let list = filteredBase;
+    if (statusTab === "active") {
+      list = list.filter((s) => s.status === "active");
+    } else if (statusTab === "deprecated") {
+      list = list.filter((s) => s.status === "deprecated");
+    } else if (statusTab === "none") {
+      list = list.filter((s) => s.status == null);
     }
-  }
-
-  const columns: AppTableColumn<SkillSummary>[] = [
-    {
-      key: "name",
-      header: "Nome",
-      width: "minmax(140px,1.1fr)",
-      sortable: true,
-      mono: true,
-      render: (v) => <span className="text-foreground group-hover:text-info transition-colors truncate block">{v}</span>,
-    },
-    {
-      key: "status",
-      header: "Status",
-      width: "110px",
-      sortable: true,
-      render: (v: SkillStatus | null | undefined) => {
-        if (v === "active") return <Pill variant="ok">Ativa</Pill>;
-        if (v === "deprecated") return <Pill variant="err">Deprecated</Pill>;
-        return <Pill variant="neutral" dot={false}>—</Pill>;
-      },
-    },
-    {
-      key: "source",
-      header: "Source",
-      width: "100px",
-      sortable: true,
-      render: (v: SkillSource) => (
-        <Pill variant={v === "skillforge" ? "ok" : v === "omc" ? "info" : "neutral"}>
-          {SOURCE_LABEL[v]}
-        </Pill>
-      ),
-    },
-    {
-      key: "description",
-      header: "Descrição",
-      width: "minmax(260px,3fr)",
-      render: (v: string) => {
-        const trim = v.length > 140 ? v.slice(0, 137).replace(/\s+\S*$/, "") + "…" : v;
-        return <span className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{trim}</span>;
-      },
-    },
-    {
-      key: "category",
-      header: "Categoria",
-      width: "120px",
-      sortable: true,
-      render: (v: string | undefined) => {
-        if (!v) return <span className="text-xs text-muted-foreground">—</span>;
-        return <Pill variant="neutral" dot={false}>{v}</Pill>;
-      },
-    },
-    {
-      key: "fileCount",
-      header: "Arq",
-      width: "80px",
-      align: "right",
-      mono: true,
-      sortable: true,
-      render: (v) => <span className="text-muted-foreground">{v}</span>,
-    },
-    {
-      key: "lockedAt",
-      header: "Lock-in",
-      width: "100px",
-      sortable: true,
-      mono: true,
-      render: (v) => (
-        v ? (
-          <span className="inline-flex items-center gap-1 text-warning text-xs">
-            <Lock className="h-3 w-3" />
-            {v}
-          </span>
-        ) : (
-          <span className="text-xs text-muted-foreground/50">—</span>
-        )
-      ),
-    },
-    {
-      key: "_arrow",
-      header: "",
-      width: "32px",
-      render: () => (
-        <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity justify-self-end" />
-      ),
-    },
-  ];
+    return [...list].sort((a, b) => a.name.localeCompare(b.name));
+  }, [filteredBase, statusTab]);
 
   if (isLoading) {
     return (
@@ -208,24 +96,34 @@ export function SkillsPage() {
     );
   }
 
-  // Source counts pra mostrar nos chips
+  // Source counts globais
   const sourceCounts: Record<string, number> = { all: skills?.length ?? 0 };
   for (const s of skills ?? []) {
     sourceCounts[s.source] = (sourceCounts[s.source] || 0) + 1;
   }
 
-  // Status counts pra mostrar nos chips
-  const statusCounts: Record<StatusFilter, number> = {
-    all: skills?.length ?? 0,
+  // Status counts dentro da filteredBase (refletem busca/source/categoria/lock-in)
+  const tabCounts: Record<StatusTab, number> = {
     active: 0,
     deprecated: 0,
     none: 0,
+    all: filteredBase.length,
   };
-  for (const s of skills ?? []) {
-    if (s.status === "active") statusCounts.active += 1;
-    else if (s.status === "deprecated") statusCounts.deprecated += 1;
-    else statusCounts.none += 1;
+  for (const s of filteredBase) {
+    if (s.status === "active") tabCounts.active += 1;
+    else if (s.status === "deprecated") tabCounts.deprecated += 1;
+    else tabCounts.none += 1;
   }
+
+  function clearFilters() {
+    setSearch("");
+    setCategory("all");
+    setSource("all");
+    setLockedOnly(false);
+  }
+
+  const hasSecondaryFilters =
+    !!search || category !== "all" || source !== "all" || lockedOnly;
 
   return (
     <div className="space-y-5">
@@ -234,7 +132,7 @@ export function SkillsPage() {
         crumb="claude · skills"
         subtitle={
           <>
-            {filtered.length} de {skills?.length ?? 0} skills
+            {skills?.length ?? 0} skills
             {" · "}
             <span className="text-info">{sourceCounts.skillforge || 0} skillforge</span>
             {" · "}
@@ -245,7 +143,7 @@ export function SkillsPage() {
         }
       />
 
-      {/* Filtros */}
+      {/* Busca + lock-in */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[260px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -265,75 +163,78 @@ export function SkillsPage() {
         />
       </div>
 
-      {/* Source chips */}
-      <FilterChipGroup
-        label="source:"
-        options={SOURCES.map((src) => ({
-          value: src,
-          label: src === "all" ? "all" : SOURCE_LABEL[src],
-          count: sourceCounts[src] || 0,
-        }))}
-        active={source}
-        onChange={setSource}
-      />
+      {/* Tabs por status */}
+      <Tabs value={statusTab} onValueChange={(v) => setStatusTab(v as StatusTab)}>
+        <TabsList>
+          <TabsTrigger value="active">
+            Ativas ({tabCounts.active})
+          </TabsTrigger>
+          <TabsTrigger value="deprecated">
+            Deprecated ({tabCounts.deprecated})
+          </TabsTrigger>
+          <TabsTrigger value="none">
+            Sem status ({tabCounts.none})
+          </TabsTrigger>
+          <TabsTrigger value="all">
+            Todas ({tabCounts.all})
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Status chips */}
-      <FilterChipGroup
-        label="status:"
-        options={STATUSES.map((st) => ({
-          value: st,
-          label: STATUS_LABEL[st],
-          count: statusCounts[st],
-        }))}
-        active={status}
-        onChange={setStatus}
-      />
-
-      {/* Category chips */}
-      <FilterChipGroup
-        label="categoria:"
-        options={CATEGORIES.map((cat) => ({ value: cat, label: cat }))}
-        active={category}
-        onChange={setCategory}
-      />
-
-      {/* Tabela densa */}
-      {filtered.length === 0 ? (
-        (search || category !== "all" || source !== "all" || status !== "all" || lockedOnly) ? (
-          <EmptyState
-            message="Nenhuma skill com esses filtros"
-            description="Tente remover ou ajustar os filtros aplicados."
-            action={
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-2"
-                onClick={() => {
-                  setSearch("");
-                  setCategory("all");
-                  setSource("all");
-                  setStatus("all");
-                  setLockedOnly(false);
-                }}
-              >
-                Limpar filtros
-              </Button>
-            }
+        {/* Filtros secundários (source + categoria) — fora dos panels pra não repetir */}
+        <div className="space-y-2 mt-4">
+          <FilterChipGroup
+            label="source:"
+            options={SOURCES.map((src) => ({
+              value: src,
+              label: src === "all" ? "all" : SOURCE_LABEL[src],
+              count: sourceCounts[src] || 0,
+            }))}
+            active={source}
+            onChange={setSource}
           />
-        ) : (
-          <EmptyState message="Nenhuma skill registrada" />
-        )
-      ) : (
-        <AppTable<SkillSummary>
-          rowKey={(s) => `${s.source}:${s.name}`}
-          data={filtered}
-          columns={columns}
-          sortKey={sortBy}
-          sortDir={sortDir}
-          onSort={toggleSort}
-          onRowClick={(s) => navigate(`/skills/${s.name}?source=${s.source}`)}
-        />
-      )}
+          <FilterChipGroup
+            label="categoria:"
+            options={CATEGORIES.map((cat) => ({ value: cat, label: cat }))}
+            active={category}
+            onChange={setCategory}
+          />
+        </div>
+
+        {/* Conteúdo: grid de cards (mesmo render pra todas as tabs — filtered já considera tab) */}
+        <TabsContent value={statusTab} className="mt-4">
+          {filtered.length === 0 ? (
+            <EmptyState
+              message="Nenhuma skill nesta visualização"
+              description={
+                hasSecondaryFilters
+                  ? "Tente remover filtros ou trocar de aba."
+                  : "Nenhuma skill encontrada nesta categoria de status."
+              }
+              action={
+                hasSecondaryFilters ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={clearFilters}
+                  >
+                    Limpar filtros
+                  </Button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filtered.map((skill) => (
+                <SkillCard
+                  key={`${skill.source}:${skill.name}`}
+                  skill={skill}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
