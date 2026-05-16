@@ -1,7 +1,8 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useState } from "react";
-import { Lock, FileText, FolderTree, Search, Code2, Eye, Copy } from "lucide-react";
+import { Lock, FileText, FolderTree, Search, Code2, Eye, Copy, CheckCircle2, Ban } from "lucide-react";
 import { useSkillDetail, useSkillFile, type SkillSource } from "@/hooks/useSkills";
+import { useSkillAllowlist, useToggleSkillAllowlist } from "@/hooks/useSkillUsage";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { MarkdownDocPanel } from "@/components/shared/MarkdownDocPanel";
 import { ViewModeToggle } from "@/components/shared/ViewModeToggle";
 import { DetailHeader } from "@/components/shared/DetailHeader";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const SOURCE_COLOR: Record<SkillSource, string> = {
@@ -20,6 +22,84 @@ const SOURCE_COLOR: Record<SkillSource, string> = {
   omc: "border-chart-4/40 bg-chart-4/10 text-chart-4",
   builtin: "border-border bg-muted/30 text-muted-foreground",
 };
+
+/**
+ * AllowlistToggle — controle inline pra marcar skill como active/deprecated.
+ * Optimistic update via React Query invalidation.
+ */
+function AllowlistToggle({ name }: { name: string }) {
+  const { data, isLoading, isError } = useSkillAllowlist(name);
+  const toggle = useToggleSkillAllowlist();
+
+  if (isLoading) {
+    return <Skeleton className="h-7 w-40" />;
+  }
+
+  // Se o backend devolver 404 (skill nunca tocada), assume "active" como default
+  const status: "active" | "deprecated" =
+    isError || !data ? "active" : data.status;
+
+  function setStatus(next: "active" | "deprecated") {
+    if (status === next || toggle.isPending) return;
+    toggle.mutate(
+      { name, status: next },
+      {
+        onSuccess: () => {
+          toast.success(
+            next === "active" ? "Marcada como ativa" : "Marcada como deprecated",
+          );
+        },
+        onError: () => {
+          toast.error("Erro ao atualizar status");
+        },
+      },
+    );
+  }
+
+  return (
+    <div
+      className="inline-flex items-center rounded-md border border-border overflow-hidden"
+      role="group"
+      aria-label="Status da skill no allowlist"
+    >
+      <button
+        type="button"
+        onClick={() => setStatus("active")}
+        disabled={toggle.isPending}
+        aria-pressed={status === "active"}
+        className={cn(
+          "inline-flex items-center gap-1.5 px-2.5 py-1 text-xs transition-colors",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+          status === "active"
+            ? "bg-success/15 text-success"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          toggle.isPending && "opacity-60 cursor-wait",
+        )}
+      >
+        <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+        Active
+      </button>
+      <div className="w-px self-stretch bg-border" />
+      <button
+        type="button"
+        onClick={() => setStatus("deprecated")}
+        disabled={toggle.isPending}
+        aria-pressed={status === "deprecated"}
+        className={cn(
+          "inline-flex items-center gap-1.5 px-2.5 py-1 text-xs transition-colors",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+          status === "deprecated"
+            ? "bg-destructive/15 text-destructive"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          toggle.isPending && "opacity-60 cursor-wait",
+        )}
+      >
+        <Ban className="h-3 w-3" aria-hidden="true" />
+        Deprecated
+      </button>
+    </div>
+  );
+}
 
 export function SkillDetailPage() {
   const { name } = useParams<{ name: string }>();
@@ -78,7 +158,8 @@ export function SkillDetailPage() {
           <p className="text-sm text-muted-foreground leading-relaxed">{skill.description}</p>
         }
         actions={
-          <>
+          <div className="flex items-center gap-2 flex-wrap">
+            <AllowlistToggle name={skill.name} />
             <Button
               variant="ghost"
               size="sm"
@@ -104,7 +185,7 @@ export function SkillDetailPage() {
               value={viewMode}
               onChange={setViewMode}
             />
-          </>
+          </div>
         }
       />
 

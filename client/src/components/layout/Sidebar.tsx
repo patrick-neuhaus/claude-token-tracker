@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, MessageSquare, FolderOpen, List, Settings, Shield,
   LogOut, TrendingUp, TrendingDown, BarChart2, Trophy, FileCode, ScrollText,
-  Search,
+  Search, Activity,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlanStatus } from "@/hooks/usePlanStatus";
@@ -14,6 +14,7 @@ import { formatUSD } from "@/lib/formatters";
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/skills", icon: FileCode, label: "Skills" },
+  { to: "/skill-usage", icon: Activity, label: "Uso de Skills" },
   { to: "/sessions", icon: MessageSquare, label: "Sessões" },
   { to: "/projects", icon: FolderOpen, label: "Projetos" },
   { to: "/entries", icon: List, label: "Entradas" },
