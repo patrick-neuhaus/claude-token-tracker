@@ -6,9 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { StatCard } from "@/components/shared/StatCard";
 import { Section } from "@/components/shared/Section";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
+import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -19,6 +17,92 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SessionTimeFilters } from "@/components/sessions/SessionTimeFilters";
 import { SessionTimeScatterChart } from "@/components/sessions/SessionTimeScatterChart";
 import { formatDuration, toDateInputValue, dayStartIso, dayEndIso } from "@/lib/timeFormatters";
+
+interface SessionTimeRow {
+  session_id: string;
+  session_db_id: string | null;
+  sessao: string;
+  project_id: string | null;
+  project_name: string | null;
+  custo_usd: number;
+  calls: number;
+  tempo_util_segundos: number;
+  inicio: string;
+  fim: string;
+}
+
+const detailColumns: AppTableColumn<SessionTimeRow>[] = [
+  {
+    key: "sessao",
+    header: "Sessão",
+    width: "minmax(180px,2fr)",
+    render: (_v, r) => (
+      <span className="font-medium truncate block">
+        {r.session_db_id ? (
+          <Link to={`/sessions/${r.session_db_id}`} className="hover:underline">
+            {r.sessao}
+          </Link>
+        ) : (
+          r.sessao
+        )}
+      </span>
+    ),
+  },
+  {
+    key: "project_name",
+    header: "Projeto",
+    width: "minmax(120px,1.3fr)",
+    render: (_v, r) => (
+      r.project_name && r.project_id ? (
+        <Link to={`/projects/${r.project_id}`}>
+          <Badge variant="secondary" className="text-xs hover:bg-secondary/80 transition-colors w-fit">{r.project_name}</Badge>
+        </Link>
+      ) : r.project_name ? (
+        <Badge variant="secondary" className="text-xs w-fit">{r.project_name}</Badge>
+      ) : (
+        <span className="text-xs text-muted-foreground">—</span>
+      )
+    ),
+  },
+  {
+    key: "custo_usd",
+    header: "Custo",
+    width: "100px",
+    align: "right",
+    mono: true,
+    render: (v) => <span className="font-medium">{formatUSD(v)}</span>,
+  },
+  {
+    key: "calls",
+    header: "Calls",
+    width: "80px",
+    align: "right",
+    mono: true,
+    render: (v) => formatNumber(v),
+  },
+  {
+    key: "tempo_util_segundos",
+    header: "Tempo Útil",
+    width: "110px",
+    align: "right",
+    mono: true,
+    render: (v) => formatDuration(v),
+  },
+  {
+    key: "inicio",
+    header: "Início",
+    width: "150px",
+    mono: true,
+    render: (v) => <span className="text-muted-foreground whitespace-nowrap">{formatDate(v)}</span>,
+  },
+  {
+    key: "fim",
+    header: "Fim",
+    width: "150px",
+    mono: true,
+    render: (v) => <span className="text-muted-foreground whitespace-nowrap">{formatDate(v)}</span>,
+  },
+];
 
 export function SessionTimePage() {
   const today = new Date();
@@ -62,6 +146,7 @@ export function SessionTimePage() {
     <div className="space-y-6">
       <PageHeader
         title="Tempo por Sessão"
+        crumb="tracker · sessões · tempo"
         subtitle="Tempo útil aproximado por sessão. Ajuste o gap máximo considerado como trabalho contínuo."
         actions={
           <UITooltip>
@@ -113,11 +198,11 @@ export function SessionTimePage() {
       {!isLoading && rows.length > 0 && (
         <>
           {/* Resumo */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard icon={DollarSign} iconColor="text-success" label="Custo Total" value={formatUSD(totals.custo)} />
-            <StatCard icon={Clock} iconColor="text-info" label="Tempo Útil" value={formatDuration(totals.tempo)} />
-            <StatCard icon={Layers} iconColor="text-warning" label="Sessões" value={formatNumber(totals.sessoes)} />
-            <StatCard icon={Activity} iconColor="text-chart-4" label="Calls" value={formatNumber(totals.calls)} />
+          <div className="kpis">
+            <StatCard label="Custo Total" value={formatUSD(totals.custo)} />
+            <StatCard label="Tempo Útil" value={formatDuration(totals.tempo)} />
+            <StatCard label="Sessões" value={formatNumber(totals.sessoes)} />
+            <StatCard label="Calls" value={formatNumber(totals.calls)} />
           </div>
 
           {/* Scatter: custo vs tempo útil */}
@@ -130,50 +215,11 @@ export function SessionTimePage() {
 
           {/* Tabela detalhada */}
           <Section title="Detalhamento" flush>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="pl-4">Sessão</TableHead>
-                  <TableHead>Projeto</TableHead>
-                  <TableHead className="text-right">Custo</TableHead>
-                  <TableHead className="text-right">Calls</TableHead>
-                  <TableHead className="text-right">Tempo Útil</TableHead>
-                  <TableHead>Início</TableHead>
-                  <TableHead className="pr-4">Fim</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((r) => (
-                  <TableRow key={r.session_id}>
-                    <TableCell className="font-medium max-w-[240px] truncate pl-4">
-                      {r.session_db_id ? (
-                        <Link to={`/sessions/${r.session_db_id}`} className="hover:underline">
-                          {r.sessao}
-                        </Link>
-                      ) : (
-                        r.sessao
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {r.project_name && r.project_id ? (
-                        <Link to={`/projects/${r.project_id}`}>
-                          <Badge variant="secondary" className="text-xs hover:bg-secondary/80 transition-colors">{r.project_name}</Badge>
-                        </Link>
-                      ) : r.project_name ? (
-                        <Badge variant="secondary" className="text-xs">{r.project_name}</Badge>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums font-medium">{formatUSD(r.custo_usd)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatNumber(r.calls)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatDuration(r.tempo_util_segundos)}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground whitespace-nowrap tabular-nums">{formatDate(r.inicio)}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground whitespace-nowrap tabular-nums pr-4">{formatDate(r.fim)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <AppTable
+              rowKey="session_id"
+              data={rows}
+              columns={detailColumns}
+            />
           </Section>
         </>
       )}

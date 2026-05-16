@@ -82,6 +82,7 @@ export function SessionsPage() {
     <div className="space-y-4">
       <PageHeader
         title="Sessões"
+        crumb="tracker · sessões"
         subtitle={
           data && data.aggregates ? (
             <>
@@ -154,11 +155,11 @@ export function SessionsPage() {
       ) : data?.sessions?.length ? (
         <>
           {data.aggregates && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <StatCard icon={DollarSign} iconColor="text-success" label="Custo Total" value={formatUSD(data.aggregates.total_cost_usd)} />
-              <StatCard icon={Layers} iconColor="text-info" label="Sessões" value={formatNumber(data.total)} />
-              <StatCard icon={TrendingUp} iconColor="text-warning" label="Custo Médio" value={formatUSD(data.aggregates.avg_session_cost)} />
-              <StatCard icon={BarChart3} iconColor="text-chart-4" label="Mais Cara" value={formatUSD(data.aggregates.max_session_cost)} />
+            <div className="kpis">
+              <StatCard label="Custo Total" value={formatUSD(data.aggregates.total_cost_usd)} />
+              <StatCard label="Sessões" value={formatNumber(data.total)} />
+              <StatCard label="Custo Médio" value={formatUSD(data.aggregates.avg_session_cost)} />
+              <StatCard label="Mais Cara" value={formatUSD(data.aggregates.max_session_cost)} />
             </div>
           )}
           <SessionsTable

@@ -1,8 +1,6 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { SOURCE_COLORS, displayLabel } from "@/lib/constants";
-import { formatUSD } from "@/lib/formatters";
-import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 import { surface, surfaceHeader, surfaceContent } from "@/lib/surface";
+import { SvgPieDonut, type PieDatum } from "@/components/charts/SvgPieDonut";
 
 interface SourceData {
   source: string;
@@ -14,16 +12,15 @@ interface Props {
 }
 
 /**
- * CostBySourceChart — Wave 7.2: source label kebab→Title Case via displayLabel.
- * "claude-code" → "Claude Code", "codex" → "Codex". Color lookup via raw key.
+ * CostBySourceChart — Wave 8.2.4 R8: SVG inline migration.
+ * Source label kebab→Title Case via displayLabel.
  */
 export function CostBySourceChart({ data }: Props) {
-  const chartData = data.map((d) => ({
-    name: displayLabel(d.source),
+  const pieData: PieDatum[] = data.map((d) => ({
+    label: displayLabel(d.source),
     value: d.cost_usd,
-    fill: SOURCE_COLORS[d.source] || "hsl(var(--muted-foreground))",
+    color: SOURCE_COLORS[d.source] || "hsl(var(--muted-foreground))",
   }));
-  const total = chartData.reduce((s, d) => s + d.value, 0);
 
   return (
     <div className={surface.section}>
@@ -31,23 +28,7 @@ export function CostBySourceChart({ data }: Props) {
         <h3 className="text-sm font-medium">Custo por Fonte</h3>
       </div>
       <div className={surfaceContent}>
-        <ResponsiveContainer width="100%" height={250}>
-          <PieChart>
-            <Pie data={chartData} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={2}>
-              {chartData.map((d) => (
-                <Cell key={d.name} fill={d.fill} />
-              ))}
-            </Pie>
-            <Tooltip
-              formatter={(value) => [
-                `${formatUSD(Number(value))} (${total > 0 ? ((Number(value) / total) * 100).toFixed(1) : 0}%)`,
-                "Custo",
-              ]}
-              {...TOOLTIP_PROPS}
-            />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        <SvgPieDonut data={pieData} height={250} />
       </div>
     </div>
   );

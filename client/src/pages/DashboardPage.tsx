@@ -8,10 +8,12 @@ import { SummaryCards } from "@/components/dashboard/SummaryCards";
 import { CostByModelChart } from "@/components/dashboard/CostByModelChart";
 import { CostBySourceChart } from "@/components/dashboard/CostBySourceChart";
 import { DailyCostChart } from "@/components/dashboard/DailyCostChart";
+import { CacheHitTrendChart } from "@/components/dashboard/CacheHitTrendChart";
 // PeriodTable removido — dados redundantes com SummaryCards
 import { DashboardFilters as DashboardFiltersBar } from "@/components/dashboard/DashboardFilters";
 import { BudgetAlert } from "@/components/dashboard/BudgetAlert";
 import { DailyBudgetProgress } from "@/components/dashboard/DailyBudgetProgress";
+import { DailyGoalBanner } from "@/components/dashboard/DailyGoalBanner";
 import { WebhookPing } from "@/components/dashboard/WebhookPing";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -85,6 +87,7 @@ export function DashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title="Dashboard"
+        crumb="tracker · dashboard"
         subtitle={
           <>
             {periodLabel} · {formatNumber(s.session_count)} sessões · {formatUSD(s.total_cost_usd)}
@@ -102,6 +105,8 @@ export function DashboardPage() {
       />
 
       <DailyBudgetProgress todayCostUsd={s?.today_cost_usd ?? 0} dailyBudgetUsd={dailyBudget} />
+
+      <DailyGoalBanner todayCostUsd={s?.today_cost_usd ?? 0} planCostUsd={planCost} />
 
       <DashboardFiltersBar filters={filters} onChange={setFilters} />
 
@@ -131,6 +136,8 @@ export function DashboardPage() {
       </div>
 
       <DailyCostChart data={c?.daily || []} />
+
+      <CacheHitTrendChart data={c?.daily || []} />
     </div>
   );
 }

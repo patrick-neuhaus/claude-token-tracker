@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSystemPromptsList, type SystemPromptSummary } from "@/hooks/useSystemPrompts";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,12 +7,10 @@ import { Search, ArrowRight, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { SortableTableHeader } from "@/components/shared/SortableTableHeader";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
 
 type SortCol = "label" | "lineCount" | "lastModified" | "bytes";
-
-const COLS = "minmax(200px,1.5fr) minmax(280px,3fr) 90px 100px 160px 32px";
 
 function formatBytes(b: number): string {
   if (b < 1024) return `${b}B`;
@@ -27,6 +25,7 @@ function formatDate(iso: string | null): string {
 }
 
 export function SystemPromptsPage() {
+  const navigate = useNavigate();
   const { data: prompts, isLoading, isError, refetch } = useSystemPromptsList();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortCol>("label");
@@ -50,10 +49,69 @@ export function SystemPromptsPage() {
     });
   }, [prompts, search, sortBy, sortDir]);
 
-  function toggleSort(col: SortCol) {
+  function toggleSort(col: string) {
     if (sortBy === col) setSortDir(sortDir === "asc" ? "desc" : "asc");
-    else { setSortBy(col); setSortDir("asc"); }
+    else { setSortBy(col as SortCol); setSortDir("asc"); }
   }
+
+  const columns: AppTableColumn<SystemPromptSummary>[] = [
+    {
+      key: "label",
+      header: "Label",
+      width: "minmax(200px,1.5fr)",
+      sortable: true,
+      render: (v, p) => (
+        <span className={`truncate ${!p.exists ? "opacity-50" : "group-hover:text-info transition-colors"}`}>
+          {v}
+        </span>
+      ),
+    },
+    {
+      key: "path",
+      header: "Path",
+      width: "minmax(280px,3fr)",
+      mono: true,
+      render: (v, p) => (
+        <span className={`text-xs text-muted-foreground truncate ${!p.exists ? "opacity-50" : ""}`} title={v}>
+          {v.replace("C:/Users/Patrick Neuhaus/", "~/")}
+        </span>
+      ),
+    },
+    {
+      key: "lineCount",
+      header: "Linhas",
+      width: "90px",
+      align: "right",
+      mono: true,
+      sortable: true,
+      render: (v, p) => <span className="text-muted-foreground">{p.exists ? v : "—"}</span>,
+    },
+    {
+      key: "bytes",
+      header: "Tamanho",
+      width: "100px",
+      align: "right",
+      mono: true,
+      sortable: true,
+      render: (v, p) => <span className="text-muted-foreground">{p.exists ? formatBytes(v) : "—"}</span>,
+    },
+    {
+      key: "lastModified",
+      header: "Modificado",
+      width: "160px",
+      mono: true,
+      sortable: true,
+      render: (v) => <span className="text-xs text-muted-foreground">{formatDate(v)}</span>,
+    },
+    {
+      key: "_arrow",
+      header: "",
+      width: "32px",
+      render: () => (
+        <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity justify-self-end" />
+      ),
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -80,6 +138,7 @@ export function SystemPromptsPage() {
     <div className="space-y-5">
       <PageHeader
         title="System Prompts"
+        crumb="claude · prompts"
         icon={ScrollText}
         subtitle={`${filtered.length} de ${prompts?.length ?? 0} arquivos · ${existing} existem`}
       />
@@ -111,49 +170,15 @@ export function SystemPromptsPage() {
           <EmptyState message="Nenhum system prompt encontrado" />
         )
       ) : (
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div
-            className="grid gap-3 px-5 py-3 border-b border-border bg-muted/30"
-            style={{ gridTemplateColumns: COLS }}
-          >
-            <SortableTableHeader col="label" label="Label" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-            <span className="text-xs font-medium text-muted-foreground">Path</span>
-            <SortableTableHeader col="lineCount" label="Linhas" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} align="right" />
-            <SortableTableHeader col="bytes" label="Tamanho" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} align="right" />
-            <SortableTableHeader col="lastModified" label="Modificado" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-            <span></span>
-          </div>
-
-          <div className="divide-y divide-border">
-            {filtered.map((p: SystemPromptSummary) => (
-              <Link
-                key={p.id}
-                to={`/system-prompts/${p.id}`}
-                className={`grid gap-3 px-5 py-2.5 hover:bg-muted/40 transition-colors items-center group ${
-                  !p.exists ? "opacity-50" : ""
-                }`}
-                style={{ gridTemplateColumns: COLS }}
-              >
-                <span className="text-sm text-foreground group-hover:text-info transition-colors truncate">
-                  {p.label}
-                </span>
-                <span className="text-xs font-mono text-muted-foreground truncate" title={p.path}>
-                  {p.path.replace("C:/Users/Patrick Neuhaus/", "~/")}
-                </span>
-                <span className="text-sm text-right tabular-nums text-muted-foreground">
-                  {p.exists ? p.lineCount : "—"}
-                </span>
-                <span className="text-sm text-right tabular-nums text-muted-foreground">
-                  {p.exists ? formatBytes(p.bytes) : "—"}
-                </span>
-                <span className="text-xs tabular-nums text-muted-foreground">
-                  {formatDate(p.lastModified)}
-                </span>
-                <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity justify-self-end" />
-              </Link>
-            ))}
-          </div>
-        </div>
+        <AppTable<SystemPromptSummary>
+          rowKey="id"
+          data={filtered}
+          columns={columns}
+          sortKey={sortBy}
+          sortDir={sortDir}
+          onSort={toggleSort}
+          onRowClick={(p) => navigate(`/system-prompts/${p.id}`)}
+        />
       )}
     </div>
   );

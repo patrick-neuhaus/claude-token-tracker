@@ -53,6 +53,7 @@ export function EntriesPage() {
     <div className="space-y-4">
       <PageHeader
         title="Entradas"
+        crumb="tracker · entradas"
         subtitle={d ? `${d.total.toLocaleString("pt-BR")} entradas no total` : undefined}
       />
 

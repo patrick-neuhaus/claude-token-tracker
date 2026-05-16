@@ -16,19 +16,12 @@ import { surface } from "@/lib/surface";
 import { Section } from "@/components/shared/Section";
 import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
 import { Badge } from "@/components/ui/badge";
+import { Pill } from "@/components/shared/Pill";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
-import { handleEnterSpaceKey } from "@/components/shared/ClickableRow";
 import { Plus, DollarSign, Users, Cpu, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import { DateRangeFilter, presetToRange } from "@/components/shared/DateRangeFilter";
@@ -140,21 +133,17 @@ export function ProjectDetailPage() {
       <Separator />
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <StatCard icon={DollarSign} iconColor="text-success" label="Custo Total" value={formatUSD(project.total_cost_usd)} />
+      <div className="kpis">
+        <StatCard label="Custo Total" value={formatUSD(project.total_cost_usd)} />
         <StatCard
-          icon={Users}
-          iconColor="text-info"
           label="Sessões"
           value={project.session_count}
-          hint={<span className="text-xs text-muted-foreground">{project.session_count === 1 ? "sessão ativa" : "sessões ativas"}</span>}
+          hint={<span>{project.session_count === 1 ? "sessão ativa" : "sessões ativas"}</span>}
         />
         <StatCard
-          icon={Cpu}
-          iconColor="text-chart-4"
           label="Tokens"
           value={formatTokens(totalTokens)}
-          hint={<span className="text-xs text-muted-foreground">{formatTokens(project.total_input)} entrada / {formatTokens(project.total_output)} saída</span>}
+          hint={<span>{formatTokens(project.total_input)} entrada / {formatTokens(project.total_output)} saída</span>}
         />
       </div>
 
@@ -205,60 +194,69 @@ export function ProjectDetailPage() {
             message="Nenhuma sessão neste projeto. Clique em 'Adicionar Sessão' pra começar a rastrear custos."
           />
         ) : (
-          <div className="rounded-xl border border-border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Fonte</TableHead>
-                  <TableHead>Última atividade</TableHead>
-                  <TableHead className="text-right">Entradas</TableHead>
-                  <TableHead className="text-right">Custo USD</TableHead>
-                  <TableHead className="w-[100px]" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {project.sessions.map((session) => (
-                  <TableRow
-                    key={session.id}
-                    tabIndex={0}
-                    role="link"
-                    aria-label={`Abrir sessão ${session.custom_name || session.session_id.slice(0, 12)}`}
-                    className="group cursor-pointer hover:bg-accent/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-                    onClick={() => navigate(`/sessions/${session.id}`)}
-                    onKeyDown={handleEnterSpaceKey(() => navigate(`/sessions/${session.id}`))}
-                  >
-                    <TableCell className="font-medium">
-                      {session.custom_name || session.session_id.slice(0, 12)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{session.source}</Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {formatDate(session.last_seen)}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {session.entry_count}
-                    </TableCell>
-                    <TableCell className="text-right font-medium tabular-nums">
-                      {formatUSD(session.total_cost_usd)}
-                    </TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => handleUnassign(session.id)}
-                        disabled={unassignSession.isPending}
-                      >
-                        Remover
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <AppTable
+            rowKey="id"
+            data={project.sessions}
+            onRowClick={(s) => navigate(`/sessions/${s.id}`)}
+            columns={[
+              {
+                key: "custom_name",
+                header: "Nome",
+                width: "minmax(180px,2fr)",
+                render: (_v, s) => (
+                  <span className="font-medium truncate block">
+                    {s.custom_name || s.session_id.slice(0, 12)}
+                  </span>
+                ),
+              },
+              {
+                key: "source",
+                header: "Fonte",
+                width: "100px",
+                render: (v) => <Pill variant="info">{v}</Pill>,
+              },
+              {
+                key: "last_seen",
+                header: "Última atividade",
+                width: "150px",
+                render: (v) => <span className="text-muted-foreground text-sm tabular-nums">{formatDate(v)}</span>,
+              },
+              {
+                key: "entry_count",
+                header: "Entradas",
+                width: "100px",
+                align: "right",
+                mono: true,
+                render: (v) => v,
+              },
+              {
+                key: "total_cost_usd",
+                header: "Custo USD",
+                width: "120px",
+                align: "right",
+                mono: true,
+                render: (v) => <span className="font-medium">{formatUSD(v)}</span>,
+              },
+              {
+                key: "_actions",
+                header: "",
+                width: "120px",
+                render: (_v, s) => (
+                  <span onClick={(e) => e.stopPropagation()} className="block">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => handleUnassign(s.id)}
+                      disabled={unassignSession.isPending}
+                    >
+                      Remover
+                    </Button>
+                  </span>
+                ),
+              },
+            ]}
+          />
         )}
       </div>
 

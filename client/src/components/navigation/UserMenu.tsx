@@ -1,9 +1,9 @@
-import { Settings, LogOut, Sun, Moon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Settings, LogOut, Sun, Moon, ChevronUp } from "lucide-react";
 
-// UserMenu — 2-row card pattern (CRM canonical lift Wave 6.0)
-// Row 1: avatar + name + theme toggle (icon-only)
-// Row 2: Configurações + Sair full-width
-// Collapsed: stacked icon-only
+// UserMenu — CRM canonical lift (Wave R10).
+// Pattern: avatar + nome trigger compacto → dropdown (Theme / Config / Sair).
+// Collapsed: avatar circular, dropdown lateral à direita.
 
 interface User {
   name: string | null;
@@ -33,9 +33,28 @@ function initialsFromName(name: string | null): string {
   );
 }
 
+interface DropdownItemProps {
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  label: string;
+  onClick?: () => void;
+}
+
+function DropdownItem({ icon: Icon, label, onClick }: DropdownItemProps) {
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      onClick={onClick}
+      className="aa-user-dropdown-item"
+    >
+      <Icon size={14} />
+      <span>{label}</span>
+    </button>
+  );
+}
+
 export function UserMenu({
   user,
-  onProfile,
   onConfig,
   onLogout,
   onToggleTheme,
@@ -43,69 +62,115 @@ export function UserMenu({
   active = false,
   collapsed = false,
 }: Props) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
   const name = user?.name ?? "Usuário";
   const avatarUrl = user?.avatarUrl ?? null;
   const initials = initialsFromName(name);
 
-  return (
-    <div
-      className={`aa-user-panel${active ? " account-active" : ""}${collapsed ? " is-collapsed" : ""}`}
-    >
-      <div className="aa-user-panel-row1">
+  const handleConfig = () => {
+    setOpen(false);
+    onConfig?.();
+  };
+  const handleLogout = () => {
+    setOpen(false);
+    onLogout?.();
+  };
+  const handleTheme = () => {
+    onToggleTheme?.();
+  };
+
+  if (collapsed) {
+    return (
+      <div ref={ref} className="aa-user-panel is-collapsed">
         <button
           type="button"
-          className="aa-user-panel-clickable"
-          onClick={onProfile}
-          title="Meu perfil"
-          aria-label={`Perfil de ${name}`}
+          aria-label={`Menu de ${name}`}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className="aa-user-panel-avatar-btn"
         >
-          <span className="aa-user-panel-avatar">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={name}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            ) : (
-              initials
-            )}
-          </span>
-          <span className="aa-user-panel-info">
-            <span className="aa-user-panel-name">{name}</span>
-          </span>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <span className="aa-user-panel-avatar">{initials}</span>
+          )}
         </button>
-        {onToggleTheme && (
-          <button
-            type="button"
-            className="aa-user-action-btn"
-            title={themeMode === "light" ? "Modo escuro" : "Modo claro"}
-            aria-label="Alternar tema"
-            onClick={onToggleTheme}
-          >
-            {themeMode === "light" ? <Moon size={14} /> : <Sun size={14} />}
-          </button>
+        {open && (
+          <div role="menu" className="aa-user-dropdown aa-user-dropdown--side">
+            {onToggleTheme && (
+              <DropdownItem
+                icon={themeMode === "light" ? Moon : Sun}
+                label={themeMode === "light" ? "Modo escuro" : "Modo claro"}
+                onClick={handleTheme}
+              />
+            )}
+            <DropdownItem icon={Settings} label="Configurações" onClick={handleConfig} />
+            <DropdownItem icon={LogOut} label="Sair" onClick={handleLogout} />
+          </div>
         )}
       </div>
-      <div className="aa-user-panel-row2">
-        <button
-          type="button"
-          className="aa-user-action-btn-wide"
-          title="Configurações"
-          onClick={onConfig}
-        >
-          <Settings size={14} />
-          <span>Configurações</span>
-        </button>
-        <button
-          type="button"
-          className="aa-user-action-btn-wide"
-          title="Sair"
-          onClick={onLogout}
-        >
-          <LogOut size={14} />
-          <span>Sair</span>
-        </button>
-      </div>
+    );
+  }
+
+  return (
+    <div ref={ref} className={`aa-user-panel${active ? " account-active" : ""}`}>
+      <button
+        type="button"
+        aria-label={`Menu de ${name}`}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className={`aa-user-panel-trigger${open ? " is-open" : ""}`}
+      >
+        <span className="aa-user-panel-avatar">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            initials
+          )}
+        </span>
+        <span className="aa-user-panel-info">
+          <span className="aa-user-panel-name">{name}</span>
+        </span>
+        <ChevronUp
+          size={14}
+          className="aa-user-panel-chevron"
+          style={{ transform: open ? "rotate(0deg)" : "rotate(180deg)" }}
+        />
+      </button>
+
+      {open && (
+        <div role="menu" className="aa-user-dropdown aa-user-dropdown--top">
+          {onToggleTheme && (
+            <DropdownItem
+              icon={themeMode === "light" ? Moon : Sun}
+              label={themeMode === "light" ? "Modo escuro" : "Modo claro"}
+              onClick={handleTheme}
+            />
+          )}
+          <DropdownItem icon={Settings} label="Configurações" onClick={handleConfig} />
+          <DropdownItem icon={LogOut} label="Sair" onClick={handleLogout} />
+        </div>
+      )}
     </div>
   );
 }

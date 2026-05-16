@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ViewModeToggleProps<T extends string> {
-  options: { value: T; icon: LucideIcon; label: string }[];
+  options: { value: T; icon: LucideIcon; label: string; count?: number | string }[];
   value: T;
   onChange: (value: T) => void;
   size?: "sm" | "default";
@@ -10,14 +10,12 @@ interface ViewModeToggleProps<T extends string> {
 }
 
 /**
- * ViewModeToggle — molecule binary/N-way toggle for view modes (grid/list,
- * raw/rendered, code/preview). Padronizes the inline button-group pattern
- * scattered across SkillDetailPage, SystemPromptDetailPage, ProjectsPage.
+ * ViewModeToggle — canonical CRM view toggle (anti-ai-design-system lift, R6).
  *
- * Resolves UX F-11 (consistent visual between binary toggles).
+ * Anatomy: bg-muted/30 container with rounded-md, active option = bg-card +
+ * subtle shadow lift. Inactive = transparent + muted-foreground.
  *
- * a11y: role="group" + aria-label parent, aria-pressed per button.
- * focus-visible inset ring (not offset, since buttons share borders).
+ * a11y: role="group" + aria-pressed per button.
  */
 export function ViewModeToggle<T extends string>({
   options,
@@ -31,7 +29,11 @@ export function ViewModeToggle<T extends string>({
     <div
       role="group"
       aria-label="Modo de visualização"
-      className={cn("flex rounded-md border border-border overflow-hidden", className)}
+      className={cn(
+        "inline-flex items-center gap-1 rounded-md p-1",
+        "bg-muted/40 border border-border/60",
+        className,
+      )}
     >
       {options.map((opt) => {
         const Icon = opt.icon;
@@ -45,14 +47,18 @@ export function ViewModeToggle<T extends string>({
             aria-label={opt.label}
             className={cn(
               padClass,
-              "text-sm transition-colors",
+              "text-sm rounded transition-all duration-150",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+              "inline-flex items-center gap-1.5",
               active
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                ? "bg-card text-foreground shadow-sm"
+                : "bg-transparent text-muted-foreground hover:text-foreground",
             )}
           >
             <Icon className="h-4 w-4" aria-hidden="true" />
+            {opt.count !== undefined && (
+              <span className="font-mono text-[10px] opacity-60">{opt.count}</span>
+            )}
           </button>
         );
       })}

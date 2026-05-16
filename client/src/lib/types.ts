@@ -19,7 +19,16 @@ export interface DashboardSummary {
 export interface DashboardCharts {
   by_model: Array<{ model: string; cost_usd: number; total_tokens: string; entries: number }>;
   by_source: Array<{ source: string; cost_usd: number; total_tokens: string; entries: number }>;
-  daily: Array<{ day: string; model: string; cost_usd: number; entries: number }>;
+  daily: Array<{
+    day: string;
+    model: string;
+    cost_usd: number;
+    input_tokens: string;
+    output_tokens: string;
+    cache_read: string;
+    cache_write: string;
+    entries: number;
+  }>;
 }
 
 // === Analytics ===

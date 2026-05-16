@@ -1,6 +1,10 @@
 import { X } from "lucide-react";
+import { format } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import { Button } from "@/components/ui/button";
 import { MS_PER_DAY } from "@/lib/constants";
+
+const USER_TZ = "America/Sao_Paulo";
 
 export interface DateRange {
   from?: string;
@@ -69,7 +73,9 @@ export function DateRangeFilter({ value, onChange, presets = DEFAULT_PRESETS, cl
 
   function toDateInputValue(iso?: string) {
     if (!iso) return "";
-    return iso.slice(0, 10);
+    // Extrai date BR (não UTC) — bug Wave 8.1: storage `to` usa 23:59:59 local
+    // que vira dia seguinte UTC. slice(0,10) lia UTC e voltava +1 no display.
+    return format(toZonedTime(new Date(iso), USER_TZ), "yyyy-MM-dd");
   }
 
   function clear() {

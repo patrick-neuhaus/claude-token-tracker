@@ -1,17 +1,18 @@
 import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Fuse from "fuse.js";
 import { useSkillsList, type SkillSummary, type SkillSource } from "@/hooks/useSkills";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Pill } from "@/components/shared/Pill";
 import { Search, Lock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { SortableTableHeader } from "@/components/shared/SortableTableHeader";
 import { FilterChip, FilterChipGroup } from "@/components/shared/FilterChip";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
 
 const CATEGORIES = [
   "all", "meta", "code-review", "guard", "implementation", "design",
@@ -50,9 +51,8 @@ const CATEGORY_COLOR: Record<string, string> = {
 
 type SortCol = "name" | "source" | "category" | "fileCount" | "lockedAt";
 
-const COLS = "minmax(140px,1.1fr) 100px minmax(260px,3fr) 120px 80px 100px 32px";
-
 export function SkillsPage() {
+  const navigate = useNavigate();
   const { data: skills, isLoading, isError, refetch } = useSkillsList();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("all");
@@ -98,14 +98,89 @@ export function SkillsPage() {
     return list;
   }, [skills, search, category, source, lockedOnly, fuse, sortBy, sortDir]);
 
-  function toggleSort(col: SortCol) {
+  function toggleSort(col: string) {
     if (sortBy === col) {
       setSortDir(sortDir === "asc" ? "desc" : "asc");
     } else {
-      setSortBy(col);
+      setSortBy(col as SortCol);
       setSortDir("asc");
     }
   }
+
+  const columns: AppTableColumn<SkillSummary>[] = [
+    {
+      key: "name",
+      header: "Nome",
+      width: "minmax(140px,1.1fr)",
+      sortable: true,
+      mono: true,
+      render: (v) => <span className="text-foreground group-hover:text-info transition-colors truncate block">{v}</span>,
+    },
+    {
+      key: "source",
+      header: "Source",
+      width: "100px",
+      sortable: true,
+      render: (v: SkillSource) => (
+        <Pill variant={v === "skillforge" ? "ok" : v === "omc" ? "info" : "neutral"}>
+          {SOURCE_LABEL[v]}
+        </Pill>
+      ),
+    },
+    {
+      key: "description",
+      header: "Descrição",
+      width: "minmax(260px,3fr)",
+      render: (v: string) => {
+        const trim = v.length > 140 ? v.slice(0, 137).replace(/\s+\S*$/, "") + "…" : v;
+        return <span className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{trim}</span>;
+      },
+    },
+    {
+      key: "category",
+      header: "Categoria",
+      width: "120px",
+      sortable: true,
+      render: (v: string | undefined) => {
+        if (!v) return <span className="text-xs text-muted-foreground">—</span>;
+        return <Pill variant="neutral" dot={false}>{v}</Pill>;
+      },
+    },
+    {
+      key: "fileCount",
+      header: "Arq",
+      width: "80px",
+      align: "right",
+      mono: true,
+      sortable: true,
+      render: (v) => <span className="text-muted-foreground">{v}</span>,
+    },
+    {
+      key: "lockedAt",
+      header: "Lock-in",
+      width: "100px",
+      sortable: true,
+      mono: true,
+      render: (v) => (
+        v ? (
+          <span className="inline-flex items-center gap-1 text-warning text-xs">
+            <Lock className="h-3 w-3" />
+            {v}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground/50">—</span>
+        )
+      ),
+    },
+    {
+      key: "_arrow",
+      header: "",
+      width: "32px",
+      render: () => (
+        <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity justify-self-end" />
+      ),
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -137,6 +212,7 @@ export function SkillsPage() {
     <div className="space-y-5">
       <PageHeader
         title="Skills"
+        crumb="claude · skills"
         subtitle={
           <>
             {filtered.length} de {skills?.length ?? 0} skills
@@ -216,68 +292,15 @@ export function SkillsPage() {
           <EmptyState message="Nenhuma skill registrada" />
         )
       ) : (
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          {/* Header */}
-          <div
-            className="grid gap-3 px-5 py-3 border-b border-border bg-muted/30"
-            style={{ gridTemplateColumns: COLS }}
-          >
-            <SortableTableHeader col="name" label="Nome" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-            <SortableTableHeader col="source" label="Source" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-            <span className="text-xs font-medium text-muted-foreground">Descrição</span>
-            <SortableTableHeader col="category" label="Categoria" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-            <SortableTableHeader col="fileCount" label="Arq" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} align="right" />
-            <SortableTableHeader col="lockedAt" label="Lock-in" sortBy={sortBy} sortDir={sortDir} onSort={toggleSort} />
-            <span></span>
-          </div>
-
-          {/* Rows */}
-          <div className="divide-y divide-border">
-            {filtered.map((s) => {
-              const trim = s.description.length > 140
-                ? s.description.slice(0, 137).replace(/\s+\S*$/, "") + "…"
-                : s.description;
-              const catClass = s.category ? (CATEGORY_COLOR[s.category] || "border-border bg-muted/30 text-muted-foreground") : "";
-              return (
-                <Link
-                  key={`${s.source}:${s.name}`}
-                  to={`/skills/${s.name}?source=${s.source}`}
-                  className="grid gap-3 px-5 py-2.5 hover:bg-muted/40 transition-colors items-center group"
-                  style={{ gridTemplateColumns: COLS }}
-                >
-                  <span className="font-mono text-sm text-foreground group-hover:text-info transition-colors truncate">
-                    {s.name}
-                  </span>
-                  <span>
-                    <Badge variant="outline" className={`text-[10px] ${SOURCE_COLOR[s.source]}`}>
-                      {SOURCE_LABEL[s.source]}
-                    </Badge>
-                  </span>
-                  <span className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{trim}</span>
-                  <span>
-                    {s.category ? (
-                      <Badge variant="outline" className={`text-[10px] ${catClass}`}>{s.category}</Badge>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
-                  </span>
-                  <span className="text-sm text-right tabular-nums text-muted-foreground">{s.fileCount}</span>
-                  <span className="text-xs tabular-nums">
-                    {s.lockedAt ? (
-                      <span className="inline-flex items-center gap-1 text-warning">
-                        <Lock className="h-3 w-3" />
-                        {s.lockedAt}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground/50">—</span>
-                    )}
-                  </span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity justify-self-end" />
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+        <AppTable<SkillSummary>
+          rowKey={(s) => `${s.source}:${s.name}`}
+          data={filtered}
+          columns={columns}
+          sortKey={sortBy}
+          sortDir={sortDir}
+          onSort={toggleSort}
+          onRowClick={(s) => navigate(`/skills/${s.name}?source=${s.source}`)}
+        />
       )}
     </div>
   );

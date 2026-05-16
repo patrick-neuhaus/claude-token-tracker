@@ -5,6 +5,7 @@ import { SettingsForm } from "@/components/settings/SettingsForm";
 import { WebhookInfo } from "@/components/settings/WebhookInfo";
 import { CsvImport } from "@/components/settings/CsvImport";
 import { PricingDrawer } from "@/components/settings/PricingDrawer";
+import { TokenEditor } from "@/components/settings/TokenEditor";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 
@@ -18,6 +19,7 @@ export function SettingsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Configurações"
+        crumb="conta · configurações"
         actions={
           <Button variant="outline" onClick={() => setPricingOpen(true)} className="gap-2">
             <DollarSign className="h-4 w-4" />
@@ -44,6 +46,7 @@ export function SettingsPage() {
           <WebhookInfo webhookToken={user.webhook_token} />
         </div>
       </div>
+      <TokenEditor />
       <PricingDrawer open={pricingOpen} onClose={() => setPricingOpen(false)} />
     </div>
   );
