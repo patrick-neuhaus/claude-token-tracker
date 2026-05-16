@@ -44,6 +44,10 @@ export const qk = {
       ["analytics", "session-time", gap, from, to] as const,
     compare: (selected: string[], dateRange: { from?: string; to?: string }) =>
       ["analytics", "compare", selected, dateRange] as const,
+    cacheHitTrend: (days: number) =>
+      ["analytics", "cache-hit-trend", days] as const,
+    toolP95: (days: number) =>
+      ["analytics", "tool-p95", days] as const,
   },
   sessions: {
     all: () => ["sessions"] as const,

@@ -237,6 +237,48 @@ export async function getProjectComparison(userId: string, projectIds: string[],
   return { summary: summary.rows, daily: daily.rows };
 }
 
+// Cache hit rate por dia (últimos N dias)
+export async function getCacheHitTrend(userId: string, days: number) {
+  const result = await query(
+    `SELECT
+       (timestamp AT TIME ZONE 'America/Sao_Paulo')::date AS date,
+       SUM(cache_read_tokens)::bigint AS cache_read,
+       SUM(input_tokens)::bigint AS input,
+       CASE WHEN SUM(cache_read_tokens + input_tokens) > 0
+         THEN ROUND(SUM(cache_read_tokens) * 100.0 / SUM(cache_read_tokens + input_tokens), 2)
+         ELSE 0
+       END AS hit_rate,
+       SUM(cache_read_tokens + input_tokens)::bigint AS total_tokens
+     FROM token_entries
+     WHERE user_id = $1
+       AND timestamp >= NOW() - ($2 || ' days')::interval
+     GROUP BY 1
+     ORDER BY 1`,
+    [userId, days.toString()]
+  );
+  return result.rows;
+}
+
+// Tool P95 duration últimos N dias
+export async function getToolP95(userId: string, days: number) {
+  const result = await query(
+    `SELECT
+       tool_name,
+       PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY duration_ms) AS p95_ms,
+       COUNT(*)::bigint AS count,
+       SUM(duration_ms)::bigint AS total_duration_ms
+     FROM tool_invocations
+     WHERE user_id = $1
+       AND timestamp >= NOW() - ($2 || ' days')::interval
+       AND duration_ms IS NOT NULL
+     GROUP BY tool_name
+     ORDER BY p95_ms DESC
+     LIMIT 10`,
+    [userId, days.toString()]
+  );
+  return result.rows;
+}
+
 // Tempo útil por sessão com gap configurável
 export async function getSessionTime(
   userId: string,
