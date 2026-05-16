@@ -16,12 +16,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { FolderOpen, Plus, LayoutGrid, List } from "lucide-react";
 import { toast } from "sonner";
-import { ResponsiveContainer, AreaChart, Area } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonRows } from "@/components/shared/SkeletonGrid";
 import { ViewModeToggle } from "@/components/shared/ViewModeToggle";
-import { ClickableRow, handleEnterSpaceKey } from "@/components/shared/ClickableRow";
+import { ClickableRow } from "@/components/shared/ClickableRow";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
+
+interface ProjectListRow {
+  id: string;
+  name: string;
+  description?: string | null;
+  session_count: number;
+  total_cost_usd: number;
+  last_activity?: string | null;
+  sparkline?: { cost: number }[];
+}
 
 export function ProjectsPage() {
   const navigate = useNavigate();
@@ -89,6 +99,7 @@ export function ProjectsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Projetos"
+        crumb="tracker · projetos"
         subtitle={
           projectList && projectList.length > 0
             ? `${projectList.length} projetos · ${formatUSD(projectList.reduce((acc, p) => acc + Number(p.total_cost_usd || 0), 0))} no total`
@@ -156,72 +167,55 @@ export function ProjectsPage() {
                   <span className="text-muted-foreground text-xs">{formatDate(project.last_activity)}</span>
                 )}
               </div>
-              {project.sparkline?.length ? (
-                <div className="h-10 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={project.sparkline} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                      <Area type="monotone" dataKey="cost" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.15} strokeWidth={1.5} dot={false} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : null}
             </ClickableRow>
           ))}
         </div>
       ) : (
         /* List view — compacta para 30+ projetos */
-        <div className="rounded-xl border border-border overflow-hidden bg-card">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/30">
-                <th className="text-left p-3 font-medium">Projeto</th>
-                <th className="text-right p-3 font-medium">Sessões</th>
-                <th className="text-right p-3 font-medium">Custo</th>
-                <th className="text-right p-3 font-medium hidden md:table-cell">Última atividade</th>
-                <th className="p-3 w-24 hidden md:table-cell">7 dias</th>
-              </tr>
-            </thead>
-            <tbody>
-              {projectList
-                .slice()
-                .sort((a, b) => b.total_cost_usd - a.total_cost_usd)
-                .map((project) => (
-                  <tr
-                    key={project.id}
-                    tabIndex={0}
-                    role="link"
-                    aria-label={`Abrir projeto ${project.name}`}
-                    className="border-b last:border-0 cursor-pointer hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-                    onClick={() => navigate(`/projects/${project.id}`)}
-                    onKeyDown={handleEnterSpaceKey(() => navigate(`/projects/${project.id}`))}
-                  >
-                    <td className="p-3">
-                      <div className="font-medium">{project.name}</div>
-                      {project.description && (
-                        <div className="text-xs text-muted-foreground truncate max-w-xs">{project.description}</div>
-                      )}
-                    </td>
-                    <td className="p-3 text-right tabular-nums">{project.session_count}</td>
-                    <td className="p-3 text-right font-medium tabular-nums">{formatUSD(project.total_cost_usd)}</td>
-                    <td className="p-3 text-right text-muted-foreground text-xs hidden md:table-cell">
-                      {project.last_activity ? formatDate(project.last_activity) : "—"}
-                    </td>
-                    <td className="p-3 hidden md:table-cell">
-                      {project.sparkline?.length ? (
-                        <div className="h-8 w-24">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={project.sparkline} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                              <Area type="monotone" dataKey="cost" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" fillOpacity={0.15} strokeWidth={1.5} dot={false} />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </div>
-                      ) : <span className="text-muted-foreground text-xs">—</span>}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
+        <AppTable<ProjectListRow>
+          rowKey="id"
+          data={projectList.slice().sort((a, b) => b.total_cost_usd - a.total_cost_usd)}
+          onRowClick={(p) => navigate(`/projects/${p.id}`)}
+          columns={[
+            {
+              key: "name",
+              header: "Projeto",
+              width: "minmax(220px,2.5fr)",
+              render: (_v, p) => (
+                <div className="min-w-0">
+                  <div className="font-medium truncate">{p.name}</div>
+                  {p.description && (
+                    <div className="text-xs text-muted-foreground truncate">{p.description}</div>
+                  )}
+                </div>
+              ),
+            },
+            {
+              key: "session_count",
+              header: "Sessões",
+              width: "100px",
+              align: "right",
+              mono: true,
+              render: (v) => v,
+            },
+            {
+              key: "total_cost_usd",
+              header: "Custo",
+              width: "110px",
+              align: "right",
+              mono: true,
+              render: (v) => <span className="font-medium">{formatUSD(v)}</span>,
+            },
+            {
+              key: "last_activity",
+              header: "Última atividade",
+              width: "150px",
+              align: "right",
+              mono: true,
+              render: (v) => <span className="text-muted-foreground text-xs">{v ? formatDate(v) : "—"}</span>,
+            },
+          ]}
+        />
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

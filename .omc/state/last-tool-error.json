@@ -1,7 +1,7 @@
 {
-  "tool_name": "mcp__Claude_Preview__preview_screenshot",
-  "tool_input_preview": "{\"serverId\":\"f7d96584-dc12-4234-a98f-6bec49ac3d09\"}",
-  "error": "preview_screenshot timed out after 30s. The preview window may be stuck (modal dialog, navigation hang, or unresponsive renderer). Check preview_console_logs for errors.",
-  "timestamp": "2026-05-06T17:35:11.044Z",
+  "tool_name": "mcp__Claude_Preview__preview_eval",
+  "tool_input_preview": "{\"serverId\":\"39d9ac3e-4af2-409e-b9fa-a813dc195319\",\"expression\":\"(async () => { window.location.href = '/analytics'; await new Promise(r => setTimeout(r, 2500)); return { path: window.location.pathnam...",
+  "error": "Eval failed: Inspected target navigated or closed",
+  "timestamp": "2026-05-06T18:17:14.916Z",
   "retry_count": 1
 }

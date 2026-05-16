@@ -84,6 +84,10 @@ export async function getCharts(userId: string, filters: DashboardFilters) {
          (timestamp AT TIME ZONE 'America/Sao_Paulo')::date AS day,
          model,
          COALESCE(SUM(cost_usd), 0)::float AS cost_usd,
+         COALESCE(SUM(input_tokens), 0)::bigint AS input_tokens,
+         COALESCE(SUM(output_tokens), 0)::bigint AS output_tokens,
+         COALESCE(SUM(cache_read), 0)::bigint AS cache_read,
+         COALESCE(SUM(cache_write), 0)::bigint AS cache_write,
          COUNT(*)::int AS entries
        FROM token_entries
        WHERE ${where}

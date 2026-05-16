@@ -8,7 +8,7 @@ export function AdminPage() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Gerenciamento de Usuários" />
+      <PageHeader title="Gerenciamento de Usuários" crumb="conta · admin" />
       {isLoading ? (
         <SkeletonRows count={5} />
       ) : (

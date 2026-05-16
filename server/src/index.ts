@@ -50,6 +50,19 @@ if (fs.existsSync(clientDist)) {
 const { errorHandler } = await import("./middleware/errorHandler.js");
 app.use(errorHandler);
 
+// Password reset cleanup: drop tokens older than 7 days at startup + every 6h.
+const { cleanupExpired } = await import("./services/passwordResetService.js");
+cleanupExpired()
+  .then((n) => {
+    if (n > 0) console.log(`[CLEANUP] dropped ${n} expired password reset tokens`);
+  })
+  .catch((err) => console.error("[CLEANUP] startup failed:", err));
+setInterval(() => {
+  cleanupExpired().catch((err) =>
+    console.error("[CLEANUP] interval failed:", err),
+  );
+}, 6 * 60 * 60 * 1000);
+
 app.listen(env.PORT, () => {
   console.log(`Server running on http://localhost:${env.PORT}`);
 });

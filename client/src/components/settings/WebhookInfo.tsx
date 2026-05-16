@@ -2,11 +2,123 @@ import { useState } from "react";
 import { Section } from "@/components/shared/Section";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, ChevronDown, ChevronRight } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
 
 interface Props {
   webhookToken: string;
 }
+
+interface PayloadField {
+  campo: string;
+  tipo: string;
+  desc: string;
+}
+
+const payloadFields: PayloadField[] = [
+  { campo: "source", tipo: "string", desc: "Ex: claude-code, claude.ai, codex" },
+  { campo: "model", tipo: "string", desc: "Nome do modelo usado" },
+  { campo: "input_tokens", tipo: "int", desc: "Tokens de entrada" },
+  { campo: "output_tokens", tipo: "int", desc: "Tokens de saída" },
+  { campo: "cache_read_tokens", tipo: "int", desc: "Tokens lidos do cache (opcional)" },
+  { campo: "cache_write_tokens", tipo: "int", desc: "Tokens escritos no cache (opcional)" },
+  { campo: "session_id", tipo: "string", desc: "ID da sessão (opcional, agrupa entries)" },
+  { campo: "timestamp", tipo: "ISO8601", desc: "Quando ocorreu (opcional, usa now() se omitido)" },
+  { campo: "auto_name", tipo: "string", desc: "Nome automático da sessão (opcional)" },
+];
+
+const payloadColumns: AppTableColumn<PayloadField>[] = [
+  {
+    key: "campo",
+    header: "Campo",
+    width: "minmax(160px,1fr)",
+    mono: true,
+    render: (v) => <span className="text-xs">{v}</span>,
+  },
+  {
+    key: "tipo",
+    header: "Tipo",
+    width: "120px",
+    render: (v) => <span className="text-xs text-muted-foreground">{v}</span>,
+  },
+  {
+    key: "desc",
+    header: "Descrição",
+    width: "minmax(220px,2fr)",
+    render: (v) => <span className="text-xs text-muted-foreground">{v}</span>,
+  },
+];
+
+interface PricingRow {
+  model: string;
+  input: string;
+  output: string;
+  cacheRead: string;
+  cacheWrite: string;
+  badge?: string;
+  badgeVariant?: "info" | "warning";
+  legacy?: boolean;
+}
+
+const pricingRows: PricingRow[] = [
+  { model: "gpt-5.5", badge: "Codex", input: "$5.00", output: "$30.00", cacheRead: "$0.50", cacheWrite: "$5.00" },
+  { model: "gpt-5.4-mini", input: "$0.75", output: "$4.50", cacheRead: "$0.075", cacheWrite: "$0.75" },
+  { model: "claude-opus-4-7", badge: "atual", input: "$5.00", output: "$25.00", cacheRead: "$0.50", cacheWrite: "$6.25" },
+  { model: "claude-sonnet-4-6", badge: "atual", input: "$3.00", output: "$15.00", cacheRead: "$0.30", cacheWrite: "$3.75" },
+  { model: "claude-haiku-4-5", badge: "atual", input: "$1.00", output: "$5.00", cacheRead: "$0.10", cacheWrite: "$1.25" },
+  { model: "claude-opus-4-6", legacy: true, input: "$5.00", output: "$25.00", cacheRead: "$0.50", cacheWrite: "$6.25" },
+  { model: "claude-opus-4-1", legacy: true, badge: "legacy", badgeVariant: "warning", input: "$15.00", output: "$75.00", cacheRead: "$1.50", cacheWrite: "$18.75" },
+  { model: "claude-haiku-3-5", legacy: true, badge: "legacy", badgeVariant: "warning", input: "$0.80", output: "$4.00", cacheRead: "$0.08", cacheWrite: "$1.00" },
+];
+
+const pricingColumns: AppTableColumn<PricingRow>[] = [
+  {
+    key: "model",
+    header: "Modelo",
+    width: "minmax(220px,2fr)",
+    render: (_v, r) => (
+      <span className={`font-mono text-xs ${r.legacy ? "text-muted-foreground" : ""}`}>
+        {r.model}
+        {r.badge && (
+          <span className={`ml-1 ${r.badgeVariant === "warning" ? "text-warning" : "text-muted-foreground"}`}>
+            ({r.badge})
+          </span>
+        )}
+      </span>
+    ),
+  },
+  {
+    key: "input",
+    header: "Input/1M",
+    width: "110px",
+    align: "right",
+    mono: true,
+    render: (v, r) => <span className={r.legacy ? "text-muted-foreground" : ""}>{v}</span>,
+  },
+  {
+    key: "output",
+    header: "Output/1M",
+    width: "110px",
+    align: "right",
+    mono: true,
+    render: (v, r) => <span className={r.legacy ? "text-muted-foreground" : ""}>{v}</span>,
+  },
+  {
+    key: "cacheRead",
+    header: "Cache Read/1M",
+    width: "130px",
+    align: "right",
+    mono: true,
+    render: (v, r) => <span className={r.legacy ? "text-muted-foreground" : ""}>{v}</span>,
+  },
+  {
+    key: "cacheWrite",
+    header: "Cache Write 5m/1M",
+    width: "150px",
+    align: "right",
+    mono: true,
+    render: (v, r) => <span className={r.legacy ? "text-muted-foreground" : ""}>{v}</span>,
+  },
+];
 
 export function WebhookInfo({ webhookToken }: Props) {
   const [copied, setCopied] = useState<string | null>(null);
@@ -148,36 +260,11 @@ export function WebhookInfo({ webhookToken }: Props) {
 
                 <div>
                   <p className="text-xs font-medium mb-1 text-muted-foreground">Campos do payload:</p>
-                  <div className="rounded-md border text-xs">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b bg-muted/40">
-                          <th className="text-left p-2 font-medium">Campo</th>
-                          <th className="text-left p-2 font-medium">Tipo</th>
-                          <th className="text-left p-2 font-medium">Descrição</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {[
-                          ["source", "string", "Ex: claude-code, claude.ai, codex"],
-                          ["model", "string", "Nome do modelo usado"],
-                          ["input_tokens", "int", "Tokens de entrada"],
-                          ["output_tokens", "int", "Tokens de saída"],
-                          ["cache_read_tokens", "int", "Tokens lidos do cache (opcional)"],
-                          ["cache_write_tokens", "int", "Tokens escritos no cache (opcional)"],
-                          ["session_id", "string", "ID da sessão (opcional, agrupa entries)"],
-                          ["timestamp", "ISO8601", "Quando ocorreu (opcional, usa now() se omitido)"],
-                          ["auto_name", "string", "Nome automático da sessão (opcional)"],
-                        ].map(([campo, tipo, desc]) => (
-                          <tr key={campo} className="border-b last:border-0">
-                            <td className="p-2 font-mono">{campo}</td>
-                            <td className="p-2 text-muted-foreground">{tipo}</td>
-                            <td className="p-2 text-muted-foreground">{desc}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <AppTable<PayloadField>
+                    rowKey="campo"
+                    data={payloadFields}
+                    columns={payloadColumns}
+                  />
                 </div>
 
                 <p className="text-xs text-muted-foreground">
@@ -193,78 +280,11 @@ export function WebhookInfo({ webhookToken }: Props) {
         title="Referência de Preços por Modelo"
         description={<span>Atualizado 2026-04-29 · fontes: <a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noopener" className="text-info hover:underline">Claude</a> e <a href="https://developers.openai.com/api/docs/pricing" target="_blank" rel="noopener" className="text-info hover:underline">OpenAI</a></span>}
       >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Modelo</TableHead>
-                <TableHead className="text-right">Input/1M</TableHead>
-                <TableHead className="text-right">Output/1M</TableHead>
-                <TableHead className="text-right">Cache Read/1M</TableHead>
-                <TableHead className="text-right">Cache Write 5m/1M</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {/* OpenAI / Codex */}
-              <TableRow>
-                <TableCell className="font-mono text-xs">gpt-5.5 <span className="text-muted-foreground">(Codex)</span></TableCell>
-                <TableCell className="text-right tabular-nums">$5.00</TableCell>
-                <TableCell className="text-right tabular-nums">$30.00</TableCell>
-                <TableCell className="text-right tabular-nums">$0.50</TableCell>
-                <TableCell className="text-right tabular-nums">$5.00</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-mono text-xs">gpt-5.4-mini</TableCell>
-                <TableCell className="text-right tabular-nums">$0.75</TableCell>
-                <TableCell className="text-right tabular-nums">$4.50</TableCell>
-                <TableCell className="text-right tabular-nums">$0.075</TableCell>
-                <TableCell className="text-right tabular-nums">$0.75</TableCell>
-              </TableRow>
-              {/* Current generation */}
-              <TableRow>
-                <TableCell className="font-mono text-xs">claude-opus-4-7 <span className="text-muted-foreground">(atual)</span></TableCell>
-                <TableCell className="text-right tabular-nums">$5.00</TableCell>
-                <TableCell className="text-right tabular-nums">$25.00</TableCell>
-                <TableCell className="text-right tabular-nums">$0.50</TableCell>
-                <TableCell className="text-right tabular-nums">$6.25</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-mono text-xs">claude-sonnet-4-6 <span className="text-muted-foreground">(atual)</span></TableCell>
-                <TableCell className="text-right tabular-nums">$3.00</TableCell>
-                <TableCell className="text-right tabular-nums">$15.00</TableCell>
-                <TableCell className="text-right tabular-nums">$0.30</TableCell>
-                <TableCell className="text-right tabular-nums">$3.75</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-mono text-xs">claude-haiku-4-5 <span className="text-muted-foreground">(atual)</span></TableCell>
-                <TableCell className="text-right tabular-nums">$1.00</TableCell>
-                <TableCell className="text-right tabular-nums">$5.00</TableCell>
-                <TableCell className="text-right tabular-nums">$0.10</TableCell>
-                <TableCell className="text-right tabular-nums">$1.25</TableCell>
-              </TableRow>
-              {/* Legacy still supported */}
-              <TableRow>
-                <TableCell className="font-mono text-xs text-muted-foreground">claude-opus-4-6</TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">$5.00</TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">$25.00</TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">$0.50</TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">$6.25</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-mono text-xs text-muted-foreground">claude-opus-4-1 <span className="text-warning">(legacy)</span></TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">$15.00</TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">$75.00</TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">$1.50</TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">$18.75</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-mono text-xs text-muted-foreground">claude-haiku-3-5 <span className="text-warning">(legacy)</span></TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">$0.80</TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">$4.00</TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">$0.08</TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">$1.00</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+        <AppTable<PricingRow>
+          rowKey="model"
+          data={pricingRows}
+          columns={pricingColumns}
+        />
       </Section>
     </>
   );

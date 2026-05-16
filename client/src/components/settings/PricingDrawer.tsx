@@ -123,22 +123,25 @@ export function PricingDrawer({ open, onClose }: Props) {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-background/70 backdrop-blur-sm"
+        className="fixed inset-0 z-40"
+        style={{ background: "var(--overlay-backdrop)" }}
         onClick={onClose}
         aria-hidden="true"
       />
-      {/* Drawer panel */}
+      {/* Drawer panel — canonical CRM: rounded left corners, sticky header/footer */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Customizar pricing por modelo"
-        className="fixed right-0 top-0 z-50 h-full w-full max-w-md bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
+        className="fixed right-0 top-0 z-50 h-full w-full max-w-md bg-card border-l border-border shadow-2xl flex flex-col rounded-l-2xl overflow-hidden animate-in slide-in-from-right duration-300 ease-out"
       >
         {/* Header */}
-        <header className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <div>
-            <h2 className="text-base font-semibold tracking-tight">Pricing customizado</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
+        <header className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-semibold tracking-tight leading-tight">
+              Pricing customizado
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
               USD por 1M tokens. Aplica em entries futuras.
             </p>
           </div>

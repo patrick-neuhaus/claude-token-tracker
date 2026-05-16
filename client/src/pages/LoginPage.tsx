@@ -1,10 +1,16 @@
-import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { RegisterForm } from "@/components/auth/RegisterForm";
+import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
+import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
+import { ConfirmEmailScreen } from "@/components/auth/ConfirmEmailScreen";
 import { Activity, Sun, Moon } from "lucide-react";
+import { api } from "@/lib/api";
+
+type AuthMode = "login" | "register" | "forgot" | "reset" | "confirm";
 
 /**
  * LoginPage — split-panel canonical (Wave 6.4a lift, anti-ai-design-system
@@ -21,10 +27,30 @@ import { Activity, Sun, Moon } from "lucide-react";
 export function LoginPage() {
   const { user, loading } = useAuth();
   const { mode: themeMode, toggle: toggleTheme } = useTheme();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tokenFromUrl = searchParams.get("token");
+  const [mode, setMode] = useState<AuthMode>(tokenFromUrl ? "reset" : "login");
+
+  // If user lands with ?token= but is already logged in, we still let them
+  // reset (handy when patrick is signed in and clicks the link himself).
+  useEffect(() => {
+    if (tokenFromUrl && mode !== "reset") {
+      setMode("reset");
+    }
+  }, [tokenFromUrl, mode]);
+
+  function goLogin() {
+    if (tokenFromUrl) {
+      // Strip token from URL so we don't bounce back to reset mode.
+      const next = new URLSearchParams(searchParams);
+      next.delete("token");
+      setSearchParams(next, { replace: true });
+    }
+    setMode("login");
+  }
 
   if (loading) return null;
-  if (user) return <Navigate to="/dashboard" replace />;
+  if (user && !tokenFromUrl) return <Navigate to="/dashboard" replace />;
 
   return (
     <div className="relative flex min-h-screen flex-col lg:flex-row">
@@ -83,10 +109,39 @@ export function LoginPage() {
       {/* Form panel */}
       <main className="flex flex-1 items-center justify-center px-6 py-10 bg-background">
         <div className="w-full max-w-md">
-          {mode === "login" ? (
-            <LoginForm onSwitch={() => setMode("register")} />
-          ) : (
-            <RegisterForm onSwitch={() => setMode("login")} />
+          {mode === "login" && (
+            <LoginForm
+              onSwitch={() => setMode("register")}
+              onForgot={() => setMode("forgot")}
+            />
+          )}
+          {mode === "register" && <RegisterForm onSwitch={() => setMode("login")} />}
+          {mode === "forgot" && (
+            <ForgotPasswordForm
+              onSubmit={async (email) => {
+                await api.post("/auth/forgot", { email });
+              }}
+              onGoLogin={goLogin}
+            />
+          )}
+          {mode === "reset" && (
+            <ResetPasswordForm
+              token={tokenFromUrl ?? undefined}
+              onSubmit={async (password, token) => {
+                if (!token) {
+                  throw new Error("Token ausente. Use o link enviado por email.");
+                }
+                await api.post("/auth/reset", { token, password });
+              }}
+              onGoLogin={goLogin}
+            />
+          )}
+          {mode === "confirm" && (
+            <ConfirmEmailScreen
+              status="success"
+              onContinue={() => setMode("login")}
+              onResend={() => setMode("forgot")}
+            />
           )}
         </div>
       </main>

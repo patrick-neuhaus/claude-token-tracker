@@ -1,6 +1,6 @@
 import { formatUSD } from "@/lib/formatters";
 import { VALUE_COLORS } from "@/lib/constants";
-import { CalendarClock, CreditCard } from "lucide-react";
+import { CalendarClock, CreditCard, Target } from "lucide-react";
 import { surface, surfaceHeader, surfaceContent } from "@/lib/surface";
 
 const DOW_NAMES = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
@@ -11,6 +11,20 @@ interface Props {
   weeklyResetDow?: number;
   weeklyResetHour?: number;
   planStartDate?: string | null;
+}
+
+function getCycleProgress(planStartDate: string | null | undefined, weeklyResetDow: number) {
+  const now = new Date();
+  if (planStartDate) {
+    const start = new Date(planStartDate);
+    const cycleStart = new Date(now.getFullYear(), now.getMonth(), start.getDate());
+    if (cycleStart.getTime() > now.getTime()) cycleStart.setMonth(cycleStart.getMonth() - 1);
+    const elapsed = Math.max(1, Math.floor((now.getTime() - cycleStart.getTime()) / 86400000) + 1);
+    return { cycleDays: 30, elapsed: Math.min(30, elapsed), cycleType: "mês" as const };
+  }
+  const dow = now.getDay();
+  const elapsed = ((dow - weeklyResetDow + 7) % 7) + 1;
+  return { cycleDays: 7, elapsed, cycleType: "semana" as const };
 }
 
 function getNextReset(dow: number, hour: number): { label: string; daysLeft: number } {
@@ -48,6 +62,14 @@ export function PlanIndicator({ totalCostUsd, planCostUsd, weeklyResetDow = 2, w
   const pct = plan > 0 ? (cost / plan) * 100 : 0;
   const color = pct > 100 ? VALUE_COLORS.good : pct >= 50 ? VALUE_COLORS.medium : VALUE_COLORS.poor;
 
+  // Daily target (R8b) — meta cumulativa pro ciclo atual
+  const cycle = getCycleProgress(planStartDate, weeklyResetDow);
+  const dailyTarget = plan / cycle.cycleDays;
+  const cumulativeTarget = dailyTarget * cycle.elapsed;
+  const cumulativeTargetPct = plan > 0 ? Math.min(100, (cumulativeTarget / plan) * 100) : 0;
+  const targetDelta = cost - cumulativeTarget;
+  const onPaceForTarget = cost <= cumulativeTarget;
+
   const message =
     pct > 100
       ? `Você está extraindo ${formatUSD(cost - plan)} a mais do que paga pelo plano!`
@@ -78,7 +100,7 @@ export function PlanIndicator({ totalCostUsd, planCostUsd, weeklyResetDow = 2, w
           </span>
         </div>
 
-        {/* Barra de progresso */}
+        {/* Barra de progresso com marker de meta cumulativa (R8b) */}
         <div className="pt-1">
           <div className="flex justify-between items-center mb-1.5">
             <span className="text-xs text-muted-foreground">Aproveitamento</span>
@@ -86,7 +108,7 @@ export function PlanIndicator({ totalCostUsd, planCostUsd, weeklyResetDow = 2, w
               {pct.toFixed(0)}%
             </span>
           </div>
-          <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
+          <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full transition-[width] duration-300 ease-out"
               style={{
@@ -95,12 +117,43 @@ export function PlanIndicator({ totalCostUsd, planCostUsd, weeklyResetDow = 2, w
                 boxShadow: pct > 100 ? `0 0 12px ${color}80` : undefined,
               }}
             />
+            {/* Daily target cumulative marker */}
+            {plan > 0 && cumulativeTargetPct > 0 && cumulativeTargetPct < 100 && (
+              <div
+                className="absolute top-[-2px] bottom-[-2px] w-px bg-foreground"
+                style={{ left: `${cumulativeTargetPct}%`, opacity: 0.7 }}
+                title={`Meta cumulativa: ${formatUSD(cumulativeTarget)}`}
+              />
+            )}
           </div>
         </div>
 
         <p className="text-sm" style={{ color }}>
           {message}
         </p>
+
+        {/* Daily target tracking (R8b) */}
+        <div className="flex items-start gap-2 rounded-md border border-border/60 bg-muted/30 px-3 py-2">
+          <Target className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+          <div className="flex-1 text-xs space-y-0.5">
+            <div className="flex justify-between gap-2">
+              <span className="text-muted-foreground">Meta diária</span>
+              <span className="font-mono tabular-nums">{formatUSD(dailyTarget)} / dia</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-muted-foreground">
+                Acumulado · dia {cycle.elapsed} de {cycle.cycleDays}
+              </span>
+              <span className="font-mono tabular-nums">{formatUSD(cumulativeTarget)}</span>
+            </div>
+            <div className={`flex justify-between gap-2 font-medium ${onPaceForTarget ? "text-success" : "text-destructive"}`}>
+              <span>{onPaceForTarget ? "↓ Abaixo da meta" : "↑ Acima da meta"}</span>
+              <span className="font-mono tabular-nums">
+                {onPaceForTarget ? "−" : "+"}{formatUSD(Math.abs(targetDelta))}
+              </span>
+            </div>
+          </div>
+        </div>
 
         {/* Info de reset semanal e billing */}
         <div className="border-t pt-3 mt-3 space-y-2">

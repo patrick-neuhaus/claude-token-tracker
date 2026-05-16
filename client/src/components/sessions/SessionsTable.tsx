@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { Pill } from "@/components/shared/Pill";
 import { ArrowRight } from "lucide-react";
 import { SessionNameEditor } from "./SessionNameEditor";
 import { formatDate, formatUSD } from "@/lib/formatters";
@@ -62,11 +63,7 @@ export function SessionsTable({ sessions, sortBy, sortDir, onSort, onRename }: P
       key: "source",
       header: "Fonte",
       width: "100px",
-      render: (_v, s) => (
-        <Badge variant="outline" className="text-xs w-fit">
-          {s.source}
-        </Badge>
-      ),
+      render: (_v, s) => <Pill variant="info">{s.source}</Pill>,
     },
     {
       key: "project_name",

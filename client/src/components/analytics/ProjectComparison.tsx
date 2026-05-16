@@ -3,19 +3,72 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Section } from "@/components/shared/Section";
 import { FilterChip } from "@/components/shared/FilterChip";
+import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
 import { useProjects } from "@/hooks/useProjects";
-import { formatUSD, formatTokens, formatNumber, formatShortDate } from "@/lib/formatters";
+import { formatUSD, formatTokens, formatNumber } from "@/lib/formatters";
 import { CHART_COLORS } from "@/lib/constants";
-import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 import type { ProjectComparisonData } from "@/lib/types";
-import {
-  ResponsiveContainer, LineChart, Line,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-} from "recharts";
+import { SvgLineChart, type LineSeries } from "@/components/charts/SvgLineChart";
+
+interface SummaryRow {
+  project_id: string;
+  project: string;
+  total_cost_usd: number;
+  session_count: number;
+  total_tokens: number;
+  cost_per_session: number;
+  _color: string;
+}
 
 interface Props {
   dateRange: { from?: string; to?: string };
 }
+
+const summaryColumns: AppTableColumn<SummaryRow>[] = [
+  {
+    key: "project",
+    header: "Projeto",
+    width: "minmax(180px,2fr)",
+    render: (v, r) => (
+      <span className="flex items-center gap-2">
+        <span className="w-2.5 h-2.5 rounded-full inline-block flex-none" style={{ background: r._color }} />
+        <span className="truncate">{v}</span>
+      </span>
+    ),
+  },
+  {
+    key: "total_cost_usd",
+    header: "Custo total",
+    width: "120px",
+    align: "right",
+    mono: true,
+    render: (v) => <span className="font-medium">{formatUSD(v)}</span>,
+  },
+  {
+    key: "session_count",
+    header: "Sessões",
+    width: "100px",
+    align: "right",
+    mono: true,
+    render: (v) => formatNumber(v),
+  },
+  {
+    key: "total_tokens",
+    header: "Tokens",
+    width: "120px",
+    align: "right",
+    mono: true,
+    render: (v) => formatTokens(v),
+  },
+  {
+    key: "cost_per_session",
+    header: "Custo/sessão",
+    width: "130px",
+    align: "right",
+    mono: true,
+    render: (v) => formatUSD(v),
+  },
+];
 
 /**
  * ProjectComparison — multi-project comparison with table + line chart.
@@ -49,10 +102,14 @@ export function ProjectComparison({ dateRange }: Props) {
     if (!dailyMap[day]) dailyMap[day] = {};
     dailyMap[day][row.project] = (dailyMap[day][row.project] || 0) + row.cost_usd;
   }
+  const projectNamesInComparison = [...new Set<string>((cd?.daily || []).map((r) => r.project))];
   const dailyData = Object.entries(dailyMap)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([day, costs]) => ({ day, ...costs }));
-  const projectNamesInComparison = [...new Set<string>((cd?.daily || []).map((r) => r.project))];
+    .map(([day, costs]) => {
+      const filled: Record<string, number> = {};
+      for (const name of projectNamesInComparison) filled[name] = costs[name] || 0;
+      return { day, ...filled };
+    });
 
   function toggleProject(id: string) {
     setSelected((prev) =>
@@ -86,48 +143,27 @@ export function ProjectComparison({ dateRange }: Props) {
         {selected.length >= 2 && cd && (
           <>
             {/* Tabela comparativa */}
-            <div className="rounded-md border overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/40">
-                    <th className="text-left p-3 font-medium">Projeto</th>
-                    <th className="text-right p-3 font-medium">Custo total</th>
-                    <th className="text-right p-3 font-medium">Sessões</th>
-                    <th className="text-right p-3 font-medium">Tokens</th>
-                    <th className="text-right p-3 font-medium">Custo/sessão</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(cd.summary || []).map((row, i) => (
-                    <tr key={row.project_id} className="border-b last:border-0">
-                      <td className="p-3 flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
-                        {row.project}
-                      </td>
-                      <td className="p-3 text-right font-medium tabular-nums">{formatUSD(row.total_cost_usd)}</td>
-                      <td className="p-3 text-right tabular-nums">{formatNumber(row.session_count)}</td>
-                      <td className="p-3 text-right tabular-nums">{formatTokens(row.total_tokens)}</td>
-                      <td className="p-3 text-right tabular-nums">{formatUSD(row.cost_per_session)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <AppTable<SummaryRow>
+              rowKey="project_id"
+              data={(cd.summary || []).map((row, i) => ({
+                ...row,
+                _color: CHART_COLORS[i % CHART_COLORS.length],
+              }))}
+              columns={summaryColumns}
+            />
 
-            {/* Gráfico sobrepostos */}
+            {/* Gráfico sobrepostos — SVG inline (R8) */}
             {dailyData.length > 0 && (
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={dailyData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="day" tickFormatter={formatShortDate} tick={{ fontSize: 11 }} />
-                  <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-                  <Tooltip formatter={(v) => formatUSD(Number(v))} labelFormatter={(v) => formatShortDate(String(v))} {...TOOLTIP_PROPS} />
-                  <Legend />
-                  {projectNamesInComparison.map((name, i) => (
-                    <Line key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} dot={false} strokeWidth={2} connectNulls />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
+              <SvgLineChart
+                data={dailyData as Array<Record<string, string | number>>}
+                xKey="day"
+                series={projectNamesInComparison.map((name, i): LineSeries => ({
+                  key: name,
+                  label: name,
+                  color: CHART_COLORS[i % CHART_COLORS.length],
+                }))}
+                height={240}
+              />
             )}
           </>
         )}

@@ -44,6 +44,7 @@ export function AchievementsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Conquistas"
+        crumb="tracker · conquistas"
         subtitle={`${totalUnlocked} de ${badges.length} desbloqueadas`}
         actions={
           <div className="flex items-center gap-2 flex-wrap">

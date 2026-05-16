@@ -168,6 +168,48 @@
   },
   "hotPaths": [
     {
+      "path": "audits\\00-master-plan.md",
+      "accessCount": 9,
+      "lastAccessed": 1778099251337,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\pages\\AnalyticsPage.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1778122834761,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\components\\shared\\StatCard.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1778091418572,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\components\\onboarding\\OnboardingWizard.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1778093642589,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\components\\layout\\Sidebar.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1778099570314,
+      "type": "file"
+    },
+    {
+      "path": "server\\src\\routes\\settings.ts",
+      "accessCount": 3,
+      "lastAccessed": 1778099750780,
+      "type": "file"
+    },
+    {
+      "path": "client\\src",
+      "accessCount": 3,
+      "lastAccessed": 1778122814940,
+      "type": "directory"
+    },
+    {
       "path": "client\\vite.config.ts",
       "accessCount": 2,
       "lastAccessed": 1778088685812,
@@ -180,10 +222,82 @@
       "type": "file"
     },
     {
-      "path": "audits\\00-master-plan.md",
+      "path": "audits\\05-deltas-and-lift.md",
       "accessCount": 2,
-      "lastAccessed": 1778090617935,
+      "lastAccessed": 1778091268741,
+      "type": "directory"
+    },
+    {
+      "path": "client\\src\\lib\\chartConfig.ts",
+      "accessCount": 2,
+      "lastAccessed": 1778091337626,
       "type": "file"
+    },
+    {
+      "path": "client\\src\\components\\analytics\\DeltaBadge.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778091350363,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\components\\analytics\\KpiBox.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778091394043,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\App.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778091473100,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\pages\\LoginPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778091630814,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\components\\achievements\\BadgeCard.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778093662718,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\components\\achievements\\TierProgressBar.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778093676718,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\components\\analytics\\AchievementNotifier.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778093696959,
+      "type": "file"
+    },
+    {
+      "path": "server\\src\\services\\tokenService.ts",
+      "accessCount": 2,
+      "lastAccessed": 1778099734820,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\pages\\SettingsPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778099854173,
+      "type": "file"
+    },
+    {
+      "path": "client\\package.json",
+      "accessCount": 2,
+      "lastAccessed": 1778122807896,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\pages\\SessionDetailPage.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1778122836591,
+      "type": "directory"
     },
     {
       "path": "client\\src\\index.css",
@@ -192,21 +306,111 @@
       "type": "file"
     },
     {
-      "path": "client\\src",
-      "accessCount": 1,
-      "lastAccessed": 1778088778207,
-      "type": "directory"
-    },
-    {
-      "path": "client\\src\\App.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1778088785430,
-      "type": "file"
-    },
-    {
       "path": "audits\\HANDOFF-WAVE-6-2.md",
       "accessCount": 1,
       "lastAccessed": 1778090668573,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\components\\analytics\\StreaksKpiGrid.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778091279938,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\hooks\\useCountUp.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778091373589,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\components\\auth\\LoginForm.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778091601437,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\pages\\AchievementsPage.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778093557947,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\components\\shared\\ConfettiBurst.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778093616559,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\contexts\\AuthContext.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778094982439,
+      "type": "file"
+    },
+    {
+      "path": "audits\\HANDOFF-WAVE-6-FINAL.md",
+      "accessCount": 1,
+      "lastAccessed": 1778095332900,
+      "type": "file"
+    },
+    {
+      "path": "server\\src\\utils\\modelNormalizer.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778098046772,
+      "type": "file"
+    },
+    {
+      "path": "server\\src\\config\\pricing.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778098047136,
+      "type": "file"
+    },
+    {
+      "path": "PLAN-B-SPEC.md",
+      "accessCount": 1,
+      "lastAccessed": 1778098058222,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\hooks\\useAnalytics.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778099544378,
+      "type": "file"
+    },
+    {
+      "path": "client\\src\\components\\layout\\StreakCounter.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778099566207,
+      "type": "file"
+    },
+    {
+      "path": "server\\src\\utils\\costCalculator.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778099611000,
+      "type": "file"
+    },
+    {
+      "path": "server\\migrations\\migrate.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778099620941,
+      "type": "file"
+    },
+    {
+      "path": "server\\src\\routes\\webhook.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778099649897,
+      "type": "file"
+    },
+    {
+      "path": "server\\migrations\\010_create_user_pricing_overrides.sql",
+      "accessCount": 1,
+      "lastAccessed": 1778099704657,
+      "type": "file"
+    },
+    {
+      "path": "server\\src\\services\\pricingOverrideService.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778099716881,
       "type": "file"
     }
   ],

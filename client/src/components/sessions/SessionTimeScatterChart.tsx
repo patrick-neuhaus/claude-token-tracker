@@ -1,7 +1,5 @@
-import {
-  ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ZAxis,
-} from "recharts";
-import { TOOLTIP_PROPS } from "@/lib/chartConfig";
+import { useMemo } from "react";
+import { SvgScatterPlot, type ScatterPoint } from "@/components/charts/SvgScatterPlot";
 import { formatUSD } from "@/lib/formatters";
 import { formatDuration } from "@/lib/timeFormatters";
 
@@ -18,59 +16,36 @@ interface Props {
 }
 
 /**
- * SessionTimeScatterChart — scatter plot of cost (Y) × useful time (X), with
- * point size proportional to call count.
- *
- * Extracted from SessionTimePage:266-312. Caller pre-shapes data via useMemo.
+ * SessionTimeScatterChart — Wave 8.2.4 R8: SVG inline migration.
+ * Cost (Y) × time (X) × calls (bubble radius).
  */
 export function SessionTimeScatterChart({ data, height = 400 }: Props) {
+  const points = useMemo<ScatterPoint[]>(() => {
+    if (data.length === 0) return [];
+    const callsMin = Math.min(...data.map((d) => d.calls));
+    const callsMax = Math.max(...data.map((d) => d.calls));
+    const span = Math.max(1, callsMax - callsMin);
+    return data.map((d) => ({
+      name: d.name,
+      x: d.tempoMin,
+      y: d.custo,
+      r: 4 + ((d.calls - callsMin) / span) * 12,
+    }));
+  }, [data]);
+
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <ScatterChart margin={{ top: 20, right: 24, left: 10, bottom: 20 }}>
-        <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-        <XAxis
-          type="number"
-          dataKey="tempoMin"
-          name="Tempo útil"
-          tickFormatter={(v: number) => `${v.toFixed(0)}m`}
-          tick={{ fontSize: 11 }}
-          label={{ value: "Tempo útil (minutos)", position: "insideBottom", offset: -10, fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-        />
-        <YAxis
-          type="number"
-          dataKey="custo"
-          name="Custo"
-          tickFormatter={(v: number) => `$${v.toFixed(0)}`}
-          tick={{ fontSize: 11 }}
-          label={{ value: "Custo (USD)", angle: -90, position: "insideLeft", fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-        />
-        <ZAxis type="number" dataKey="calls" range={[60, 400]} name="calls" />
-        <Tooltip
-          {...TOOLTIP_PROPS}
-          cursor={{ strokeDasharray: "3 3" }}
-          content={({ active, payload }) => {
-            if (active && payload && payload.length) {
-              const p = payload[0].payload;
-              return (
-                <div style={TOOLTIP_PROPS.contentStyle as React.CSSProperties}>
-                  <p className="text-sm font-medium" style={TOOLTIP_PROPS.itemStyle as React.CSSProperties}>{p.name}</p>
-                  <p className="text-xs" style={TOOLTIP_PROPS.labelStyle as React.CSSProperties}>
-                    Tempo: {formatDuration(p.tempoMin * 60)}
-                  </p>
-                  <p className="text-xs" style={TOOLTIP_PROPS.labelStyle as React.CSSProperties}>
-                    Custo: {formatUSD(p.custo)}
-                  </p>
-                  <p className="text-xs" style={TOOLTIP_PROPS.labelStyle as React.CSSProperties}>
-                    Calls: {p.calls}
-                  </p>
-                </div>
-              );
-            }
-            return null;
-          }}
-        />
-        <Scatter data={data} fill="hsl(var(--chart-1))" fillOpacity={0.6} />
-      </ScatterChart>
-    </ResponsiveContainer>
+    <SvgScatterPlot
+      data={points}
+      height={height}
+      xLabel="Tempo útil (minutos)"
+      yLabel="Custo (USD)"
+      formatX={(v) => `${v.toFixed(0)}m`}
+      formatY={(v) => `$${v.toFixed(0)}`}
+      formatTooltip={(p) => {
+        const orig = data.find((d) => d.name === p.name);
+        if (!orig) return p.name;
+        return `${p.name}\nTempo: ${formatDuration(orig.tempoMin * 60)}\nCusto: ${formatUSD(orig.custo)}\nCalls: ${orig.calls}`;
+      }}
+    />
   );
 }

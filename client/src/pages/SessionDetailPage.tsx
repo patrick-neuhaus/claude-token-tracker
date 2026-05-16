@@ -4,6 +4,7 @@ import { useRenameSession } from "@/hooks/useSessions";
 import { Section } from "@/components/shared/Section";
 import { StatCard } from "@/components/shared/StatCard";
 import { Badge } from "@/components/ui/badge";
+import { Pill } from "@/components/shared/Pill";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { Button } from "@/components/ui/button";
@@ -11,20 +12,73 @@ import { NavBreadcrumb } from "@/components/shared/NavBreadcrumb";
 import { SessionNameEditor } from "@/components/sessions/SessionNameEditor";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  BarChart, Bar,
-} from "recharts";
+import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
+import { SvgAreaStack } from "@/components/charts/SvgAreaStack";
+import { SvgStackedBar } from "@/components/charts/SvgStackedBar";
 import {
   MessageSquare, DollarSign, Hash, Clock, Activity, FolderOpen, ExternalLink,
 } from "lucide-react";
 import { formatUSD, formatNumber, formatTokens, formatDate } from "@/lib/formatters";
-import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 import { ModelPieChart } from "@/components/charts/ModelPieChart";
 import { toast } from "sonner";
+
+interface EntryRow {
+  id: string;
+  timestamp: string;
+  model: string;
+  input_tokens: number;
+  output_tokens: number;
+  cache_read: number | string;
+  cache_write: number | string;
+  cost_usd: number;
+}
+
+const entriesColumns: AppTableColumn<EntryRow>[] = [
+  {
+    key: "timestamp",
+    header: "Horário",
+    width: "minmax(160px,1.4fr)",
+    render: (v) => <span className="text-muted-foreground tabular-nums whitespace-nowrap">{formatDate(v)}</span>,
+  },
+  {
+    key: "model",
+    header: "Modelo",
+    width: "minmax(140px,1.2fr)",
+    render: (v) => <span className="truncate" title={v}>{v}</span>,
+  },
+  {
+    key: "input_tokens",
+    header: "Input",
+    width: "100px",
+    align: "right",
+    mono: true,
+    render: (v) => formatTokens(v),
+  },
+  {
+    key: "output_tokens",
+    header: "Output",
+    width: "100px",
+    align: "right",
+    mono: true,
+    render: (v) => formatTokens(v),
+  },
+  {
+    key: "cache_read",
+    header: "Cache",
+    width: "100px",
+    align: "right",
+    mono: true,
+    render: (_v, e) => formatTokens(Number(e.cache_read) + Number(e.cache_write)),
+  },
+  {
+    key: "cost_usd",
+    header: "Custo",
+    width: "110px",
+    align: "right",
+    mono: true,
+    render: (v) => <span className="font-medium">{formatUSD(v)}</span>,
+  },
+];
 
 function formatDuration(seconds: number): string {
   const s = Math.max(0, Math.floor(seconds));
@@ -79,13 +133,19 @@ export function SessionDetailPage() {
     );
   }
 
-  // Token composition bar
-  const tokenBreakdown = [
-    { name: "Input", value: Number(aggregates.total_input) },
-    { name: "Output", value: Number(aggregates.total_output) },
-    { name: "Cache Read", value: Number(aggregates.total_cache_read) },
-    { name: "Cache Write", value: Number(aggregates.total_cache_write) },
+  // Token composition: cache reuse insight pré-calculado
+  const totalInput = Number(aggregates.total_input);
+  const totalOutput = Number(aggregates.total_output);
+  const totalCacheRead = Number(aggregates.total_cache_read);
+  const totalCacheWrite = Number(aggregates.total_cache_write);
+  const tokenSegments = [
+    { key: "input", label: "Input", value: totalInput, color: "hsl(var(--chart-1))" },
+    { key: "output", label: "Output", value: totalOutput, color: "hsl(var(--chart-2))" },
+    { key: "cache_read", label: "Cache Read", value: totalCacheRead, color: "hsl(var(--success))" },
+    { key: "cache_write", label: "Cache Write", value: totalCacheWrite, color: "hsl(var(--chart-4))" },
   ];
+  const tokenSum = totalInput + totalOutput + totalCacheRead + totalCacheWrite;
+  const cachePct = tokenSum > 0 ? (totalCacheRead / tokenSum) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -109,7 +169,7 @@ export function SessionDetailPage() {
             entryCount={session.entry_count}
           />
           <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <Badge variant="outline" className="text-xs">{session.source}</Badge>
+            <Pill variant="info">{session.source}</Pill>
             {session.project_id && session.project_name && (
               <Link to={`/projects/${session.project_id}`}>
                 <Badge variant="secondary" className="text-xs gap-1 hover:bg-secondary/80 transition-colors cursor-pointer">
@@ -134,45 +194,25 @@ export function SessionDetailPage() {
       </div>
 
       {/* Metrics bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard icon={DollarSign} iconColor="text-success-display" label="Custo Total" value={formatUSD(aggregates.total_cost_usd)} />
-        <StatCard icon={Hash} iconColor="text-info-display" label="Total Tokens" value={formatTokens(aggregates.total_tokens)} />
-        <StatCard icon={Clock} iconColor="text-warning" label="Duração" value={formatDuration(duration)} />
-        <StatCard icon={Activity} iconColor="text-chart-4" label="Entradas" value={formatNumber(aggregates.entry_count)} />
+      <div className="kpis">
+        <StatCard label="Custo Total" value={formatUSD(aggregates.total_cost_usd)} />
+        <StatCard label="Total Tokens" value={formatTokens(aggregates.total_tokens)} />
+        <StatCard label="Duração" value={formatDuration(duration)} />
+        <StatCard label="Entradas" value={formatNumber(aggregates.entry_count)} />
       </div>
 
-      {/* Chart: cumulative cost */}
+      {/* Chart: cumulative cost — SVG inline (R8) */}
       {timeline.length > 0 && (
         <Section title="Custo acumulado">
-            <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={timeline} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis
-                  dataKey="timestamp"
-                  tickFormatter={(v) => formatDate(v).split(" ")[1] || ""}
-                  tick={{ fontSize: 11 }}
-                />
-                <YAxis
-                  tickFormatter={(v: number) => `$${v.toFixed(2)}`}
-                  tick={{ fontSize: 11 }}
-                  width={60}
-                />
-                <Tooltip
-                  formatter={(v) => formatUSD(Number(v))}
-                  labelFormatter={(v) => formatDate(String(v))}
-                  {...TOOLTIP_PROPS}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="cumulative_cost"
-                  name="Custo acumulado"
-                  stroke="hsl(var(--chart-2))"
-                  fill="hsl(var(--chart-2))"
-                  fillOpacity={0.2}
-                  strokeWidth={2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <SvgAreaStack
+            data={timeline as Array<Record<string, string | number>>}
+            xKey="timestamp"
+            series={[{ key: "cumulative_cost", label: "Custo acumulado", color: "hsl(var(--chart-2))" }]}
+            stacked={false}
+            height={260}
+            formatX={(v) => formatDate(v).split(" ")[1] || ""}
+            formatY={(v) => `$${v.toFixed(2)}`}
+          />
         </Section>
       )}
 
@@ -186,16 +226,19 @@ export function SessionDetailPage() {
             )}
         </Section>
 
-        <Section title="Composição de Tokens">
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={tokenBreakdown} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis tickFormatter={(v) => formatTokens(v)} tick={{ fontSize: 11 }} width={60} />
-                <Tooltip formatter={(v) => formatTokens(Number(v))} {...TOOLTIP_PROPS} />
-                <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+        <Section
+          title="Composição de Tokens"
+          description={
+            tokenSum > 0
+              ? `${cachePct.toFixed(0)}% reaproveitamento de cache`
+              : "Sem dados"
+          }
+        >
+          <SvgStackedBar
+            segments={tokenSegments}
+            height={56}
+            formatValue={(v) => formatTokens(v)}
+          />
         </Section>
       </div>
 
@@ -204,34 +247,11 @@ export function SessionDetailPage() {
           {entries.length === 0 ? (
             <EmptyState icon={Activity} message="Nenhuma entrada" />
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="pl-4">Horário</TableHead>
-                  <TableHead>Modelo</TableHead>
-                  <TableHead className="text-right">Input</TableHead>
-                  <TableHead className="text-right">Output</TableHead>
-                  <TableHead className="text-right">Cache</TableHead>
-                  <TableHead className="text-right pr-4">Custo</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {entries.map((e) => (
-                  <TableRow key={e.id}>
-                    <TableCell className="text-sm text-muted-foreground pl-4 tabular-nums whitespace-nowrap">
-                      {formatDate(e.timestamp)}
-                    </TableCell>
-                    <TableCell className="text-sm">{e.model}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatTokens(e.input_tokens)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatTokens(e.output_tokens)}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {formatTokens(Number(e.cache_read) + Number(e.cache_write))}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums font-medium pr-4">{formatUSD(e.cost_usd)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <AppTable
+              rowKey="id"
+              data={entries}
+              columns={entriesColumns}
+            />
           )}
       </Section>
     </div>

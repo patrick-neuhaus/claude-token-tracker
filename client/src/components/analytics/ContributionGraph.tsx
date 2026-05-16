@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { format, eachWeekOfInterval, startOfWeek, endOfWeek } from "date-fns";
+import { X } from "lucide-react";
 import { MONTH_LABELS, DOW_LABELS_FULL, MS_PER_DAY } from "@/lib/constants";
-import { formatShortDate } from "@/lib/formatters";
+import { formatShortDate, formatUSD } from "@/lib/formatters";
 
 interface DayData {
   day: string;
@@ -18,6 +20,7 @@ const GAP = 4;
 const STEP = CELL + GAP;
 
 export function ContributionGraph({ data, from, to }: Props) {
+  const [selected, setSelected] = useState<string | null>(null);
   const now = new Date();
   const dataMap: Record<string, number> = {};
   let maxCost = 0;
@@ -52,6 +55,14 @@ export function ContributionGraph({ data, from, to }: Props) {
 
   const activeDays = Object.keys(dataMap).filter((k) => dataMap[k] > 0).length;
   const totalWidth = weeks.length * STEP;
+
+  function toggleDay(key: string) {
+    setSelected((prev) => (prev === key ? null : key));
+  }
+
+  const selectedCost = selected ? dataMap[selected] || 0 : 0;
+  const selectedDate = selected ? new Date(selected + "T00:00:00") : null;
+  const selectedDow = selectedDate ? DOW_LABELS_FULL[selectedDate.getDay()] : null;
 
   return (
     <div className="overflow-x-auto flex justify-center">
@@ -98,12 +109,19 @@ export function ContributionGraph({ data, from, to }: Props) {
                     const cost = dataMap[key] || 0;
                     const alpha = getAlpha(cost);
                     const inRange = day >= startDate && day <= endDate;
+                    const isSelected = selected === key;
 
                     return (
-                      <div
+                      <button
+                        type="button"
                         key={dayIdx}
+                        onClick={() => toggleDay(key)}
                         title={cost > 0 ? `${formatShortDate(key)}: $${cost.toFixed(2)}` : formatShortDate(key)}
-                        className="rounded-sm"
+                        aria-label={cost > 0 ? `${formatShortDate(key)}: $${cost.toFixed(2)}` : formatShortDate(key)}
+                        aria-pressed={isSelected}
+                        className={`rounded-sm transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                          isSelected ? "ring-2 ring-ring scale-110" : ""
+                        }`}
                         style={{
                           width: CELL,
                           height: CELL,
@@ -132,6 +150,27 @@ export function ContributionGraph({ data, from, to }: Props) {
           )}
           <span className="text-[11px] text-muted-foreground ml-1">· {activeDays} dias ativos</span>
         </div>
+
+        {/* Detail panel inline quando dia selecionado */}
+        {selected && selectedDate && selectedDow && (
+          <div className="mt-3 inline-flex items-center gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm" style={{ marginLeft: 36 }}>
+            <span className="font-medium text-foreground">
+              {selectedDow} · {formatShortDate(selected)}
+            </span>
+            <span className="text-muted-foreground">·</span>
+            <span className="text-foreground tabular-nums">
+              {selectedCost > 0 ? formatUSD(selectedCost) : "Sem atividade"}
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelected(null)}
+              aria-label="Fechar detalhe"
+              className="ml-1 inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

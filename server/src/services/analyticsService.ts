@@ -38,7 +38,7 @@ export async function getAnalytics(userId: string, from?: string, to?: string) {
        ORDER BY week, model`,
       [userId, modelStart, endTs]
     ),
-    // 3. Top 10 sessões mais caras (filtradas pelo período)
+    // 3. Top 30 sessões — client agrupa por custom_name (R8-FIX-6)
     query(
       `SELECT s.id, s.session_id, s.custom_name, s.source,
               COALESCE(SUM(te.cost_usd), 0)::float AS total_cost_usd,
@@ -49,7 +49,7 @@ export async function getAnalytics(userId: string, from?: string, to?: string) {
        WHERE s.user_id = $1 AND te.timestamp >= $2 AND te.timestamp <= $3
        GROUP BY s.id, s.session_id, s.custom_name, s.source
        ORDER BY total_cost_usd DESC
-       LIMIT 10`,
+       LIMIT 30`,
       [userId, startTs, endTs]
     ),
     // 4. Comparação este mês vs mês passado (sempre absoluto, ignora filtro)

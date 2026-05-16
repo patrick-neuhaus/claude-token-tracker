@@ -2,14 +2,8 @@ import { useState, useRef, type DragEvent } from "react";
 import { Section } from "@/components/shared/Section";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Pill } from "@/components/shared/Pill";
+import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
 import { useImportCsv } from "@/hooks/useImport";
 import { toast } from "sonner";
 import { Upload, FileText, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
@@ -22,6 +16,52 @@ interface PreviewRow {
   outputTokens: string;
   costUsd: string;
 }
+
+const previewColumns: AppTableColumn<PreviewRow & { _idx: number }>[] = [
+  {
+    key: "timestamp",
+    header: "Timestamp",
+    width: "minmax(160px,1.5fr)",
+    mono: true,
+    render: (v) => <span className="text-xs">{v.length > 19 ? v.slice(0, 19).replace("T", " ") : v}</span>,
+  },
+  {
+    key: "source",
+    header: "Source",
+    width: "120px",
+    render: (v) => <Pill variant="info">{v}</Pill>,
+  },
+  {
+    key: "model",
+    header: "Model",
+    width: "minmax(140px,1.5fr)",
+    render: (v) => <span className="text-xs truncate" title={v}>{v}</span>,
+  },
+  {
+    key: "inputTokens",
+    header: "Input",
+    width: "100px",
+    align: "right",
+    mono: true,
+    render: (v) => <span className="text-xs">{Number(v).toLocaleString()}</span>,
+  },
+  {
+    key: "outputTokens",
+    header: "Output",
+    width: "100px",
+    align: "right",
+    mono: true,
+    render: (v) => <span className="text-xs">{Number(v).toLocaleString()}</span>,
+  },
+  {
+    key: "costUsd",
+    header: "Cost (USD)",
+    width: "110px",
+    align: "right",
+    mono: true,
+    render: (v) => <span className="text-xs">{v}</span>,
+  },
+];
 
 function parseCsvPreview(text: string): { headers: string[]; rows: PreviewRow[] } {
   const lines = text
@@ -191,50 +231,15 @@ export function CsvImport() {
 
             {/* Preview table */}
             {preview && preview.rows.length > 0 && (
-              <div className="rounded-lg border">
-                <div className="px-4 py-2 border-b">
-                  <p className="text-xs text-muted-foreground font-medium">
-                    Pre-visualizacao (primeiras {preview.rows.length} linhas)
-                  </p>
-                </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Timestamp</TableHead>
-                      <TableHead>Source</TableHead>
-                      <TableHead>Model</TableHead>
-                      <TableHead className="text-right">Input</TableHead>
-                      <TableHead className="text-right">Output</TableHead>
-                      <TableHead className="text-right">Cost (USD)</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {preview.rows.map((row, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="text-xs font-mono">
-                          {row.timestamp.length > 19
-                            ? row.timestamp.slice(0, 19).replace("T", " ")
-                            : row.timestamp}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="text-xs">
-                            {row.source}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs">{row.model}</TableCell>
-                        <TableCell className="text-right text-xs font-mono">
-                          {Number(row.inputTokens).toLocaleString()}
-                        </TableCell>
-                        <TableCell className="text-right text-xs font-mono">
-                          {Number(row.outputTokens).toLocaleString()}
-                        </TableCell>
-                        <TableCell className="text-right text-xs font-mono">
-                          {row.costUsd}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground font-medium">
+                  Pre-visualizacao (primeiras {preview.rows.length} linhas)
+                </p>
+                <AppTable<PreviewRow & { _idx: number }>
+                  rowKey="_idx"
+                  data={preview.rows.map((r, idx) => ({ ...r, _idx: idx }))}
+                  columns={previewColumns}
+                />
               </div>
             )}
 

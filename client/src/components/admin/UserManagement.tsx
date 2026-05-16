@@ -1,6 +1,6 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Pill, type PillVariant } from "@/components/shared/Pill";
+import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
 import { useUpdateUserRole } from "@/hooks/useSettings";
 import { formatDate } from "@/lib/formatters";
 import { toast } from "sonner";
@@ -17,11 +17,11 @@ interface Props {
   users: UserRow[];
 }
 
-const roleBadgeVariant: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-  super_admin: "default",
-  admin: "secondary",
-  user: "outline",
-  pending: "destructive",
+const rolePillVariant: Record<string, PillVariant> = {
+  super_admin: "ok",
+  admin: "info",
+  user: "neutral",
+  pending: "warn",
 };
 
 export function UserManagement({ users }: Props) {
@@ -35,47 +35,53 @@ export function UserManagement({ users }: Props) {
     updateRole.mutate({ id, role: "pending" }, { onSuccess: () => toast.success("Usuario rejeitado") });
   }
 
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Email</TableHead>
-          <TableHead>Nome</TableHead>
-          <TableHead>Role</TableHead>
-          <TableHead>Criado em</TableHead>
-          <TableHead>Acoes</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {users.map((u) => (
-          <TableRow key={u.id}>
-            <TableCell>{u.email}</TableCell>
-            <TableCell>{u.display_name || "-"}</TableCell>
-            <TableCell>
-              <Badge variant={roleBadgeVariant[u.role] || "outline"}>{u.role}</Badge>
-            </TableCell>
-            <TableCell className="text-sm">{formatDate(u.created_at)}</TableCell>
-            <TableCell>
-              {u.role === "pending" && (
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={() => handleApprove(u.id)}>
-                    Aprovar
-                  </Button>
-                  <Button size="sm" variant="destructive" onClick={() => handleReject(u.id)}>
-                    Rejeitar
-                  </Button>
-                </div>
-              )}
-              {u.role === "user" && (
-                <Button size="sm" variant="outline" onClick={() => updateRole.mutate({ id: u.id, role: "admin" })}>
-                  Promover
-                </Button>
-              )}
-              {u.role === "super_admin" && <span className="text-xs text-muted-foreground">—</span>}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
+  const columns: AppTableColumn<UserRow>[] = [
+    {
+      key: "email",
+      header: "Email",
+      width: "minmax(200px,2fr)",
+      render: (v) => <span className="truncate" title={v}>{v}</span>,
+    },
+    {
+      key: "display_name",
+      header: "Nome",
+      width: "minmax(140px,1.5fr)",
+      render: (v) => <span className="truncate">{v || "-"}</span>,
+    },
+    {
+      key: "role",
+      header: "Role",
+      width: "120px",
+      render: (v) => <Pill variant={rolePillVariant[v] || "neutral"}>{v}</Pill>,
+    },
+    {
+      key: "created_at",
+      header: "Criado em",
+      width: "150px",
+      render: (v) => <span className="text-muted-foreground tabular-nums">{formatDate(v)}</span>,
+    },
+    {
+      key: "_actions",
+      header: "Ações",
+      width: "minmax(180px,1fr)",
+      render: (_v, u) => (
+        <>
+          {u.role === "pending" && (
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => handleApprove(u.id)}>Aprovar</Button>
+              <Button size="sm" variant="destructive" onClick={() => handleReject(u.id)}>Rejeitar</Button>
+            </div>
+          )}
+          {u.role === "user" && (
+            <Button size="sm" variant="outline" onClick={() => updateRole.mutate({ id: u.id, role: "admin" })}>
+              Promover
+            </Button>
+          )}
+          {u.role === "super_admin" && <span className="text-xs text-muted-foreground">—</span>}
+        </>
+      ),
+    },
+  ];
+
+  return <AppTable<UserRow> columns={columns} data={users} rowKey="id" />;
 }

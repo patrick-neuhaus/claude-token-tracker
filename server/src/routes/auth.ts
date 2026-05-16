@@ -1,7 +1,13 @@
 import { Router } from "express";
 import { z } from "zod";
 import { registerUser, loginUser, getMe } from "../services/authService.js";
+import {
+  createResetToken,
+  consumeResetToken,
+  sendResetLink,
+} from "../services/passwordResetService.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { maskEmail, describeError } from "../utils/security.js";
 import type { AuthRequest } from "../types/index.js";
 
@@ -16,6 +22,15 @@ const registerSchema = z.object({
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+});
+
+const forgotSchema = z.object({
+  email: z.string().email(),
+});
+
+const resetSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8),
 });
 
 router.post("/register", async (req, res) => {
@@ -73,6 +88,75 @@ router.post("/login", async (req, res) => {
 
   res.json({ status: "active", token: result.token, user: result.user });
 });
+
+// Password reset flow (Wave 8 P0 fix).
+// /forgot — always returns 200 (anti-enum). createResetToken returns null if
+// email not registered; we still respond with the generic success message.
+router.post(
+  "/forgot",
+  asyncHandler(async (req, res) => {
+    const parsed = forgotSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res
+        .status(400)
+        .json({ status: "error", message: "Email obrigatorio" });
+      return;
+    }
+
+    console.log("[AUTH] Forgot-password attempt:", maskEmail(parsed.data.email));
+
+    try {
+      const result = await createResetToken(parsed.data.email);
+      if (result) {
+        sendResetLink(parsed.data.email, result.token);
+      }
+    } catch (err) {
+      console.error("[FORGOT ERROR]", describeError(err));
+      // Don't leak — still return generic success.
+    }
+
+    res.json({
+      status: "ok",
+      message: "Se o email estiver cadastrado, um link foi enviado.",
+    });
+  }),
+);
+
+// /reset — consume token + set new password.
+router.post(
+  "/reset",
+  asyncHandler(async (req, res) => {
+    const parsed = resetSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      const message =
+        issue.path[0] === "password"
+          ? "Senha precisa de no minimo 8 caracteres"
+          : "Token e senha obrigatorios";
+      res.status(400).json({ status: "error", message });
+      return;
+    }
+
+    try {
+      const result = await consumeResetToken(parsed.data.token, parsed.data.password);
+      if (!result.ok) {
+        res
+          .status(400)
+          .json({ status: "error", message: result.error ?? "Token invalido" });
+        return;
+      }
+      res.json({
+        status: "ok",
+        message: "Senha redefinida com sucesso. Faca login.",
+      });
+    } catch (err) {
+      console.error("[RESET ERROR]", describeError(err));
+      res
+        .status(500)
+        .json({ status: "error", message: "internal error" });
+    }
+  }),
+);
 
 router.get("/me", authMiddleware, async (req, res) => {
   const { getUserId } = await import("../utils/routeHelpers.js");

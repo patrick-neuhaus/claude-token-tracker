@@ -3,17 +3,15 @@ import { useAnalytics } from "@/hooks/useAnalytics";
 import { formatUSD, formatShortDate } from "@/lib/formatters";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { Section } from "@/components/shared/Section";
-import {
-  ResponsiveContainer, LineChart, Line, AreaChart, Area,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, Cell,
-} from "recharts";
+import { SvgLineChart } from "@/components/charts/SvgLineChart";
+import { SvgAreaStack } from "@/components/charts/SvgAreaStack";
+import { SvgBarChart } from "@/components/charts/SvgBarChart";
 import { BarChart2 } from "lucide-react";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { ContributionGraph } from "@/components/analytics/ContributionGraph";
 import { CHART_COLORS } from "@/lib/constants";
 import type { AnalyticsData } from "@/lib/types";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { PeriodComparisonGrid } from "@/components/analytics/PeriodComparisonGrid";
 import { StreaksKpiGrid } from "@/components/analytics/StreaksKpiGrid";
@@ -34,7 +32,7 @@ export function AnalyticsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Analytics" />
+        <PageHeader title="Analytics" crumb="tracker · analytics" />
         <SkeletonGrid count={4} cols={1} itemHeight="h-72" />
       </div>
     );
@@ -62,7 +60,11 @@ export function AnalyticsPage() {
   }
   const projectTrendData = Object.entries(dayMap)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([day, costs]) => ({ day, ...costs }));
+    .map(([day, costs]) => {
+      const filled: Record<string, number> = {};
+      for (const name of projectNames) filled[name] = costs[name] || 0;
+      return { day, ...filled };
+    });
 
   // --- 2. Model Trend: pivot por modelo ---
   const modelNames = [...new Set<string>(model_trend.map((r: MT) => r.model))];
@@ -74,14 +76,15 @@ export function AnalyticsPage() {
   }
   const modelTrendData = Object.entries(weekMap)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([week, costs]) => ({
-      week: formatShortDate(week),
-      ...costs,
-    }));
+    .map(([week, costs]) => {
+      const filled: Record<string, number> = {};
+      for (const name of modelNames) filled[name] = costs[name] || 0;
+      return { week: formatShortDate(week), ...filled };
+    });
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Analytics" />
+      <PageHeader title="Analytics" crumb="tracker · analytics" />
 
       {/* === BLOCO ESTÁTICO — não muda com filtros === */}
 
@@ -99,8 +102,8 @@ export function AnalyticsPage() {
         </div>
       )}
 
-      {/* Atividade + Padrão de uso — dados globais */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Atividade + Padrão de uso — dados globais (stacked full-width pra não dar scroll horizontal) */}
+      <div className="space-y-4">
         <Section title="Atividade por Dia">
           <ContributionGraph data={daily_cost || []} />
         </Section>
@@ -125,76 +128,81 @@ export function AnalyticsPage() {
         />
       </div>
 
-      {/* Custo por Projeto */}
+      {/* Custo por Projeto — SVG inline (R8) */}
       <Section title="Custo por Projeto">
         {projectNames.length === 0 ? (
           <EmptyChart message="Nenhum projeto com sessões vinculadas ainda" />
         ) : (
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={projectTrendData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="day" tickFormatter={formatShortDate} tick={{ fontSize: 11 }} />
-              <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-              <Tooltip formatter={(v) => formatUSD(Number(v))} labelFormatter={(v) => formatShortDate(String(v))} {...TOOLTIP_PROPS} />
-              <Legend />
-              {projectNames.map((name, i) => (
-                <Line key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} dot={false} strokeWidth={2} connectNulls />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
+          <SvgLineChart
+            data={projectTrendData as Array<Record<string, string | number>>}
+            xKey="day"
+            series={projectNames.map((name, i) => ({
+              key: name,
+              label: name,
+              color: CHART_COLORS[i % CHART_COLORS.length],
+            }))}
+            height={260}
+          />
         )}
       </Section>
 
       {/* Comparação de projetos */}
       <ProjectComparison dateRange={dateRange} />
 
-      {/* Tendência de modelos */}
+      {/* Tendência de modelos — SVG inline (R8) */}
       <Section title="Custo por Modelo (por semana)">
         {modelNames.length === 0 ? (
           <EmptyChart message="Nenhum dado de modelo encontrado" />
         ) : (
-          <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={modelTrendData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="week" tick={{ fontSize: 11 }} />
-              <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} width={56} />
-              <Tooltip formatter={(v) => formatUSD(Number(v))} {...TOOLTIP_PROPS} />
-              <Legend />
-              {modelNames.map((name, i) => (
-                <Area key={name} type="monotone" dataKey={name} stroke={CHART_COLORS[i % CHART_COLORS.length]} fill={CHART_COLORS[i % CHART_COLORS.length]} fillOpacity={0.15} strokeWidth={2} stackId="1" connectNulls />
-              ))}
-            </AreaChart>
-          </ResponsiveContainer>
+          <SvgAreaStack
+            data={modelTrendData as Array<Record<string, string | number>>}
+            xKey="week"
+            series={modelNames.map((name, i) => ({
+              key: name,
+              label: name,
+              color: CHART_COLORS[i % CHART_COLORS.length],
+            }))}
+            stacked
+            height={260}
+            formatX={(v) => v}
+          />
         )}
       </Section>
 
-      {/* Top 10 sessões mais caras */}
-      <Section title="Top 10 Sessões mais Caras">
+      {/* Top 10 sessões mais caras — agrupado por nome (R8-FIX-6) */}
+      <Section title="Top 10 Sessões mais Caras" description="Sessões com mesmo nome agrupadas">
         {!top_sessions?.length ? (
           <EmptyChart message="Nenhuma sessão encontrada" />
-        ) : (
-          <ResponsiveContainer width="100%" height={Math.max(180, top_sessions.length * 28)}>
-            <BarChart
-              data={top_sessions.map((s: typeof top_sessions[number]) => ({
-                name: s.custom_name || s.session_id.slice(0, 12) + "…",
-                cost: s.total_cost_usd,
-                session_id: s.session_id,
-              }))}
-              layout="vertical"
-              margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-              <XAxis type="number" tickFormatter={(v: number) => `$${v.toFixed(2)}`} tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11 }} />
-              <Tooltip formatter={(v) => formatUSD(Number(v))} {...TOOLTIP_PROPS} />
-              <Bar dataKey="cost" radius={[0, 4, 4, 0]}>
-                {top_sessions.map((s, i: number) => (
-                  <Cell key={s.session_id} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        )}
+        ) : (() => {
+          const map = new Map<string, { name: string; cost: number; count: number; entries: number }>();
+          for (const s of top_sessions) {
+            const key = s.custom_name || s.session_id;
+            const display = s.custom_name || s.session_id.slice(0, 12) + "…";
+            const existing = map.get(key);
+            if (existing) {
+              existing.cost += s.total_cost_usd;
+              existing.count += 1;
+              existing.entries += s.entry_count;
+            } else {
+              map.set(key, { name: display, cost: s.total_cost_usd, count: 1, entries: s.entry_count });
+            }
+          }
+          const grouped = [...map.values()].sort((a, b) => b.cost - a.cost).slice(0, 10);
+          return (
+            <SvgBarChart
+              data={grouped.map((g) => ({
+                name: g.count > 1 ? `${g.name} (${g.count})` : g.name,
+                cost: g.cost,
+              })) as Array<Record<string, string | number>>}
+              xKey="name"
+              series={[{ key: "cost", label: "Custo", color: "hsl(var(--chart-1))" }]}
+              horizontal
+              height={Math.max(180, grouped.length * 36)}
+              formatY={(v) => formatUSD(v)}
+              formatTooltip={(_k, v, row) => `${row.name}: ${formatUSD(v)}`}
+            />
+          );
+        })()}
       </Section>
 
     </div>

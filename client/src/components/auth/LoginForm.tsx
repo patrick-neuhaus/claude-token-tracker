@@ -7,9 +7,10 @@ import { surface } from "@/lib/surface";
 
 interface Props {
   onSwitch: () => void;
+  onForgot?: () => void;
 }
 
-export function LoginForm({ onSwitch }: Props) {
+export function LoginForm({ onSwitch, onForgot }: Props) {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,7 +55,18 @@ export function LoginForm({ onSwitch }: Props) {
           <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Senha</Label>
+          <div className="flex items-baseline justify-between">
+            <Label htmlFor="password">Senha</Label>
+            {onForgot && (
+              <button
+                type="button"
+                onClick={onForgot}
+                className="text-xs text-info hover:underline font-medium"
+              >
+                Esqueceu a senha?
+              </button>
+            )}
+          </div>
           <Input
             id="password"
             type="password"

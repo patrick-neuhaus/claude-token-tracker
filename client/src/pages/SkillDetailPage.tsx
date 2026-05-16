@@ -5,6 +5,7 @@ import { useSkillDetail, useSkillFile, type SkillSource } from "@/hooks/useSkill
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Pill } from "@/components/shared/Pill";
 import { Button } from "@/components/ui/button";
 import { SkillFileTree } from "@/components/skills/SkillFileTree";
 import { SkillSearch } from "@/components/skills/SkillSearch";
@@ -60,9 +61,9 @@ export function SkillDetailPage() {
         title={skill.name}
         badges={
           <>
-            <Badge variant="outline" className={`text-[10px] ${SOURCE_COLOR[skill.source]}`}>
+            <Pill variant={skill.source === "skillforge" ? "ok" : skill.source === "omc" ? "info" : "neutral"}>
               {skill.source}
-            </Badge>
+            </Pill>
             {skill.lockedAt && (
               <span
                 className="inline-flex items-center gap-1 text-xs text-warning border border-warning/40 bg-warning/10 px-2 py-0.5 rounded-sm"

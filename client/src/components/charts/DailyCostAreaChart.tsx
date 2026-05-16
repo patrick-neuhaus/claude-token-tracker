@@ -1,8 +1,4 @@
-import {
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-} from "recharts";
-import { TOOLTIP_PROPS } from "@/lib/chartConfig";
-import { formatUSD, formatShortDate } from "@/lib/formatters";
+import { SvgAreaStack, type AreaSeries } from "./SvgAreaStack";
 
 interface Datum {
   day: string;
@@ -11,44 +7,27 @@ interface Datum {
 
 interface Props {
   data: Datum[];
-  /** Chart height in pixels. Default 240. */
   height?: number;
-  /** Stroke + fill color. Default --chart-1 token. */
   color?: string;
 }
 
 /**
- * DailyCostAreaChart — area chart for daily cost over time.
- *
- * Extracted from ProjectDetailPage:308-329 (was inline). Reusable for any
- * day×cost timeseries (sparklines, project pages, dashboard).
+ * DailyCostAreaChart — Wave 8.2.4 R8: SVG inline migration.
+ * Single-series area chart for daily cost timeseries.
  */
 export function DailyCostAreaChart({
   data,
   height = 240,
   color = "hsl(var(--chart-1))",
 }: Props) {
+  const series: AreaSeries[] = [{ key: "cost_usd", label: "Custo", color }];
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={data} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-        <XAxis dataKey="day" tickFormatter={formatShortDate} tick={{ fontSize: 11 }} />
-        <YAxis tickFormatter={(v: number) => `$${v.toFixed(0)}`} tick={{ fontSize: 11 }} width={56} />
-        <Tooltip
-          formatter={(v) => formatUSD(Number(v))}
-          labelFormatter={(v) => formatShortDate(String(v))}
-          {...TOOLTIP_PROPS}
-        />
-        <Area
-          type="monotone"
-          dataKey="cost_usd"
-          name="Custo"
-          stroke={color}
-          fill={color}
-          fillOpacity={0.2}
-          strokeWidth={2}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+    <SvgAreaStack
+      data={data as Array<Record<string, string | number>>}
+      xKey="day"
+      series={series}
+      stacked={false}
+      height={height}
+    />
   );
 }

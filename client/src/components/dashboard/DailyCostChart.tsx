@@ -1,8 +1,7 @@
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useMemo } from "react";
 import { normalizeModelFamily, MODEL_COLORS } from "@/lib/constants";
-import { formatUSD, formatShortDate } from "@/lib/formatters";
-import { TOOLTIP_PROPS } from "@/lib/chartConfig";
 import { surface, surfaceHeader, surfaceContent } from "@/lib/surface";
+import { SvgAreaStack, type AreaSeries } from "@/components/charts/SvgAreaStack";
 
 interface DailyData {
   day: string;
@@ -14,24 +13,32 @@ interface Props {
   data: DailyData[];
 }
 
+/**
+ * DailyCostChart — Wave 8.2.4 R8: SVG inline migration.
+ * Stacked area chart por família (Opus/Sonnet/Haiku).
+ */
 export function DailyCostChart({ data }: Props) {
-  // Pivot: { day, opus, sonnet, haiku, total }
-  const byDay: Record<string, Record<string, number>> = {};
-  for (const d of data) {
-    if (!byDay[d.day]) byDay[d.day] = {};
-    const family = normalizeModelFamily(d.model);
-    byDay[d.day][family] = (byDay[d.day][family] || 0) + d.cost_usd;
-  }
+  const { rows, families } = useMemo(() => {
+    const byDay: Record<string, Record<string, number>> = {};
+    for (const d of data) {
+      if (!byDay[d.day]) byDay[d.day] = {};
+      const family = normalizeModelFamily(d.model);
+      byDay[d.day][family] = (byDay[d.day][family] || 0) + d.cost_usd;
+    }
+    const fams = [...new Set(data.map((d) => normalizeModelFamily(d.model)))];
+    const sortedDays = Object.keys(byDay).sort();
+    const rows = sortedDays.map((day) => ({
+      day,
+      ...Object.fromEntries(fams.map((f) => [f, byDay[day][f] || 0])),
+    }));
+    return { rows, families: fams };
+  }, [data]);
 
-  const chartData = Object.entries(byDay)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([day, models]) => {
-      const total = Object.values(models).reduce((s, v) => s + v, 0);
-      const label = formatShortDate(day);
-      return { day: label, ...models, total };
-    });
-
-  const families = [...new Set(data.map((d) => normalizeModelFamily(d.model)))];
+  const series: AreaSeries[] = families.map((f) => ({
+    key: f,
+    label: f,
+    color: MODEL_COLORS[f] || MODEL_COLORS.outro,
+  }));
 
   return (
     <div className={`${surface.section} col-span-2`}>
@@ -39,28 +46,20 @@ export function DailyCostChart({ data }: Props) {
         <h3 className="text-sm font-medium">Custo Diário</h3>
       </div>
       <div className={surfaceContent}>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-            <XAxis dataKey="day" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
-            <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `$${v}`} />
-            <Tooltip
-              formatter={(value, name) => [formatUSD(Number(value)), String(name)]}
-              {...TOOLTIP_PROPS}
-            />
-            {families.map((f) => (
-              <Area
-                key={f}
-                type="monotone"
-                dataKey={f}
-                stackId="1"
-                fill={MODEL_COLORS[f] || MODEL_COLORS.outro}
-                stroke={MODEL_COLORS[f] || MODEL_COLORS.outro}
-                fillOpacity={0.6}
+        <SvgAreaStack data={rows} xKey="day" series={series} stacked height={300} />
+        {/* Legend */}
+        <div className="flex items-center gap-4 mt-3 flex-wrap text-xs">
+          {series.map((s) => (
+            <span key={s.key} className="inline-flex items-center gap-1.5">
+              <span
+                className="h-2 w-2 rounded-sm"
+                style={{ background: s.color }}
+                aria-hidden="true"
               />
-            ))}
-          </AreaChart>
-        </ResponsiveContainer>
+              <span className="text-muted-foreground capitalize">{s.label}</span>
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
