@@ -75,6 +75,16 @@ export const qk = {
       source?: SkillSource,
     ) => ["skills", "file", name, filePath, source ?? "auto"] as const,
   },
+  skillInvocations: {
+    all: () => ["skillInvocations"] as const,
+    stats: (from?: string, to?: string) =>
+      ["skillInvocations", "stats", from, to] as const,
+  },
+  skillAllowlist: {
+    all: () => ["skillAllowlist", "all"] as const,
+    detail: (name: string | undefined) =>
+      ["skillAllowlist", "detail", name] as const,
+  },
   systemPrompts: {
     all: () => ["systemPrompts"] as const,
     list: () => ["systemPrompts", "list"] as const,
