@@ -1,10 +1,9 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Fuse from "fuse.js";
-import { useSkillsList, type SkillSummary, type SkillSource } from "@/hooks/useSkills";
+import { useSkillsList, type SkillSummary, type SkillSource, type SkillStatus } from "@/hooks/useSkills";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { Pill } from "@/components/shared/Pill";
 import { Search, Lock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,10 +20,13 @@ const CATEGORIES = [
 
 const SOURCES: ("all" | SkillSource)[] = ["all", "skillforge", "omc", "builtin"];
 
-const SOURCE_COLOR: Record<SkillSource, string> = {
-  skillforge: "border-info/40 bg-info/10 text-info",
-  omc: "border-chart-4/40 bg-chart-4/10 text-chart-4",
-  builtin: "border-border bg-muted/30 text-muted-foreground",
+type StatusFilter = "all" | SkillStatus | "none";
+const STATUSES: StatusFilter[] = ["all", "active", "deprecated", "none"];
+const STATUS_LABEL: Record<StatusFilter, string> = {
+  all: "todas",
+  active: "ativas",
+  deprecated: "deprecated",
+  none: "sem status",
 };
 
 const SOURCE_LABEL: Record<SkillSource, string> = {
@@ -33,23 +35,7 @@ const SOURCE_LABEL: Record<SkillSource, string> = {
   builtin: "built-in",
 };
 
-const CATEGORY_COLOR: Record<string, string> = {
-  meta: "border-chart-4/40 bg-chart-4/10 text-chart-4",
-  "code-review": "border-info/40 bg-info/10 text-info",
-  guard: "border-warning/40 bg-warning/10 text-warning",
-  optimization: "border-success/40 bg-success/10 text-success",
-  implementation: "border-info/40 bg-info/10 text-info",
-  design: "border-chart-5/40 bg-chart-5/10 text-chart-5",
-  knowledge: "border-chart-2/40 bg-chart-2/10 text-chart-2",
-  content: "border-border bg-muted/30 text-muted-foreground",
-  infra: "border-warning/40 bg-warning/10 text-warning",
-  people: "border-chart-3/40 bg-chart-3/10 text-chart-3",
-  meeting: "border-chart-3/40 bg-chart-3/10 text-chart-3",
-  workflow: "border-info/40 bg-info/10 text-info",
-  marketing: "border-chart-5/40 bg-chart-5/10 text-chart-5",
-};
-
-type SortCol = "name" | "source" | "category" | "fileCount" | "lockedAt";
+type SortCol = "name" | "source" | "category" | "fileCount" | "lockedAt" | "status";
 
 export function SkillsPage() {
   const navigate = useNavigate();
@@ -57,6 +43,7 @@ export function SkillsPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("all");
   const [source, setSource] = useState<"all" | SkillSource>("all");
+  const [status, setStatus] = useState<StatusFilter>("all");
   const [lockedOnly, setLockedOnly] = useState(false);
   const [sortBy, setSortBy] = useState<SortCol>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -82,6 +69,13 @@ export function SkillsPage() {
     if (source !== "all") {
       list = list.filter((s) => s.source === source);
     }
+    if (status !== "all") {
+      if (status === "none") {
+        list = list.filter((s) => s.status == null);
+      } else {
+        list = list.filter((s) => s.status === status);
+      }
+    }
     if (lockedOnly) {
       list = list.filter((s) => !!s.lockedAt);
     }
@@ -93,10 +87,11 @@ export function SkillsPage() {
         case "category": return ((a.category || "zzz").localeCompare(b.category || "zzz")) * dir;
         case "fileCount": return (a.fileCount - b.fileCount) * dir;
         case "lockedAt": return ((a.lockedAt || "").localeCompare(b.lockedAt || "")) * dir;
+        case "status": return ((a.status || "zzz").localeCompare(b.status || "zzz")) * dir;
       }
     });
     return list;
-  }, [skills, search, category, source, lockedOnly, fuse, sortBy, sortDir]);
+  }, [skills, search, category, source, status, lockedOnly, fuse, sortBy, sortDir]);
 
   function toggleSort(col: string) {
     if (sortBy === col) {
@@ -115,6 +110,17 @@ export function SkillsPage() {
       sortable: true,
       mono: true,
       render: (v) => <span className="text-foreground group-hover:text-info transition-colors truncate block">{v}</span>,
+    },
+    {
+      key: "status",
+      header: "Status",
+      width: "110px",
+      sortable: true,
+      render: (v: SkillStatus | null | undefined) => {
+        if (v === "active") return <Pill variant="ok">Ativa</Pill>;
+        if (v === "deprecated") return <Pill variant="err">Deprecated</Pill>;
+        return <Pill variant="neutral" dot={false}>—</Pill>;
+      },
     },
     {
       key: "source",
@@ -208,6 +214,19 @@ export function SkillsPage() {
     sourceCounts[s.source] = (sourceCounts[s.source] || 0) + 1;
   }
 
+  // Status counts pra mostrar nos chips
+  const statusCounts: Record<StatusFilter, number> = {
+    all: skills?.length ?? 0,
+    active: 0,
+    deprecated: 0,
+    none: 0,
+  };
+  for (const s of skills ?? []) {
+    if (s.status === "active") statusCounts.active += 1;
+    else if (s.status === "deprecated") statusCounts.deprecated += 1;
+    else statusCounts.none += 1;
+  }
+
   return (
     <div className="space-y-5">
       <PageHeader
@@ -258,6 +277,18 @@ export function SkillsPage() {
         onChange={setSource}
       />
 
+      {/* Status chips */}
+      <FilterChipGroup
+        label="status:"
+        options={STATUSES.map((st) => ({
+          value: st,
+          label: STATUS_LABEL[st],
+          count: statusCounts[st],
+        }))}
+        active={status}
+        onChange={setStatus}
+      />
+
       {/* Category chips */}
       <FilterChipGroup
         label="categoria:"
@@ -268,7 +299,7 @@ export function SkillsPage() {
 
       {/* Tabela densa */}
       {filtered.length === 0 ? (
-        (search || category !== "all" || source !== "all" || lockedOnly) ? (
+        (search || category !== "all" || source !== "all" || status !== "all" || lockedOnly) ? (
           <EmptyState
             message="Nenhuma skill com esses filtros"
             description="Tente remover ou ajustar os filtros aplicados."
@@ -281,6 +312,7 @@ export function SkillsPage() {
                   setSearch("");
                   setCategory("all");
                   setSource("all");
+                  setStatus("all");
                   setLockedOnly(false);
                 }}
               >

@@ -69,6 +69,22 @@ export async function setStatus(
   };
 }
 
+/**
+ * Return all skill statuses as a Map<skill_name, status>.
+ * Used by skillsService.listSkills() to enrich the response.
+ * Cached via TTL by the caller (skillsService cache).
+ */
+export async function getAllStatuses(): Promise<Map<string, AllowlistStatus>> {
+  const result = await query<{ skill_name: string; status: AllowlistStatus }>(
+    `SELECT skill_name, status FROM skill_allowlist`
+  );
+  const map = new Map<string, AllowlistStatus>();
+  for (const row of result.rows) {
+    map.set(row.skill_name, row.status);
+  }
+  return map;
+}
+
 /** Full table dump for the admin allowlist UI. Sorted by skill_name. */
 export async function listAll(): Promise<AllowlistEntry[]> {
   const result = await query<{
