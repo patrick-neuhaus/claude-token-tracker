@@ -85,9 +85,7 @@ async function resolveProjectId(
   if (existing.rows.length > 0) return existing.rows[0].id;
 
   const created = await query<{ id: string }>(
-    `INSERT INTO projects (user_id, name) VALUES ($1, $2)
-     ON CONFLICT (user_id, name) DO UPDATE SET name = EXCLUDED.name
-     RETURNING id`,
+    `INSERT INTO projects (user_id, name) VALUES ($1, $2) RETURNING id`,
     [user_id, name]
   );
   return created.rows[0]?.id ?? null;
