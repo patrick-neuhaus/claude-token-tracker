@@ -31,6 +31,7 @@ const routeMap = [
   ["/api/system-prompts", "./routes/systemPrompts.js"],
   ["/api/skill-invocations", "./routes/skillInvocations.js"],
   ["/api/skill-allowlist", "./routes/skillAllowlist.js"],
+  ["/api/compactions", "./routes/compactions.js"],
 ] as const;
 
 for (const [prefix, modulePath] of routeMap) {
