@@ -21,6 +21,7 @@ import { SessionTimePage } from "@/pages/SessionTimePage";
 import { SessionDetailPage } from "@/pages/SessionDetailPage";
 import { SkillsPage } from "@/pages/SkillsPage";
 import { SkillDetailPage } from "@/pages/SkillDetailPage";
+import { SkillUsagePage } from "@/pages/SkillUsagePage";
 import { SystemPromptsPage } from "@/pages/SystemPromptsPage";
 import { SystemPromptDetailPage } from "@/pages/SystemPromptDetailPage";
 
@@ -47,6 +48,7 @@ export default function App() {
                 <Route path="/dashboard" element={<RouteErrorBoundary routeName="Dashboard"><DashboardPage /></RouteErrorBoundary>} />
                 <Route path="/skills" element={<RouteErrorBoundary routeName="Skills"><SkillsPage /></RouteErrorBoundary>} />
                 <Route path="/skills/:name" element={<RouteErrorBoundary routeName="Skill Detail"><SkillDetailPage /></RouteErrorBoundary>} />
+                <Route path="/skill-usage" element={<RouteErrorBoundary routeName="Skill Usage"><SkillUsagePage /></RouteErrorBoundary>} />
                 <Route path="/system-prompts" element={<RouteErrorBoundary routeName="System Prompts"><SystemPromptsPage /></RouteErrorBoundary>} />
                 <Route path="/system-prompts/:id" element={<RouteErrorBoundary routeName="System Prompt Detail"><SystemPromptDetailPage /></RouteErrorBoundary>} />
                 <Route path="/sessions" element={<RouteErrorBoundary routeName="Sessions"><SessionsPage /></RouteErrorBoundary>} />
