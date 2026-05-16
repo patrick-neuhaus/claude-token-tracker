@@ -17,6 +17,7 @@ import {
   X,
   TrendingUp,
   TrendingDown,
+  Activity,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -62,6 +63,7 @@ const navGroups: NavGroup[] = [
     label: "Showcase",
     items: [
       { to: "/skills", icon: FileCode, label: "Skills" },
+      { to: "/skill-usage", icon: Activity, label: "Uso de Skills" },
       { to: "/system-prompts", icon: ScrollText, label: "System Prompts" },
     ],
   },
