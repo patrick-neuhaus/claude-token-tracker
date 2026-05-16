@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.js";
-import { getAnalytics, getProjectComparison, getAchievements, getSessionTime } from "../services/analyticsService.js";
+import { getAnalytics, getProjectComparison, getAchievements, getSessionTime, getCacheHitTrend, getToolP95 } from "../services/analyticsService.js";
 import { getUserId, getDateRange } from "../utils/routeHelpers.js";
 
 const router = Router();
@@ -32,6 +32,20 @@ router.get("/compare", async (req, res) => {
     .map((s) => s.trim())
     .filter(Boolean);
   const data = await getProjectComparison(getUserId(req), projectIds, from, to);
+  res.json(data);
+});
+
+router.get("/cache-hit-trend", async (req, res) => {
+  const rawDays = parseInt(req.query.days as string);
+  const days = Math.min(Math.max(isNaN(rawDays) ? 30 : rawDays, 1), 90);
+  const data = await getCacheHitTrend(getUserId(req), days);
+  res.json(data);
+});
+
+router.get("/tool-p95", async (req, res) => {
+  const rawDays = parseInt(req.query.days as string);
+  const days = Math.min(Math.max(isNaN(rawDays) ? 7 : rawDays, 1), 90);
+  const data = await getToolP95(getUserId(req), days);
   res.json(data);
 });
 
