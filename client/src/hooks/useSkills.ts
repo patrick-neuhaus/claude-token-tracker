@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 export type SkillSource = "skillforge" | "omc" | "builtin";
+export type SkillStatus = "active" | "deprecated";
 
 export interface SkillSummary {
   name: string;
@@ -10,6 +11,8 @@ export interface SkillSummary {
   fileCount: number;
   category: string | null;
   source: SkillSource;
+  /** Allowlist status — null when not categorized in `skill_allowlist`. */
+  status: SkillStatus | null;
 }
 
 export interface SkillFile {

@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { env } from "../config/env.js";
 import { isFresh } from "../utils/ttlCache.js";
+import { getAllStatuses, type AllowlistStatus } from "./skillAllowlistService.js";
 
 // Source dirs come from env (defaults in env.ts match Patrick's machine).
 const SKILLFORGE_DIR = env.SKILLFORGE_DIR;
@@ -18,6 +19,8 @@ export interface SkillSummary {
   fileCount: number;
   category: string | null;
   source: SkillSource;
+  /** Allowlist status — null when skill is not categorized in `skill_allowlist` table. */
+  status: AllowlistStatus | null;
 }
 
 export interface SkillFile {
@@ -272,19 +275,22 @@ async function scanBuiltinPlugins(): Promise<RawSkillEntry[]> {
 async function buildSummaryFromEntry(
   entry: RawSkillEntry,
   locked: Map<string, string>,
+  statuses: Map<string, AllowlistStatus>,
 ): Promise<SkillSummary | null> {
   const skillMd = path.join(entry.fullDir, "SKILL.md");
   try {
     const content = await fs.readFile(skillMd, "utf-8");
     const { meta } = parseFrontmatter(content);
     const fileCount = await countFilesRecursive(entry.fullDir);
+    const name = meta.name || entry.dirName;
     return {
-      name: meta.name || entry.dirName,
+      name,
       description: meta.description || "",
       lockedAt: locked.get(entry.dirName) || null,
       fileCount,
       category: inferCategory(entry.dirName, meta.description),
       source: entry.source,
+      status: statuses.get(name) ?? statuses.get(entry.dirName) ?? null,
     };
   } catch {
     return null;
@@ -296,10 +302,11 @@ export async function listSkills(): Promise<SkillSummary[]> {
 
   const locked = await parseLockedSkills();
 
-  const [skillforgeRaw, omcRaw, builtinRaw] = await Promise.all([
+  const [skillforgeRaw, omcRaw, builtinRaw, statuses] = await Promise.all([
     scanFlatDir(SKILLFORGE_DIR, "skillforge"),
     scanFlatDir(OMC_DIR, "omc"),
     scanBuiltinPlugins(),
+    getAllStatuses().catch(() => new Map<string, AllowlistStatus>()),
   ]);
 
   // Dedup with precedence skillforge > omc > builtin (by skill name).
@@ -322,7 +329,7 @@ export async function listSkills(): Promise<SkillSummary[]> {
 
   const summaries: SkillSummary[] = [];
   for (const entry of seen.values()) {
-    const s = await buildSummaryFromEntry(entry, locked);
+    const s = await buildSummaryFromEntry(entry, locked, statuses);
     if (s) summaries.push(s);
   }
 
