@@ -2,8 +2,10 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { useSkillUsageStats } from "@/hooks/useSkillUsage";
+import { useToolStats } from "@/hooks/useToolStats";
 import { SkillUsageStats } from "@/components/skills/SkillUsageStats";
 import { SkillUsageTimeSeries } from "@/components/skills/SkillUsageTimeSeries";
+import { TopToolsDonut } from "@/components/tools/TopToolsDonut";
 import {
   DateRangeFilter,
   type DateRange,
@@ -82,6 +84,7 @@ export function SkillUsagePage() {
     dateRange.from,
     dateRange.to,
   );
+  const { data: toolData } = useToolStats(dateRange.from, dateRange.to);
 
   if (isLoading) {
     return (
@@ -130,6 +133,13 @@ export function SkillUsagePage() {
         description="As 10 skills mais invocadas no período selecionado."
       >
         <TopSkillsTable data={data.topSkills ?? []} />
+      </Section>
+
+      <Section
+        title="Top Tools (semana)"
+        description="As 5 ferramentas mais chamadas pelo Claude Code no período."
+      >
+        <TopToolsDonut data={toolData?.topTools ?? []} />
       </Section>
     </div>
   );
