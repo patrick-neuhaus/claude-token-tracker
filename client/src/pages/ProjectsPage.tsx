@@ -21,7 +21,7 @@ import { SkeletonRows } from "@/components/shared/SkeletonGrid";
 import { ViewModeToggle } from "@/components/shared/ViewModeToggle";
 import { ClickableRow } from "@/components/shared/ClickableRow";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
+import { AppTable } from "@/components/data/AppTable";
 
 interface ProjectListRow {
   id: string;

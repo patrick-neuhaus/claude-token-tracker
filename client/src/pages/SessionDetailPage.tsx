@@ -16,7 +16,7 @@ import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
 import { SvgAreaStack } from "@/components/charts/SvgAreaStack";
 import { SvgStackedBar } from "@/components/charts/SvgStackedBar";
 import {
-  MessageSquare, DollarSign, Hash, Clock, Activity, FolderOpen, ExternalLink,
+  MessageSquare, Activity, FolderOpen, ExternalLink,
 } from "lucide-react";
 import { formatUSD, formatNumber, formatTokens, formatDate } from "@/lib/formatters";
 import { ModelPieChart } from "@/components/charts/ModelPieChart";

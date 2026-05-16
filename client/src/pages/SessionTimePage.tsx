@@ -10,7 +10,7 @@ import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { Clock, DollarSign, Activity, Layers, Info } from "lucide-react";
+import { Clock, Info } from "lucide-react";
 import { Tooltip as UITooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { MS_PER_DAY } from "@/lib/constants";
 import { PageHeader } from "@/components/shared/PageHeader";

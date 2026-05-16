@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { Search, X, DollarSign, Layers, TrendingUp, BarChart3 } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { NativeSelect } from "@/components/shared/NativeSelect";
 import { Pagination } from "@/components/shared/Pagination";

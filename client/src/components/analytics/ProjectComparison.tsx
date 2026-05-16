@@ -15,7 +15,8 @@ interface SummaryRow {
   project: string;
   total_cost_usd: number;
   session_count: number;
-  total_tokens: number;
+  entry_count: number;
+  total_tokens: string;
   cost_per_session: number;
   _color: string;
 }

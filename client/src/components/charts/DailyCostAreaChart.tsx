@@ -3,6 +3,7 @@ import { SvgAreaStack, type AreaSeries } from "./SvgAreaStack";
 interface Datum {
   day: string;
   cost_usd: number;
+  [k: string]: string | number;
 }
 
 interface Props {

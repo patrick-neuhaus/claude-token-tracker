@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { linearScale, areaPath, linePath, niceTicks } from "@/lib/svg-charts";
-import { formatUSD, formatShortDate } from "@/lib/formatters";
+import { formatShortDate } from "@/lib/formatters";
 import { useChartTooltip } from "./ChartTooltip";
 
 export interface AreaSeries {
