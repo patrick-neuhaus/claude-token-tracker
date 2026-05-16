@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { Pill } from "@/components/shared/Pill";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AppTable, type AppTableColumn } from "@/components/data/AppTable";

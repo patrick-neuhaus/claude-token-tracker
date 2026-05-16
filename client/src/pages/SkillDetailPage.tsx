@@ -5,7 +5,6 @@ import { useSkillDetail, useSkillFile, type SkillSource } from "@/hooks/useSkill
 import { useSkillAllowlist, useToggleSkillAllowlist } from "@/hooks/useSkillUsage";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Pill } from "@/components/shared/Pill";
 import { Button } from "@/components/ui/button";
 import { SkillFileTree } from "@/components/skills/SkillFileTree";
@@ -17,12 +16,6 @@ import { ViewModeToggle } from "@/components/shared/ViewModeToggle";
 import { DetailHeader } from "@/components/shared/DetailHeader";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-const SOURCE_COLOR: Record<SkillSource, string> = {
-  skillforge: "border-info/40 bg-info/10 text-info",
-  omc: "border-chart-4/40 bg-chart-4/10 text-chart-4",
-  builtin: "border-border bg-muted/30 text-muted-foreground",
-};
 
 /**
  * AllowlistToggle — controle inline pra marcar skill como active/deprecated.
