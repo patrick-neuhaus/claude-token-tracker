@@ -278,6 +278,9 @@ def main():
     except Exception:
         sys.exit(0)
 
+    # BUG-FIX: session_id SEMPRE vem do hook_input payload (Claude Code PostStop).
+    # NUNCA extrair do conteudo do transcript — isso gerava session_ids "fantasma"
+    # (IDs internos do JSONL que nao batem com o session real do Claude Code).
     session_id = hook_input.get('session_id', '')
     transcript_path = hook_input.get('transcript_path', '')
     cwd = hook_input.get('cwd', '')
