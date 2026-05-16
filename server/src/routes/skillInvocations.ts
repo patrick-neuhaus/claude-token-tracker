@@ -75,10 +75,12 @@ router.get(
   "/stats",
   asyncHandler(async (req, res) => {
     const { from, to } = getDateRange(req);
+    const projectId = typeof req.query.project_id === "string" ? req.query.project_id : undefined;
     const data = await getStats({
       user_id: getUserId(req),
       from: from ? new Date(from) : undefined,
       to: to ? new Date(to) : undefined,
+      project_id: projectId,
     });
     res.json(data);
   })

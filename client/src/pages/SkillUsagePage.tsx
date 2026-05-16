@@ -2,12 +2,14 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { useSkillUsageStats } from "@/hooks/useSkillUsage";
+import { useProjects } from "@/hooks/useProjects";
 import { SkillUsageStats } from "@/components/skills/SkillUsageStats";
 import { SkillUsageTimeSeries } from "@/components/skills/SkillUsageTimeSeries";
 import {
   DateRangeFilter,
   type DateRange,
 } from "@/components/shared/DateRangeFilter";
+import { NativeSelect } from "@/components/shared/NativeSelect";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Section } from "@/components/shared/Section";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
@@ -78,9 +80,13 @@ function TopSkillsTable({ data }: { data: TopSkill[] }) {
 
 export function SkillUsagePage() {
   const [dateRange, setDateRange] = useState<DateRange>({ preset: "7d" });
+  const [projectId, setProjectId] = useState<string | undefined>(undefined);
+  const { data: projectsData } = useProjects();
+  const projects = projectsData || [];
   const { data, isLoading, isError, refetch } = useSkillUsageStats(
     dateRange.from,
     dateRange.to,
+    projectId,
   );
 
   if (isLoading) {
@@ -118,6 +124,21 @@ export function SkillUsagePage() {
       />
 
       <DateRangeFilter value={dateRange} onChange={setDateRange} />
+
+      {projects.length > 0 && (
+        <div className="flex items-center gap-2">
+          <NativeSelect
+            value={projectId || ""}
+            onChange={(e) => setProjectId(e.target.value || undefined)}
+            className="w-44"
+          >
+            <option value="">Todos os projetos</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </NativeSelect>
+        </div>
+      )}
 
       <SkillUsageStats data={data} />
 
