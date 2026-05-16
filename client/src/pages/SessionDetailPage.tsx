@@ -16,11 +16,12 @@ import { AppTable, type AppTableColumn } from "@/components/data/AppTable";
 import { SvgAreaStack } from "@/components/charts/SvgAreaStack";
 import { SvgStackedBar } from "@/components/charts/SvgStackedBar";
 import {
-  MessageSquare, Activity, FolderOpen, ExternalLink,
+  MessageSquare, Activity, FolderOpen, ExternalLink, Zap,
 } from "lucide-react";
 import { formatUSD, formatNumber, formatTokens, formatDate } from "@/lib/formatters";
 import { ModelPieChart } from "@/components/charts/ModelPieChart";
 import { toast } from "sonner";
+import { useSessionCompactions } from "@/hooks/useCompactions";
 
 interface EntryRow {
   id: string;
@@ -110,6 +111,9 @@ export function SessionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data, isLoading, isError } = useSessionDetail(id);
   const rename = useRenameSession();
+  const { data: compactionData } = useSessionCompactions(
+    data?.session?.session_id
+  );
 
   if (isLoading) return <Skeletons />;
   if (isError || !data) {
@@ -241,6 +245,26 @@ export function SessionDetailPage() {
           />
         </Section>
       </div>
+
+      {/* Compaction indicator */}
+      {compactionData?.bySession && compactionData.bySession.compactions.length > 0 && (
+        <Section title="Compactions">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+            <Zap className="h-5 w-5 text-yellow-500 shrink-0" />
+            <div className="text-sm">
+              <span className="font-medium">
+                Compactou {compactionData.bySession.compactions.length}x
+              </span>
+              {compactionData.bySession.avg_reduction_pct !== null && (
+                <span className="text-muted-foreground ml-2">
+                  · reduziu{" "}
+                  {compactionData.bySession.avg_reduction_pct.toFixed(1)}% em média
+                </span>
+              )}
+            </div>
+          </div>
+        </Section>
+      )}
 
       {/* Entries */}
       <Section title="Entradas recentes" flush>
