@@ -33,4 +33,6 @@ export interface TokenPayload {
   conversation_url?: string;
   auto_name?: string;
   session_name?: string;
+  project?: string;
+  cwd?: string;
 }

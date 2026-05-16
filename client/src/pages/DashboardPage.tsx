@@ -20,6 +20,47 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { formatUSD, formatNumber } from "@/lib/formatters";
+import { Section } from "@/components/shared/Section";
+import { useProjects } from "@/hooks/useProjects";
+
+function TopProjectsWeekCard() {
+  const { data: projects, isLoading } = useProjects();
+
+  if (isLoading) return <Skeleton className="h-48 rounded-xl" />;
+
+  if (!projects || projects.length === 0) return null;
+
+  // Sum sparkline (last 7 days) to get week cost per project
+  const withWeekCost = projects
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      weekCost: Array.isArray(p.sparkline)
+        ? p.sparkline.reduce((sum: number, d: { cost: number }) => sum + (d.cost || 0), 0)
+        : 0,
+    }))
+    .filter((p) => p.weekCost > 0)
+    .sort((a, b) => b.weekCost - a.weekCost)
+    .slice(0, 5);
+
+  if (withWeekCost.length === 0) return null;
+
+  return (
+    <Section title="Top projetos — última semana" description="Os 5 projetos com maior custo nos últimos 7 dias.">
+      <div className="divide-y divide-border">
+        {withWeekCost.map((p, i) => (
+          <div key={p.id} className="flex items-center justify-between py-2 px-1 gap-4">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs text-muted-foreground w-4 tabular-nums">{i + 1}</span>
+              <span className="text-sm font-mono truncate">{p.name}</span>
+            </div>
+            <span className="text-sm tabular-nums shrink-0">{formatUSD(p.weekCost)}</span>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
 
 function DashboardSkeleton() {
   return (
@@ -52,7 +93,6 @@ export function DashboardPage() {
 
   const { data: summary, isLoading: loadingSummary, isError: errorSummary, refetch: refetchSummary } = useSummary(filters);
   const { data: charts, isLoading: loadingCharts, isError: errorCharts, refetch: refetchCharts } = useCharts(filters);
-
   const s = summary;
   const c = charts;
 
@@ -136,6 +176,8 @@ export function DashboardPage() {
       </div>
 
       <DailyCostChart data={c?.daily || []} />
+
+      <TopProjectsWeekCard />
 
       <CacheHitTrendChart data={c?.daily || []} />
     </div>
