@@ -108,7 +108,7 @@ router.post(
     try {
       const result = await createResetToken(parsed.data.email);
       if (result) {
-        sendResetLink(parsed.data.email, result.token);
+        await sendResetLink(parsed.data.email, result.token);
       }
     } catch (err) {
       console.error("[FORGOT ERROR]", describeError(err));

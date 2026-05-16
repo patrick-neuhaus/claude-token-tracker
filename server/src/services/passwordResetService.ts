@@ -2,6 +2,7 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { pool, query } from "../config/database.js";
 import { env } from "../config/env.js";
+import { sendResetEmail } from "./emailService.js";
 
 /**
  * Password reset flow (Wave 8 P0 fix).
@@ -12,8 +13,9 @@ import { env } from "../config/env.js";
  * Token: 48-char hex (crypto.randomBytes(24).toString('hex')) — 192 bits of
  * entropy. expires_at enforced at SQL level on consumeResetToken.
  *
- * Local email transport: sendResetLink logs the URL to stdout. Future:
- * swap to Resend/SendGrid call when RESEND_API_KEY is configured.
+ * Email transport: sendResetLink calls sendResetEmail (Brevo SMTP via
+ * nodemailer). Falls back to console log of the URL if SMTP_* env vars
+ * are missing — keeps dev mode working without credentials.
  */
 
 const TOKEN_TTL_HOURS = 1;
@@ -102,18 +104,30 @@ export async function cleanupExpired(): Promise<number> {
 }
 
 /**
- * sendResetLink — local workaround. Logs the link to stdout so Patrick can
- * copy it manually for end-to-end testing. When RESEND_API_KEY is wired,
- * swap the console.log for an actual API call.
+ * sendResetLink — dispatch reset email via Brevo SMTP (nodemailer).
+ *
+ * If SMTP_* env vars are missing, emailService falls back to a console log
+ * of the email envelope. In that case we ALSO log the raw link here so
+ * Patrick can copy it manually for end-to-end testing without SMTP.
  */
-export function sendResetLink(email: string, token: string): void {
+export async function sendResetLink(
+  email: string,
+  token: string,
+): Promise<void> {
   const baseUrl =
     process.env.APP_BASE_URL || `http://localhost:${env.PORT}`;
   const link = `${baseUrl}/?token=${token}`;
-  console.log("\n========== PASSWORD RESET LINK ==========");
-  console.log(`Email: ${email}`);
-  console.log(`Link:  ${link}`);
-  console.log(`Valido por ${TOKEN_TTL_HOURS} hora${TOKEN_TTL_HOURS > 1 ? "s" : ""}`);
-  console.log("==========================================\n");
-  // Future: Resend.emails.send({ to: email, ... })
+
+  const result = await sendResetEmail(email, link);
+
+  if (result.via === "console") {
+    // Fallback (dev): preserve old log so Patrick can copy the link manually.
+    console.log("\n========== PASSWORD RESET LINK (fallback console) ==========");
+    console.log(`Email: ${email}`);
+    console.log(`Link:  ${link}`);
+    console.log(
+      `Valido por ${TOKEN_TTL_HOURS} hora${TOKEN_TTL_HOURS > 1 ? "s" : ""}`,
+    );
+    console.log("=============================================================\n");
+  }
 }

@@ -39,6 +39,14 @@ export const env = {
   CLAUDE_RULES_DIR:
     process.env.CLAUDE_RULES_DIR ||
     "C:/Users/Patrick Neuhaus/.claude/rules",
+  // SMTP (transactional emails — Brevo). All optional: if unset, emailService
+  // falls back to console log of the email envelope.
+  SMTP_HOST: process.env.SMTP_HOST,
+  SMTP_PORT: process.env.SMTP_PORT,
+  SMTP_USER: process.env.SMTP_USER,
+  SMTP_PASS: process.env.SMTP_PASS,
+  SMTP_FROM: process.env.SMTP_FROM,
+  APP_BASE_URL: process.env.APP_BASE_URL,
 };
 
 const required = ["DATABASE_URL", "JWT_SECRET"] as const;
