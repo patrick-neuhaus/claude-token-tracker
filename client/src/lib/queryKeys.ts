@@ -77,8 +77,8 @@ export const qk = {
   },
   skillInvocations: {
     all: () => ["skillInvocations"] as const,
-    stats: (from?: string, to?: string) =>
-      ["skillInvocations", "stats", from, to] as const,
+    stats: (from?: string, to?: string, projectId?: string) =>
+      ["skillInvocations", "stats", from, to, projectId] as const,
   },
   skillAllowlist: {
     all: () => ["skillAllowlist", "all"] as const,
@@ -90,6 +90,12 @@ export const qk = {
     list: () => ["systemPrompts", "list"] as const,
     detail: (id: string | undefined) =>
       ["systemPrompts", "detail", id] as const,
+  },
+  compactions: {
+    all: () => ["compactions"] as const,
+    stats: (sessionId?: string) =>
+      ["compactions", "stats", sessionId] as const,
+    inefficient: () => ["compactions", "inefficient"] as const,
   },
   settings: () => ["settings"] as const,
   achievements: () => ["achievements"] as const,

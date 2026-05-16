@@ -24,6 +24,8 @@ const payloadSchema = z.object({
   conversation_url: z.string().optional(),
   auto_name: z.string().max(120).optional(),
   session_name: z.string().max(100).optional(),
+  project: z.string().max(200).optional(),
+  cwd: z.string().max(1000).optional(),
 });
 
 router.post("/track-tokens", webhookAuth, async (req, res) => {
@@ -46,6 +48,8 @@ router.post("/track-tokens", webhookAuth, async (req, res) => {
     cache_write: data.cache_write || data.cache_write_tokens || 0,
     auto_name: data.auto_name,
     session_name: data.session_name,
+    project: data.project,
+    cwd: data.cwd,
   };
 
   const webhookReq = req as WebhookRequest;

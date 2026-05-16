@@ -27,18 +27,19 @@ export interface SkillAllowlistEntry {
   updated_at: string;
 }
 
-function buildStatsPath(from?: string, to?: string): string {
+function buildStatsPath(from?: string, to?: string, projectId?: string): string {
   const qs = new URLSearchParams();
   if (from) qs.set("from", from);
   if (to) qs.set("to", to);
+  if (projectId) qs.set("project_id", projectId);
   const q = qs.toString();
   return q ? `/skill-invocations/stats?${q}` : "/skill-invocations/stats";
 }
 
-export function useSkillUsageStats(from?: string, to?: string) {
+export function useSkillUsageStats(from?: string, to?: string, projectId?: string) {
   return useQuery<SkillUsageStats>({
-    queryKey: qk.skillInvocations.stats(from, to),
-    queryFn: () => api.get<SkillUsageStats>(buildStatsPath(from, to)),
+    queryKey: qk.skillInvocations.stats(from, to, projectId),
+    queryFn: () => api.get<SkillUsageStats>(buildStatsPath(from, to, projectId)),
     staleTime: 30_000,
   });
 }

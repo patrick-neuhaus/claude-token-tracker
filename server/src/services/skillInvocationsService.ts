@@ -22,6 +22,7 @@ export interface SkillStatsInput {
   user_id: string;
   from?: Date;
   to?: Date;
+  project_id?: string;
 }
 
 export interface TopSkillRow {
@@ -42,7 +43,7 @@ export interface SkillStats {
   deprecatedCount: number;
 }
 
-// Tiny in-memory TTL cache keyed by user+from+to.
+// Tiny in-memory TTL cache keyed by user+from+to+project_id.
 // Stats endpoint reads hot — 30s window cuts most refresh chatter without hiding fresh writes too long.
 const STATS_TTL_MS = 30_000;
 const statsCache = new Map<string, { at: number; data: SkillStats }>();
@@ -52,6 +53,7 @@ function statsCacheKey(input: SkillStatsInput): string {
     input.user_id,
     input.from?.toISOString() ?? "",
     input.to?.toISOString() ?? "",
+    input.project_id ?? "",
   ].join("|");
 }
 
@@ -119,15 +121,20 @@ export async function getStats(input: SkillStatsInput): Promise<SkillStats> {
   const startTs = input.from?.toISOString() ?? "1970-01-01T00:00:00.000Z";
   const endTs = input.to?.toISOString() ?? new Date().toISOString();
 
+  // Optional project_id filter — adds $4 param when present
+  const projectFilter = input.project_id ? `AND project_id = $4` : "";
+  const baseParams: unknown[] = [input.user_id, startTs, endTs];
+  if (input.project_id) baseParams.push(input.project_id);
+
   const [topRes, dailyRes, deprecatedRes] = await Promise.all([
     query<{ skill_name: string; count: string }>(
       `SELECT skill_name, COUNT(*)::bigint AS count
        FROM skill_invocations
-       WHERE user_id = $1 AND timestamp >= $2 AND timestamp <= $3
+       WHERE user_id = $1 AND timestamp >= $2 AND timestamp <= $3 ${projectFilter}
        GROUP BY skill_name
        ORDER BY count DESC, skill_name ASC
        LIMIT 20`,
-      [input.user_id, startTs, endTs]
+      baseParams
     ),
     query<{ date: string; count: string; allow: string; deny: string }>(
       `SELECT
@@ -136,18 +143,18 @@ export async function getStats(input: SkillStatsInput): Promise<SkillStats> {
          COUNT(*) FILTER (WHERE decision = 'allow')::bigint AS allow,
          COUNT(*) FILTER (WHERE decision = 'deny')::bigint AS deny
        FROM skill_invocations
-       WHERE user_id = $1 AND timestamp >= $2 AND timestamp <= $3
+       WHERE user_id = $1 AND timestamp >= $2 AND timestamp <= $3 ${projectFilter}
        GROUP BY date
        ORDER BY date ASC`,
-      [input.user_id, startTs, endTs]
+      baseParams
     ),
     query<{ count: string }>(
       `SELECT COUNT(*)::bigint AS count
        FROM skill_invocations si
        JOIN skill_allowlist sa ON sa.skill_name = si.skill_name
-       WHERE si.user_id = $1 AND si.timestamp >= $2 AND si.timestamp <= $3
+       WHERE si.user_id = $1 AND si.timestamp >= $2 AND si.timestamp <= $3 ${projectFilter}
          AND sa.status = 'deprecated'`,
-      [input.user_id, startTs, endTs]
+      baseParams
     ),
   ]);
 
