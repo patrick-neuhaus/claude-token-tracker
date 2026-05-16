@@ -52,8 +52,10 @@ def save_last_sent_line(session_id, line_num):
         json.dump(data, f)
 
 
-def extract_auto_name(transcript_path):
-    """Extrai o nome automatico da sessao a partir da primeira mensagem do usuario."""
+def extract_auto_name(transcript_path, project_name=None):
+    """Extrai o nome automatico da sessao a partir da primeira mensagem do usuario.
+    Se project_name estiver disponivel, formato: 'project: first_intent'.
+    """
     if not transcript_path or not os.path.exists(transcript_path):
         return None
     try:
@@ -92,12 +94,20 @@ def extract_auto_name(transcript_path):
 
                 text = text.strip()
                 if text:
-                    # Trunca em 80 chars, sem quebrar palavra
-                    if len(text) > 80:
-                        text = text[:77].rsplit(' ', 1)[0] + '...'
                     # Remove quebras de linha
                     text = ' '.join(text.split())
-                    return text if text else None
+                    if project_name:
+                        # Formato: "project_name: first_intent_truncated_80"
+                        prefix = project_name + ': '
+                        max_intent = 80
+                        if len(text) > max_intent:
+                            text = text[:max_intent - 3].rsplit(' ', 1)[0] + '...'
+                        return prefix + text if text else None
+                    else:
+                        # Fallback: apenas a intent truncada em 80
+                        if len(text) > 80:
+                            text = text[:77].rsplit(' ', 1)[0] + '...'
+                        return text if text else None
     except Exception:
         pass
     return None
@@ -270,6 +280,8 @@ def main():
 
     session_id = hook_input.get('session_id', '')
     transcript_path = hook_input.get('transcript_path', '')
+    cwd = hook_input.get('cwd', '')
+    project_name = os.path.basename(cwd) if cwd else None
 
     skip_lines = get_last_sent_line(session_id)
     entries, total_lines = extract_usage_entries(transcript_path, skip_lines)
@@ -277,7 +289,7 @@ def main():
     # Extrai nome automatico apenas na primeira vez (skip_lines == 0)
     auto_name = None
     if skip_lines == 0:
-        auto_name = extract_auto_name(transcript_path)
+        auto_name = extract_auto_name(transcript_path, project_name)
 
     # Funny name (ex: fluffy-giggling-phoenix) — chamado a cada hook fire
     # porque o plan file pode ser criado em qualquer momento da sessao.
@@ -302,6 +314,10 @@ def main():
             payload['auto_name'] = auto_name
         if session_name:
             payload['session_name'] = session_name
+        if project_name:
+            payload['project'] = project_name
+        if cwd:
+            payload['cwd'] = cwd
         send_to_webhook(payload)
 
     save_last_sent_line(session_id, total_lines)

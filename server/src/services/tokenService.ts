@@ -47,6 +47,25 @@ export async function insertTokenEntry(userId: string, payload: TokenPayload) {
   }
 
   if (payload.session_id) {
+    // Resolve project_id from project name if provided
+    let projectId: string | null = null;
+    if (payload.project) {
+      // SELECT first, INSERT if missing (upsert by name per user)
+      const existingProject = await query(
+        `SELECT id FROM projects WHERE user_id = $1 AND name = $2`,
+        [userId, payload.project]
+      );
+      if (existingProject.rows.length > 0) {
+        projectId = existingProject.rows[0].id;
+      } else {
+        const newProject = await query(
+          `INSERT INTO projects (user_id, name) VALUES ($1, $2) RETURNING id`,
+          [userId, payload.project]
+        );
+        projectId = newProject.rows[0].id;
+      }
+    }
+
     await query(
       `INSERT INTO sessions
          (user_id, session_id, source, first_seen, last_seen, total_cost_usd, total_input, total_output, entry_count, custom_name, session_name)
@@ -71,6 +90,14 @@ export async function insertTokenEntry(userId: string, payload: TokenPayload) {
         payload.session_name || null,
       ]
     );
+
+    // Update project_id on session only if not already set (COALESCE semantics)
+    if (projectId) {
+      await query(
+        `UPDATE sessions SET project_id = COALESCE(project_id, $2) WHERE session_id = $1 AND user_id = $3`,
+        [payload.session_id, projectId, userId]
+      );
+    }
   }
 
   return { cost_usd: costUsd };
