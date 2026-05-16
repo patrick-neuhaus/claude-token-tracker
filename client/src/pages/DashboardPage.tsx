@@ -12,6 +12,7 @@ import { CostByModelChart } from "@/components/dashboard/CostByModelChart";
 import { CostBySourceChart } from "@/components/dashboard/CostBySourceChart";
 import { DailyCostChart } from "@/components/dashboard/DailyCostChart";
 import { CacheHitTrendChart } from "@/components/dashboard/CacheHitTrendChart";
+import { ToolP95Card } from "@/components/dashboard/ToolP95Card";
 // PeriodTable removido — dados redundantes com SummaryCards
 import { DashboardFilters as DashboardFiltersBar } from "@/components/dashboard/DashboardFilters";
 import { BudgetAlert } from "@/components/dashboard/BudgetAlert";
@@ -183,6 +184,8 @@ export function DashboardPage() {
       <DailyCostChart data={c?.daily || []} />
 
       <TopProjectsWeekCard />
+
+      <ToolP95Card />
 
       <CacheHitTrendChart data={c?.daily || []} />
 
