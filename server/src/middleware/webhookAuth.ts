@@ -1,7 +1,13 @@
 import type { Response, NextFunction } from "express";
+import crypto from "crypto";
 import { query } from "../config/database.js";
 import type { WebhookRequest } from "../types/index.js";
 
+/**
+ * Wave 1 hardening: lookup por SHA-256 hex do token, nunca plaintext.
+ * Coluna `webhook_token` (plain) ainda existe TEMPORARIAMENTE pra UI Settings.
+ * TODO(wave-futura): drop coluna `webhook_token`, manter so `webhook_token_hash`.
+ */
 export async function webhookAuth(
   req: WebhookRequest,
   res: Response,
@@ -14,9 +20,10 @@ export async function webhookAuth(
   }
 
   try {
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
     const result = await query(
-      "SELECT id, email FROM users WHERE webhook_token = $1",
-      [token]
+      "SELECT id, email FROM users WHERE webhook_token_hash = $1",
+      [tokenHash]
     );
     if (result.rows.length === 0) {
       res.status(401).json({ status: "error", message: "Invalid webhook token" });

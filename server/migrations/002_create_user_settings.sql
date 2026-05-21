@@ -1,4 +1,4 @@
-CREATE TABLE user_settings (
+CREATE TABLE IF NOT EXISTS user_settings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   role TEXT NOT NULL DEFAULT 'pending' CHECK (role IN ('super_admin','admin','user','pending')),

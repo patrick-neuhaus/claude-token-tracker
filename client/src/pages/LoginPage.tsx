@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -29,15 +29,13 @@ export function LoginPage() {
   const { mode: themeMode, toggle: toggleTheme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const tokenFromUrl = searchParams.get("token");
-  const [mode, setMode] = useState<AuthMode>(tokenFromUrl ? "reset" : "login");
-
-  // If user lands with ?token= but is already logged in, we still let them
-  // reset (handy when patrick is signed in and clicks the link himself).
-  useEffect(() => {
-    if (tokenFromUrl && mode !== "reset") {
-      setMode("reset");
-    }
-  }, [tokenFromUrl, mode]);
+  // Initial mode derived once from URL — useState initializer avoids the
+  // mount-time setState ping that the previous useEffect introduced.
+  // Subsequent transitions go through setMode (e.g. goLogin strips ?token=).
+  const [mode, setMode] = useState<AuthMode>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("token") ? "reset" : "login";
+  });
 
   function goLogin() {
     if (tokenFromUrl) {

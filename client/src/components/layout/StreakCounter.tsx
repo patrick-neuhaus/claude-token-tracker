@@ -27,12 +27,13 @@ export function StreakCounter({ collapsed }: Props) {
   const prev = useRef(current);
   const [bump, setBump] = useState(false);
   useEffect(() => {
-    if (current > prev.current && current > 0) {
+    const previous = prev.current;
+    prev.current = current;
+    if (current > previous && current > 0) {
       setBump(true);
       const id = setTimeout(() => setBump(false), 600);
       return () => clearTimeout(id);
     }
-    prev.current = current;
   }, [current]);
 
   if (collapsed) return null;

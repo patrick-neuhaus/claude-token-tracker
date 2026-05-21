@@ -1,5 +1,7 @@
 import { Router } from "express";
+import { z } from "zod";
 import { webhookAuth } from "../middleware/webhookAuth.js";
+import { webhookLimiter } from "../middleware/rateLimit.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { getUserId } from "../utils/routeHelpers.js";
@@ -31,6 +33,7 @@ interface TrackBody {
 
 router.post(
   "/track",
+  webhookLimiter,
   webhookAuth,
   asyncHandler<unknown, unknown, TrackBody>(async (req, res) => {
     const body = (req.body ?? {}) as TrackBody;
@@ -64,8 +67,21 @@ router.post(
 
       const trigger =
         body.trigger === "manual" ? "manual" : ("auto" as const);
-      const project_id =
-        typeof body.project_id === "string" ? body.project_id : undefined;
+
+      // UUID guard: invalid UUID would crash INSERT downstream. Coerce to undefined.
+      const projectIdParse = z
+        .string()
+        .uuid()
+        .optional()
+        .nullable()
+        .safeParse(body.project_id);
+      if (!projectIdParse.success) {
+        res
+          .status(400)
+          .json({ status: "error", message: "project_id must be a valid UUID" });
+        return;
+      }
+      const project_id = projectIdParse.data ?? undefined;
 
       const result = await recordPreCompact({
         user_id,

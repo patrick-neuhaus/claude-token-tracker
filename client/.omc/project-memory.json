@@ -1,0 +1,198 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1778123007595,
+  "projectRoot": "C:\\Users\\Patrick Neuhaus\\Documents\\Github\\claude-token-tracker\\client",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "react",
+        "version": "19.2.4",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.2.4",
+        "category": "frontend"
+      },
+      {
+        "name": "vite",
+        "version": "8.0.1",
+        "category": "build"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "vite",
+      "build": "tsc -b && vite build",
+      "lint": "eslint .",
+      "preview": "vite preview"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "public",
+      "src"
+    ],
+    "gitBranches": {
+      "defaultBranch": "master",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "dist": {
+      "path": "dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 3,
+      "lastAccessed": 1778123007508,
+      "keyFiles": [
+        "favicon.svg",
+        "icons.svg",
+        "index.html"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 2,
+      "lastAccessed": 1778123007510,
+      "keyFiles": [
+        "favicon.svg",
+        "icons.svg"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 3,
+      "lastAccessed": 1778123007529,
+      "keyFiles": [
+        "App.tsx",
+        "index.css",
+        "main.tsx"
+      ]
+    },
+    "dist\\assets": {
+      "path": "dist\\assets",
+      "purpose": "Static assets",
+      "fileCount": 5,
+      "lastAccessed": 1778123007530,
+      "keyFiles": [
+        "geist-cyrillic-wght-normal-CHSlOQsW.woff2",
+        "geist-latin-ext-wght-normal-DMtmJ5ZE.woff2",
+        "geist-latin-wght-normal-Dm3htQBi.woff2"
+      ]
+    },
+    "src\\components": {
+      "path": "src\\components",
+      "purpose": "UI components",
+      "fileCount": 3,
+      "lastAccessed": 1778123007532,
+      "keyFiles": [
+        "ErrorBoundary.tsx",
+        "RouteErrorBoundary.tsx",
+        "ShortcutsOverlay.tsx"
+      ]
+    },
+    "src\\lib": {
+      "path": "src\\lib",
+      "purpose": "Library code",
+      "fileCount": 12,
+      "lastAccessed": 1778123007533,
+      "keyFiles": [
+        "api.ts",
+        "badges.ts",
+        "chartConfig.ts"
+      ]
+    },
+    "src\\pages": {
+      "path": "src\\pages",
+      "purpose": "Page components",
+      "fileCount": 16,
+      "lastAccessed": 1778123007534,
+      "keyFiles": [
+        "AchievementsPage.tsx",
+        "AdminPage.tsx",
+        "AnalyticsPage.tsx"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "src\\pages\\DashboardPage.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1778123234616,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\types.ts",
+      "accessCount": 2,
+      "lastAccessed": 1778123185152,
+      "type": "file"
+    },
+    {
+      "path": "src\\hooks\\useDashboard.ts",
+      "accessCount": 1,
+      "lastAccessed": 1778123165641,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\dashboard\\DailyCostChart.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778123188909,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\charts\\SvgLineChart.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778123196830,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\shared\\Section.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778123203972,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\dashboard\\CacheHitTrendChart.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1778123220836,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

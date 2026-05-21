@@ -174,7 +174,7 @@ export function ProjectsPage() {
         /* List view — compacta para 30+ projetos */
         <AppTable<ProjectListRow>
           rowKey="id"
-          data={projectList.slice().sort((a, b) => b.total_cost_usd - a.total_cost_usd)}
+          data={projectList.slice().sort((a, b) => Number(b.total_cost_usd) - Number(a.total_cost_usd))}
           onRowClick={(p) => navigate(`/projects/${p.id}`)}
           columns={[
             {

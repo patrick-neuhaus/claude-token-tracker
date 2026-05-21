@@ -4,20 +4,51 @@ import { pool, query } from "../config/database.js";
 import { env } from "../config/env.js";
 import type { AuthUser } from "../types/index.js";
 
+export class BootstrapEmailMismatchError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BootstrapEmailMismatchError";
+  }
+}
+
 export async function registerUser(email: string, password: string, displayName?: string) {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
 
-    // Lock the users table to prevent race condition on first registration
-    await client.query("LOCK TABLE users IN EXCLUSIVE MODE");
+    // Advisory lock (xact-scoped) to serialize first-user race without blocking
+    // the whole users table. Namespace 42 = register flow. Released on COMMIT/ROLLBACK.
+    await client.query("SELECT pg_advisory_xact_lock(42)");
     const countResult = await client.query(
       "SELECT COUNT(*)::int AS count FROM users"
     );
     const isFirst = countResult.rows[0].count === 0;
-    const role = isFirst ? "super_admin" : "pending";
 
-    const hash = await bcrypt.hash(password, 12);
+    // SECURITY: bootstrap super_admin gate (trident Area 1 P0-2).
+    // First user to /register becomes super_admin. Without the env var gate,
+    // any attacker beating Patrick to the endpoint on a fresh deploy gets it.
+    let role: "super_admin" | "pending";
+    if (isFirst) {
+      const bootstrapEmail = env.BOOTSTRAP_SUPER_ADMIN_EMAIL;
+      if (bootstrapEmail) {
+        if (email.toLowerCase() !== bootstrapEmail.toLowerCase()) {
+          await client.query("ROLLBACK");
+          throw new BootstrapEmailMismatchError(
+            "First user must match BOOTSTRAP_SUPER_ADMIN_EMAIL"
+          );
+        }
+        role = "super_admin";
+      } else {
+        console.warn(
+          "[BOOTSTRAP] First user got super_admin without BOOTSTRAP_SUPER_ADMIN_EMAIL gate. UNSAFE in public deploys."
+        );
+        role = "super_admin";
+      }
+    } else {
+      role = "pending";
+    }
+
+    const hash = await bcrypt.hash(password, env.BCRYPT_COST);
 
     const userResult = await client.query(
       `INSERT INTO users (email, password_hash, display_name)

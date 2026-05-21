@@ -30,7 +30,7 @@ npm run migrate
 npm run dev
 ```
 
-Acesse `http://localhost:5173` (dev) ou `http://localhost:3001` (producao).
+Acesse `http://localhost:5173` (dev) ou `http://localhost:3002` (producao).
 
 ## Primeiro acesso
 
@@ -46,7 +46,7 @@ Acesse `http://localhost:5173` (dev) ou `http://localhost:3001` (producao).
 Edite `scripts/tampermonkey.js`:
 
 ```javascript
-const WEBHOOK_URL = 'http://localhost:3001/api/webhook/track-tokens';
+const WEBHOOK_URL = 'http://localhost:3002/api/webhook/track-tokens';
 const WEBHOOK_TOKEN = 'cole-seu-token-aqui';
 ```
 
@@ -57,7 +57,7 @@ Instale o script no Tampermonkey.
 Defina as variaveis de ambiente:
 
 ```bash
-export TOKEN_TRACKER_WEBHOOK=http://localhost:3001/api/webhook/track-tokens
+export TOKEN_TRACKER_WEBHOOK=http://localhost:3002/api/webhook/track-tokens
 export TOKEN_TRACKER_TOKEN=cole-seu-token-aqui
 ```
 

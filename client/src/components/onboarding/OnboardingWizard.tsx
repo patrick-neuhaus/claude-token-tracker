@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSummary } from "@/hooks/useDashboard";
 import { Button } from "@/components/ui/button";
@@ -50,10 +50,10 @@ interface Props {
 export function OnboardingWizard({ onComplete }: Props) {
   const [step, setStep] = useState<StepName>("welcome");
 
-  const handleComplete = () => {
+  const handleComplete = useCallback(() => {
     localStorage.setItem(STORAGE_KEY, "true");
     onComplete();
-  };
+  }, [onComplete]);
 
   // ESC closes wizard (skip-to-end)
   useEffect(() => {
@@ -67,7 +67,7 @@ export function OnboardingWizard({ onComplete }: Props) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  });
+  }, [handleComplete]);
 
   const stepIdx = STEPS.indexOf(step);
 
@@ -223,6 +223,7 @@ function HookStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }
   const { user } = useAuth();
   const [lang, setLang] = useState<HookLang>("bash");
   const [copied, setCopied] = useState(false);
+  const copiedTimerRef = useRef<number | null>(null);
   const { data: summary } = useSummary({ period: "today" });
 
   // Live detection: poll summary; auto-advance when first event arrives.
@@ -267,12 +268,26 @@ await fetch("${webhookUrl}", {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(snippets[lang]);
+      if (copiedTimerRef.current !== null) {
+        window.clearTimeout(copiedTimerRef.current);
+      }
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      copiedTimerRef.current = window.setTimeout(() => {
+        setCopied(false);
+        copiedTimerRef.current = null;
+      }, 2000);
     } catch {
       // clipboard API blocked; user copies manually
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimerRef.current !== null) {
+        window.clearTimeout(copiedTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <section className="space-y-6">

@@ -82,7 +82,7 @@ async function resolveProjectId(
     `SELECT id FROM projects WHERE user_id = $1 AND name = $2 LIMIT 1`,
     [user_id, name]
   );
-  if (existing.rows.length > 0) return existing.rows[0].id;
+  if (existing.rows.length > 0) return existing.rows[0]?.id ?? null;
 
   const created = await query<{ id: string }>(
     `INSERT INTO projects (user_id, name) VALUES ($1, $2) RETURNING id`,
@@ -123,6 +123,7 @@ export async function recordToolUse(
   invalidateStatsCacheForUser(input.user_id);
 
   const row = result.rows[0];
+  if (!row) throw new Error("Failed to insert tool invocation");
   return {
     id: row.id,
     timestamp: row.timestamp.toISOString(),

@@ -69,25 +69,6 @@ export function ConfettiBurst({
           }
         />
       ))}
-      <style>{`
-        @keyframes confetti-fall {
-          0%   { transform: translate(var(--x), -32px) rotate(0deg);   opacity: 1; }
-          100% { transform: translate(var(--x), 100vh) rotate(540deg); opacity: 0; }
-        }
-        .confetti-particle {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 8px;
-          height: 12px;
-          border-radius: 1px;
-          background: var(--c);
-          animation: confetti-fall var(--dur, 1600ms) var(--delay, 0ms) ease-in forwards;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .confetti-particle { display: none; }
-        }
-      `}</style>
     </div>
   );
 }

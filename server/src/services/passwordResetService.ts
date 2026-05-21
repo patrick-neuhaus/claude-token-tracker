@@ -21,6 +21,13 @@ import { sendResetEmail } from "./emailService.js";
 const TOKEN_TTL_HOURS = 1;
 const CLEANUP_AGE_DAYS = 7;
 
+// Wave 4 A1 P1: per-email throttle independente do rate-limit-por-IP.
+// IPs rotativos podem furar o limit por IP (3/h em rateLimit.ts). Sem cap
+// por user_id, atacante mantém /forgot pra mesmo email infinitamente,
+// gerando rows em password_resets + custo SMTP. Limita a MAX_RESETS_PER_HOUR
+// tokens válidos (não usados, não expirados, criados na última hora) por user.
+const MAX_RESETS_PER_HOUR = 3;
+
 export interface ResetTokenRecord {
   token: string;
   expires_at: Date;
@@ -37,6 +44,24 @@ export async function createResetToken(
     return null;
   }
   const userId: string = userResult.rows[0].id;
+
+  // Wave 4 A1 P1: per-email throttle. Conta tokens ainda-válidos criados
+  // na última hora pro mesmo user. Se >= MAX_RESETS_PER_HOUR, retorna null
+  // silenciosamente — caller (auth.ts /forgot) já responde 200 genérico
+  // sempre, anti-enum mantido. Atacante com IPs rotativos não consegue
+  // multiplicar emails de reset, nem inflar password_resets, nem queimar SMTP.
+  const throttleResult = await query(
+    `SELECT COUNT(*)::int AS count
+       FROM password_resets
+      WHERE user_id = $1
+        AND used_at IS NULL
+        AND expires_at > now()
+        AND created_at > now() - INTERVAL '1 hour'`,
+    [userId],
+  );
+  if (throttleResult.rows[0].count >= MAX_RESETS_PER_HOUR) {
+    return null;
+  }
 
   const token = crypto.randomBytes(24).toString("hex");
   const expires_at = new Date(Date.now() + TOKEN_TTL_HOURS * 60 * 60 * 1000);
@@ -73,7 +98,7 @@ export async function consumeResetToken(
     }
 
     const { id: resetId, user_id: userId } = resetResult.rows[0];
-    const hash = await bcrypt.hash(newPassword, 12);
+    const hash = await bcrypt.hash(newPassword, env.BCRYPT_COST);
 
     await client.query(
       "UPDATE users SET password_hash = $1, updated_at = now() WHERE id = $2",

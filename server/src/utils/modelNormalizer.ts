@@ -19,10 +19,10 @@ function detectClaudeFamily(s: string): ClaudeFamily | null {
 
 function extractClaudeVersion(s: string, family: ClaudeFamily): string | null {
   const post = new RegExp(`${family}-(\\d+)(?:-(\\d+))?`).exec(s);
-  if (post) return post[2] ? `${post[1]}-${post[2]}` : post[1];
+  if (post) return post[2] ? `${post[1]}-${post[2]}` : post[1] ?? null;
 
   const pre = new RegExp(`(\\d+)(?:-(\\d+))?-${family}`).exec(s);
-  if (pre) return pre[2] ? `${pre[1]}-${pre[2]}` : pre[1];
+  if (pre) return pre[2] ? `${pre[1]}-${pre[2]}` : pre[1] ?? null;
 
   return null;
 }

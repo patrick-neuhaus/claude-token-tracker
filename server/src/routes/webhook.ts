@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { webhookAuth } from "../middleware/webhookAuth.js";
+import { webhookLimiter } from "../middleware/rateLimit.js";
 import { insertTokenEntry } from "../services/tokenService.js";
 import { describeError } from "../utils/security.js";
 import type { WebhookRequest } from "../types/index.js";
@@ -18,7 +19,9 @@ const payloadSchema = z.object({
   cache_write: z.number().int().min(0).default(0),
   cache_write_tokens: z.number().int().min(0).optional(),
   total_tokens: z.number().int().min(0).default(0),
-  cost_usd: z.number().min(0).default(0),
+  // SECURITY (Wave 4 A1 P1): cost_usd NOT accepted from client. Server
+  // computes from pricing tables server-side. Client-supplied cost could be
+  // falsified to underreport/overreport spend. cost_brl ignored same reason.
   cost_brl: z.number().min(0).optional(),
   session_id: z.string().optional(),
   conversation_url: z.string().optional(),
@@ -28,7 +31,7 @@ const payloadSchema = z.object({
   cwd: z.string().max(1000).optional(),
 });
 
-router.post("/track-tokens", webhookAuth, async (req, res) => {
+router.post("/track-tokens", webhookLimiter, webhookAuth, async (req, res) => {
   const parsed = payloadSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({

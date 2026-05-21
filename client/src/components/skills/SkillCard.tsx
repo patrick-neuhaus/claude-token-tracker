@@ -32,7 +32,7 @@ function StatusPill({ status }: { status: SkillStatus | null }) {
 export function SkillCard({ skill }: Props) {
   return (
     <NavLink
-      to={`/skills/${skill.name}?source=${skill.source}`}
+      to={`/skills/${encodeURIComponent(skill.name)}?source=${encodeURIComponent(skill.source)}`}
       className={cn(
         "group flex flex-col gap-3 rounded-lg border border-border bg-card p-4",
         "min-h-[180px] transition-all duration-150",

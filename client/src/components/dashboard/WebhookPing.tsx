@@ -54,32 +54,6 @@ export function WebhookPing() {
           Ver setup completo
         </Button>
       </Link>
-
-      <style>{`
-        @keyframes webhook-ping-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.7; transform: scale(1.08); }
-        }
-        @keyframes webhook-ping-halo {
-          0% { opacity: 0.5; transform: scale(1); }
-          100% { opacity: 0; transform: scale(2.5); }
-        }
-        .webhook-ping-dot {
-          animation: webhook-ping-pulse var(--motion-pulse-loop, 2s) ease-in-out infinite;
-        }
-        .webhook-ping-halo {
-          animation: webhook-ping-halo var(--motion-pulse-loop, 2s) ease-out infinite;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .webhook-ping-dot,
-          .webhook-ping-halo {
-            animation: none;
-          }
-          .webhook-ping-halo {
-            display: none;
-          }
-        }
-      `}</style>
     </div>
   );
 }

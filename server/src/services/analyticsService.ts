@@ -2,14 +2,21 @@ import { query } from "../config/database.js";
 import { MS_PER_DAY } from "../utils/routeHelpers.js";
 import { CACHE_SAVINGS_USD_SQL } from "../utils/cacheSavings.js";
 
+// Onda 6 A1 P2: unifica janelas default em 1 constante. Antes: projectStart=60d
+// e modelStart=12w (84d) — sub-queries do mesmo endpoint comparavam períodos
+// diferentes silenciosamente. Agora ambos usam DEFAULT_WINDOW_DAYS quando
+// `from` não é fornecido.
+const DEFAULT_WINDOW_DAYS = 90; // 3 meses
+
 export async function getAnalytics(userId: string, from?: string, to?: string) {
   const now = new Date();
   const startTs = from || "1970-01-01T00:00:00.000Z";
   const endTs = to || now.toISOString();
 
-  // Para project_trend e model_trend: usa from/to se fornecido, senão padrão 60d/12w
-  const projectStart = from || new Date(now.getTime() - 60 * MS_PER_DAY).toISOString();
-  const modelStart = from || new Date(now.getTime() - 12 * 7 * MS_PER_DAY).toISOString();
+  // Sub-queries trend usam janela unificada quando `from` ausente.
+  const trendStart = from || new Date(now.getTime() - DEFAULT_WINDOW_DAYS * MS_PER_DAY).toISOString();
+  const projectStart = trendStart;
+  const modelStart = trendStart;
 
   const [projectTrend, modelTrend, sessionDist, periodComparison, heatmap, dataRange, hourlyData, dailyCostData, streaksData] = await Promise.all([
     // 1. Custo por projeto ao longo do tempo

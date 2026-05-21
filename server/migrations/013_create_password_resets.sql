@@ -8,7 +8,7 @@
 -- Anti-enum: /forgot endpoint always returns 200 (doesn't reveal whether email
 -- exists). Token is required for /reset — no fallback by email.
 
-CREATE TABLE password_resets (
+CREATE TABLE IF NOT EXISTS password_resets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   token TEXT UNIQUE NOT NULL,
@@ -17,6 +17,6 @@ CREATE TABLE password_resets (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX idx_password_resets_token ON password_resets (token);
-CREATE INDEX idx_password_resets_user ON password_resets (user_id);
-CREATE INDEX idx_password_resets_expires ON password_resets (expires_at);
+CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets (token);
+CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets (user_id);
+CREATE INDEX IF NOT EXISTS idx_password_resets_expires ON password_resets (expires_at);

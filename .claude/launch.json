@@ -5,7 +5,7 @@
       "name": "token-tracker",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["tsx", "src/index.ts"],
-      "port": 3001,
+      "port": 3002,
       "autoPort": false,
       "cwd": "claude-token-tracker/server"
     },

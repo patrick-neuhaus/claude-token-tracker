@@ -47,6 +47,48 @@ export interface SendEmailParams {
   text?: string; // fallback plaintext
 }
 
+/**
+ * sendWithRetry — wrapper de retry exponencial pra SMTP transient errors.
+ *
+ * Retry policy:
+ *   - max 3 tentativas
+ *   - backoff exponencial: 1s, 2s, 4s
+ *   - retryable: responseCode >= 500 (5xx SMTP), ECONNRESET, ETIMEDOUT, ENOTFOUND, EAI_AGAIN
+ *   - NÃO retry: 4xx SMTP (bounce, address inválido, auth fail) — não adianta retry
+ */
+async function sendWithRetry(
+  fn: () => Promise<void>,
+  maxRetries = 3,
+): Promise<void> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await fn();
+      return;
+    } catch (err: unknown) {
+      const e = err as { responseCode?: number; code?: string; message?: string };
+      const isRetryable =
+        (typeof e?.responseCode === "number" && e.responseCode >= 500) ||
+        e?.code === "ETIMEDOUT" ||
+        e?.code === "ECONNRESET" ||
+        e?.code === "ENOTFOUND" ||
+        e?.code === "EAI_AGAIN";
+
+      if (!isRetryable || attempt === maxRetries) {
+        console.error(
+          `[email] send failed after ${attempt} ${attempt === 1 ? "try" : "tries"}: ${e?.message ?? String(err)}`,
+        );
+        throw err;
+      }
+
+      const delay = Math.pow(2, attempt) * 500; // 1s, 2s, 4s
+      console.warn(
+        `[email] retry ${attempt}/${maxRetries} em ${delay}ms (code=${e?.code ?? "?"} responseCode=${e?.responseCode ?? "?"})`,
+      );
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+}
+
 export async function sendEmail(
   params: SendEmailParams,
 ): Promise<{ ok: boolean; error?: string; via: "smtp" | "console" }> {
@@ -72,12 +114,14 @@ export async function sendEmail(
   }
 
   try {
-    await transport.sendMail({
-      from,
-      to: params.to,
-      subject: params.subject,
-      text: params.text,
-      html: params.html,
+    await sendWithRetry(async () => {
+      await transport.sendMail({
+        from,
+        to: params.to,
+        subject: params.subject,
+        text: params.text,
+        html: params.html,
+      });
     });
     console.log(
       `[email] sent to ${params.to} subject="${params.subject}"`,

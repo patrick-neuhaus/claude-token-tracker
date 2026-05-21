@@ -14,6 +14,14 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": true,
+    "noPropertyAccessFromIndexSignature": false,
+    // TODO (A2 P3-1 Wave 5 backlog): enable strict++ flags:
+    //   "noUncheckedIndexedAccess": true  — needs guards on array[i] / record[key]
+    //   "noImplicitOverride": true        — needs 'override' keyword on 4 sites:
+    //     ErrorBoundary.tsx getDerivedStateFromError + componentDidCatch
+    //     RouteErrorBoundary.tsx getDerivedStateFromError + componentDidCatch
+    // Reverted by Wave 5 worker M to respect frontend-code-no-touch constraint
+    // (Worker N owns frontend). Server tsconfig kept noImplicitOverride: true.
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,

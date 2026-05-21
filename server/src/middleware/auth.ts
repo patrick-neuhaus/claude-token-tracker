@@ -19,7 +19,11 @@ export function authMiddleware(
     const decoded = jwt.verify(token, env.JWT_SECRET) as AuthUser;
     req.user = decoded;
     next();
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") {
+      const name = err instanceof Error ? err.name : "unknown";
+      console.warn(`[auth] JWT verify failed: ${name}`);
+    }
     res.status(401).json({ status: "error", message: "Invalid token" });
   }
 }

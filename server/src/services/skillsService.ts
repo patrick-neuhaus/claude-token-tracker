@@ -48,12 +48,22 @@ let cache: {
 } = { listAt: 0 };
 const TTL_MS = 60_000;
 
+/**
+ * Valid skill name regex — defence in depth alongside the path.resolve+startsWith
+ * traversal guard in getSkillFile(). Negative lookahead `(?!.*\.\.)` rejects any
+ * `..` literal anywhere in the name, and the first char class forbids leading `.`
+ * so hidden-style names like `.bashrc` cannot be looked up either.
+ */
+const VALID_SKILL_NAME = /^(?!.*\.\.)[a-zA-Z0-9_-][a-zA-Z0-9_.-]*$/;
+
 /** Parse YAML frontmatter. Skill.md frontmatter is simple: name + description (sometimes license). */
 export function parseFrontmatter(content: string): { meta: Record<string, string>; body: string } {
   const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
   if (!m) return { meta: {}, body: content };
+  const frontmatterRaw = m[1] ?? "";
+  const bodyRaw = m[2] ?? "";
   const meta: Record<string, string> = {};
-  const lines = m[1].split(/\r?\n/);
+  const lines = frontmatterRaw.split(/\r?\n/);
   let currentKey: string | null = null;
   let currentVal = "";
   let inQuoted = false;
@@ -73,9 +83,10 @@ export function parseFrontmatter(content: string): { meta: Record<string, string
     if (colonIdx === -1) continue;
     const key = line.slice(0, colonIdx).trim();
     let val = line.slice(colonIdx + 1).trim();
-    if ((val.startsWith('"') || val.startsWith("'")) && !val.slice(1).includes(val[0])) {
+    const firstChar = val[0];
+    if (firstChar && (firstChar === '"' || firstChar === "'") && !val.slice(1).includes(firstChar)) {
       inQuoted = true;
-      quoteChar = val[0];
+      quoteChar = firstChar;
       currentKey = key;
       currentVal = val;
       continue;
@@ -86,7 +97,7 @@ export function parseFrontmatter(content: string): { meta: Record<string, string
   if (inQuoted && currentKey) {
     meta[currentKey] = currentVal.replace(new RegExp(`^${quoteChar}|${quoteChar}$`, "g"), "").trim();
   }
-  return { meta, body: m[2] };
+  return { meta, body: bodyRaw };
 }
 
 async function parseLockedSkills(): Promise<Map<string, string>> {
@@ -98,9 +109,9 @@ async function parseLockedSkills(): Promise<Map<string, string>> {
     const lines = content.split(/\r?\n/);
     for (const line of lines) {
       const dateMatch = line.match(/validated:(\d{4}-\d{2}-\d{2})/);
-      if (dateMatch) lastDate = dateMatch[1];
+      if (dateMatch && dateMatch[1]) lastDate = dateMatch[1];
       const bulletMatch = line.match(/^\s*-\s+([a-z][a-z0-9-]*)\b/);
-      if (bulletMatch && lastDate) {
+      if (bulletMatch && bulletMatch[1] && lastDate) {
         map.set(bulletMatch[1], lastDate);
       }
     }
@@ -378,7 +389,7 @@ async function listFilesRecursive(baseDir: string, currentDir: string): Promise<
 }
 
 export async function getSkill(name: string, source?: SkillSource): Promise<SkillDetail | null> {
-  if (!/^[a-zA-Z0-9_.-]+$/.test(name)) return null;
+  if (!VALID_SKILL_NAME.test(name)) return null;
   const resolved = await resolveSkillDir(name, source);
   if (!resolved) return null;
   const skillMd = path.join(resolved.dir, "SKILL.md");
@@ -406,7 +417,7 @@ export async function getSkillFile(
   relativePath: string,
   source?: SkillSource,
 ): Promise<string | null> {
-  if (!/^[a-zA-Z0-9_.-]+$/.test(name)) return null;
+  if (!VALID_SKILL_NAME.test(name)) return null;
   const resolved = await resolveSkillDir(name, source);
   if (!resolved) return null;
   const skillDir = path.resolve(resolved.dir);

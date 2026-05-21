@@ -1,4 +1,4 @@
-CREATE TABLE sessions (
+CREATE TABLE IF NOT EXISTS sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id),
   session_id TEXT NOT NULL,
@@ -13,4 +13,4 @@ CREATE TABLE sessions (
   UNIQUE(user_id, session_id)
 );
 
-CREATE INDEX idx_sessions_last_seen ON sessions (last_seen DESC);
+CREATE INDEX IF NOT EXISTS idx_sessions_last_seen ON sessions (last_seen DESC);

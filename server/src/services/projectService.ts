@@ -147,9 +147,15 @@ export async function deleteProject(userId: string, projectId: string) {
 }
 
 export async function assignSession(userId: string, sessionId: string, projectId: string) {
+  // SECURITY (Wave 4 A1 P1 IDOR fix): cross-user attack possible if we only
+  // validate session ownership — attacker could assign their own session to
+  // another user's project_id. Validate BOTH session AND project belong to
+  // the same userId in a single atomic UPDATE.
   const result = await query(
     `UPDATE sessions SET project_id = $3
-     WHERE id = $1 AND user_id = $2
+     WHERE id = $1
+       AND user_id = $2
+       AND EXISTS (SELECT 1 FROM projects WHERE id = $3 AND user_id = $2)
      RETURNING id, session_id, project_id`,
     [sessionId, userId, projectId]
   );

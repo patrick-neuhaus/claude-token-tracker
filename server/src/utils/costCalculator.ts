@@ -4,10 +4,14 @@ import { normalizeModel } from "./modelNormalizer.js";
 /** Resolve pricing with version fallback: "opus-4-7" → "opus" → DEFAULT. */
 export function resolvePricing(model: string): ModelPricing {
   const key = normalizeModel(model);
-  if (PRICING[key]) return PRICING[key];
+  const exact = PRICING[key];
+  if (exact) return exact;
   // Strip version: "opus-4-99" → "opus"
   const family = key.split("-")[0];
-  if (PRICING[family]) return PRICING[family];
+  if (family) {
+    const familyPricing = PRICING[family];
+    if (familyPricing) return familyPricing;
+  }
   return DEFAULT_PRICING;
 }
 

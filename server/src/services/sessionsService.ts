@@ -148,18 +148,46 @@ export async function getSessionDetail(userId: string, sessionDbId: string) {
   };
 }
 
-export async function getSessionEntries(userId: string, sessionDbId: string) {
-  const result = await query(
-    `SELECT id, timestamp, source, model, input_tokens, output_tokens,
-            cache_read, cache_write, total_tokens, cost_usd::float, conversation_url
-     FROM token_entries
-     WHERE user_id = $1 AND session_id = (
-       SELECT session_id FROM sessions WHERE id = $2 AND user_id = $1
-     )
-     ORDER BY timestamp DESC`,
-    [userId, sessionDbId],
-  );
-  return result.rows;
+// Onda 5 A1 P2: bounded query — session com 50k entries sem LIMIT = OOM.
+// Hard cap 5000, default 1000. Frontend pode paginar via limit/offset.
+// Returns { rows, total } pra header X-Total-Count.
+export async function getSessionEntries(
+  userId: string,
+  sessionDbId: string,
+  limit: number = 1000,
+  offset: number = 0,
+) {
+  const safeLimit = Math.min(Math.max(1, limit), 5000);
+  const safeOffset = Math.max(0, offset);
+
+  // Onda 6 A1 P2/P3: subquery `IN (SELECT ...)` → JOIN. Mesma perf na maioria
+  // dos planejadores, mas mais legível e consistente com analyticsService.
+  const [rowsResult, countResult] = await Promise.all([
+    query(
+      `SELECT te.id, te.timestamp, te.source, te.model, te.input_tokens, te.output_tokens,
+              te.cache_read, te.cache_write, te.total_tokens, te.cost_usd::float, te.conversation_url
+       FROM token_entries te
+       JOIN sessions s ON s.session_id = te.session_id AND s.user_id = te.user_id
+       WHERE s.id = $2 AND te.user_id = $1
+       ORDER BY te.timestamp DESC
+       LIMIT $3 OFFSET $4`,
+      [userId, sessionDbId, safeLimit, safeOffset],
+    ),
+    query(
+      `SELECT COUNT(*)::int AS total
+       FROM token_entries te
+       JOIN sessions s ON s.session_id = te.session_id AND s.user_id = te.user_id
+       WHERE s.id = $2 AND te.user_id = $1`,
+      [userId, sessionDbId],
+    ),
+  ]);
+
+  return {
+    rows: rowsResult.rows,
+    total: countResult.rows[0].total,
+    limit: safeLimit,
+    offset: safeOffset,
+  };
 }
 
 export async function renameSession(

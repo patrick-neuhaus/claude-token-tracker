@@ -17,6 +17,8 @@ interface Props {
   formatX?: (v: string) => string;
   formatY?: (v: number) => string;
   legend?: boolean;
+  /** Accessible label for screen readers. Defaults to a generic chart description. */
+  ariaLabel?: string;
 }
 
 /**
@@ -30,6 +32,7 @@ export function SvgLineChart({
   formatX = formatShortDate,
   formatY,
   legend = true,
+  ariaLabel,
 }: Props) {
   const W = 800;
   const H = height;
@@ -92,6 +95,7 @@ export function SvgLineChart({
         height={H}
         preserveAspectRatio="none"
         role="img"
+        aria-label={ariaLabel ?? `Gráfico de linha com ${series.length} série(s)`}
       >
         {ticksY.map((tv, i) => (
           <g key={i}>

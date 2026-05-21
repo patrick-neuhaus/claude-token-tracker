@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAchievements } from "@/hooks/useAchievements";
@@ -34,6 +35,7 @@ function saveSeen(ids: Set<string>) {
 export function AchievementNotifier() {
   const { user } = useAuth();
   const { data } = useAchievements();
+  const navigate = useNavigate();
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -65,7 +67,7 @@ export function AchievementNotifier() {
           duration: Infinity,
           action: {
             label: "Ver conquistas",
-            onClick: () => (window.location.href = "/achievements"),
+            onClick: () => navigate("/achievements"),
           },
         });
       }, i * 800);
@@ -78,7 +80,7 @@ export function AchievementNotifier() {
           duration: Infinity,
           action: {
             label: "Ver todas",
-            onClick: () => (window.location.href = "/achievements"),
+            onClick: () => navigate("/achievements"),
           },
         });
       }, 5 * 800);
@@ -93,7 +95,7 @@ export function AchievementNotifier() {
       timersRef.current.forEach(clearTimeout);
       timersRef.current = [];
     };
-  }, [data, user]);
+  }, [data, user, navigate]);
 
   if (!showConfetti) return null;
 

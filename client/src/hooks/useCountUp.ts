@@ -35,13 +35,14 @@ export function formatLike(original: string | number, current: number): string {
  */
 export function useCountUp(
   ref: RefObject<HTMLElement | null>,
-  target: string | number,
+  target: string | number | null,
   duration = 800,
 ): string | number {
-  const [display, setDisplay] = useState<string | number>(target);
+  const [display, setDisplay] = useState<string | number>(target ?? "");
   const hasRun = useRef(false);
 
   useEffect(() => {
+    if (target === null) return;
     const el = ref.current;
     if (!el) return;
     const numeric = parseNumeric(target);

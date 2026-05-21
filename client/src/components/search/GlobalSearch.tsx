@@ -59,7 +59,7 @@ export function GlobalSearch({ open, onOpenChange }: Props) {
         id: `${s.source}:${s.name}`,
         label: s.name,
         description: s.description,
-        href: `/skills/${s.name}?source=${s.source}`,
+        href: `/skills/${encodeURIComponent(s.name)}?source=${encodeURIComponent(s.source)}`,
         meta: s.category || undefined,
         source: s.source,
         locked: !!s.lockedAt,
@@ -187,12 +187,13 @@ export function GlobalSearch({ open, onOpenChange }: Props) {
                   </div>
                   {list.map((r) => {
                     flatIdx++;
-                    const isActive = flatIdx === activeIndex;
+                    const myIdx = flatIdx;
+                    const isActive = myIdx === activeIndex;
                     return (
                       <button
                         key={r.id}
                         type="button"
-                        onMouseEnter={() => setActiveIndex(flatIdx)}
+                        onMouseEnter={() => setActiveIndex(myIdx)}
                         onClick={() => go(r.href)}
                         className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-colors ${
                           isActive ? "bg-muted/60" : "hover:bg-muted/30"

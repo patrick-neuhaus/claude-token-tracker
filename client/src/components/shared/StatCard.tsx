@@ -35,7 +35,7 @@ export function StatCard({
   animate = true,
 }: Props) {
   const valueRef = useRef<HTMLDivElement | null>(null);
-  const displayValue = useCountUp(valueRef, value);
+  const displayValue = useCountUp(valueRef, animate ? value : null);
   const finalValue = animate ? displayValue : value;
   const finalSublabel = sublabel ?? hint;
 

@@ -70,6 +70,9 @@ function contrastRatio(hex1: string, hex2: string): number {
   const l2 = relLum(...hexToRgb(hex2));
   return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
 }
+function safeBtoa(str: string): string {
+  return btoa(unescape(encodeURIComponent(str)));
+}
 
 // ── Token registry ──
 interface TokenDef {
@@ -291,7 +294,7 @@ export function TokenEditor() {
   }
   function handleShareUrl() {
     try {
-      const b64 = btoa(JSON.stringify(overrides));
+      const b64 = safeBtoa(JSON.stringify(overrides));
       const u = new URL(window.location.href);
       u.searchParams.set("theme", b64);
       navigator.clipboard?.writeText(u.toString());

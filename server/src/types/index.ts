@@ -28,7 +28,10 @@ export interface TokenPayload {
   cache_read: number;
   cache_write: number;
   total_tokens: number;
-  cost_usd: number;
+  // Wave 4 A1 P1: cost_usd is server-computed only — never trusted from
+  // client payload. Kept optional in the type to avoid breaking internal
+  // callers that still reference it; webhook schema drops it entirely.
+  cost_usd?: number;
   session_id?: string;
   conversation_url?: string;
   auto_name?: string;

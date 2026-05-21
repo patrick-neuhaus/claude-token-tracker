@@ -83,27 +83,6 @@ export function BadgeCard({ badge }: Props) {
           </span>
         </div>
       )}
-      <style>{`
-        .badge-card {
-          opacity: 0;
-          transform: scale(0.85);
-        }
-        .badge-card--revealed {
-          opacity: 1;
-          transform: scale(1);
-          transition:
-            opacity 320ms ease-out,
-            transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .badge-card,
-          .badge-card--revealed {
-            opacity: 1;
-            transform: none;
-            transition: opacity 200ms ease-out;
-          }
-        }
-      `}</style>
     </div>
   );
 }
