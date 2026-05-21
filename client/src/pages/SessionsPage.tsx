@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useSessions, type SessionFilters, useRenameSession } from "@/hooks/useSessions";
 import { useProjects } from "@/hooks/useProjects";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -190,6 +191,13 @@ export function SessionsPage() {
         <EmptyState
           message="Nenhuma sessão registrada"
           description="Configure o webhook nos seus scripts ou importe um CSV em Configurações para começar."
+          action={
+            <Link to="/settings">
+              <Button variant="outline" size="sm" className="mt-2">
+                Ir para Configurações
+              </Button>
+            </Link>
+          }
         />
       )}
     </div>

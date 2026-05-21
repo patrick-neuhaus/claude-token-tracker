@@ -121,11 +121,30 @@ export async function getMe(userId: string) {
     `SELECT u.id, u.email, u.display_name, u.webhook_token, u.created_at,
             us.role, us.brl_rate, us.plan_cost_usd,
             us.daily_budget_usd, us.session_budget_usd,
-            us.plan_start_date, us.weekly_reset_dow, us.weekly_reset_hour
+            us.plan_start_date, us.weekly_reset_dow, us.weekly_reset_hour,
+            us.onboarding_completed, us.onboarding_completed_at
      FROM users u
      JOIN user_settings us ON us.user_id = u.id
      WHERE u.id = $1`,
     [userId]
+  );
+  return result.rows[0] || null;
+}
+
+/**
+ * Worker RR: persist onboarding completion to user_settings so flag survives
+ * cross-device login (vs localStorage-only). Accepts `completed=false` to allow
+ * "Refazer tour" reset from Settings.
+ */
+export async function setOnboardingCompleted(userId: string, completed: boolean) {
+  const result = await query(
+    `UPDATE user_settings
+        SET onboarding_completed = $2,
+            onboarding_completed_at = CASE WHEN $2 THEN now() ELSE NULL END,
+            updated_at = now()
+      WHERE user_id = $1
+      RETURNING onboarding_completed, onboarding_completed_at`,
+    [userId, completed],
   );
   return result.rows[0] || null;
 }

@@ -52,12 +52,13 @@ export function useSkillFile(name: string | undefined, filePath: string | null, 
   return useQuery<string>({
     queryKey: ["skills", "file", name, filePath, source ?? "auto"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const qs = new URLSearchParams({ path: filePath! });
       if (source) qs.set("source", source);
+      // SECURITY (Fase A A1): cookie httpOnly auth_token enviado automático via
+      // credentials:include. GET safe — sem X-CSRF-Token.
       const res = await fetch(
         `/api/skills/${name}/file?${qs.toString()}`,
-        { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+        { credentials: "include" },
       );
       if (!res.ok) throw new Error(`Failed to load ${filePath}`);
       return res.text();

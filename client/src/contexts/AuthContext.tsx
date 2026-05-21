@@ -6,7 +6,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, resetCsrfToken } from "@/lib/api";
 
 interface User {
   id: string;
@@ -21,6 +21,9 @@ interface User {
   plan_start_date: string | null;
   weekly_reset_dow: number;
   weekly_reset_hour: number;
+  // Worker RR: server-persisted onboarding flag (migration 021).
+  onboarding_completed: boolean;
+  onboarding_completed_at: string | null;
 }
 
 interface AuthContextType {
@@ -28,21 +31,30 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<{ status: string; message?: string }>;
   register: (email: string, password: string) => Promise<{ status: string; message?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 /**
- * AuthProvider — real auth (Wave 6.4c — MOCK_USER bypass removed).
+ * AuthProvider — Fase A A1: cookie httpOnly auth (sem localStorage).
  *
  * Flow:
- * - Mount: read token from localStorage. If present, fetch /auth/me → setUser.
- *   If absent OR /auth/me fails, setUser(null) → AppLayout redirects /login.
- * - login(): POST /auth/login → save token + refreshUser
- * - logout(): clean token + setUser(null) → triggers /login redirect
- * - 401 from any endpoint: api.ts clears token; next render finds user=null.
+ * - Mount: chama GET /api/auth/me (browser envia auth_token cookie automático).
+ *   200 → setUser; 401 → setUser(null) → AppLayout redirect /login.
+ * - login(): POST /api/auth/login. Server seta cookie httpOnly. Body retorna user.
+ *   Client guarda user em state, depois chama refreshUser pra hidratar completo.
+ * - logout(): POST /api/auth/logout. Server clearCookie. Client reset state +
+ *   reset CSRF token cache (próxima sessão pega novo).
+ * - 401 de qualquer endpoint: api.ts joga ApiError(401); AppLayout/router
+ *   redireciona /login na próxima render.
+ *
+ * Mudança vs Wave anterior:
+ * - JWT NÃO está mais em localStorage. Cookie httpOnly NÃO é acessível por JS.
+ * - Boot não tem "if token in localStorage" — chama /me sempre e deixa server
+ *   decidir via cookie. Custo: 1 request extra no cold start anônimo (200ms).
+ * - logout virou async (POST server-side).
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -58,22 +70,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      refreshUser().finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    refreshUser().finally(() => setLoading(false));
   }, [refreshUser]);
 
   const login = async (email: string, password: string) => {
     try {
-      const res = await api.post<{ status: string; token?: string; user?: User; message?: string }>(
+      const res = await api.post<{ status: string; user?: User; message?: string }>(
         "/auth/login",
         { email, password },
       );
-      if (res.status === "active" && res.token) {
-        localStorage.setItem("token", res.token);
+      if (res.status === "active") {
+        // Cookie já foi setado pelo server. Refresh CSRF cache pro próximo
+        // POST (csurf gera novo secret na sessão recém-autenticada).
+        resetCsrfToken();
         await refreshUser();
         return { status: "active" };
       }
@@ -88,12 +97,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (email: string, password: string) => {
     try {
-      const res = await api.post<{ status: string; token?: string; message?: string }>(
+      const res = await api.post<{ status: string; user?: User; message?: string }>(
         "/auth/register",
         { email, password },
       );
-      if (res.status === "active" && res.token) {
-        localStorage.setItem("token", res.token);
+      if (res.status === "active") {
+        resetCsrfToken();
         await refreshUser();
         return { status: "active" };
       }
@@ -106,9 +115,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
+  const logout = async () => {
+    try {
+      // Server clearCookie. Se POST falhar (network/CSRF), ainda assim limpa
+      // state local — usuário não fica "preso" em UI logada com cookie expirado.
+      await api.post("/auth/logout", {});
+    } catch {
+      // Silent — best-effort. Cookie pode permanecer até expirar (7d).
+    } finally {
+      resetCsrfToken();
+      setUser(null);
+    }
   };
 
   return (

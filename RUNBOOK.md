@@ -51,6 +51,17 @@ Atualizar `.env` `WEBHOOK_TOKEN_DEFAULT`, `~/.claude/settings.json` `TOKEN_TRACK
 Rotacionados auto via task `ClaudeTokenTrackerLogRotation` daily 03h quando > 10MB.
 Manual: `powershell scripts/rotate-logs.ps1`.
 
+## Backup do banco
+
+Daily 03:30 via task `ClaudeTokenTrackerBackup`. Saída em `~/Documents/backups/claude-token-tracker/*.sql.gz`. Retenção 30 dias.
+
+Manual: `powershell scripts/backup-db.ps1`
+Restore: `gunzip -c arquivo.sql.gz | docker exec -i claude-token-tracker-db psql -U tracker -d claude_token_tracker`
+
+## Health endpoint
+
+`GET http://localhost:3002/health` retorna JSON `{ ok, uptime_seconds, db: { status, latency_ms }, version, timestamp }`. Sem auth, sem rate limit. HTTP 200 quando DB ok, 503 quando DB inacessível. Usar em uptime monitors e probes externos.
+
 ## Reset completo
 
 ```powershell
