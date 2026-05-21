@@ -18,44 +18,68 @@ const client = new pg.Client({ connectionString: DATABASE_URL });
 async function migrate() {
   await client.connect();
 
-  await client.query(`
-    CREATE TABLE IF NOT EXISTS _migrations (
-      name TEXT PRIMARY KEY,
-      applied_at TIMESTAMPTZ DEFAULT now()
-    )
-  `);
+  // Advisory lock pra serializar runs paralelos de migrate em CI/deploy concorrente.
+  // Namespace 8675309 = id arbitrário pra migrações deste app.
+  // session-level lock (não xact) pra cobrir todo o loop de aplicação.
+  // Outro processo concorrente bloqueia aqui até este liberar.
+  console.log("Acquiring migration advisory lock...");
+  await client.query("SELECT pg_advisory_lock(8675309)");
+  console.log("Lock acquired.");
 
-  const applied = await client.query("SELECT name FROM _migrations ORDER BY name");
-  const appliedSet = new Set(applied.rows.map((r) => r.name));
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS _migrations (
+        name TEXT PRIMARY KEY,
+        applied_at TIMESTAMPTZ DEFAULT now()
+      )
+    `);
 
-  const files = fs
-    .readdirSync(__dirname)
-    .filter((f) => f.endsWith(".sql"))
-    .sort();
+    const applied = await client.query("SELECT name FROM _migrations ORDER BY name");
+    const appliedSet = new Set(applied.rows.map((r) => r.name));
 
-  for (const file of files) {
-    if (appliedSet.has(file)) {
-      console.log(`  skip: ${file}`);
-      continue;
+    const files = fs
+      .readdirSync(__dirname)
+      .filter((f) => f.endsWith(".sql"))
+      .sort();
+
+    for (const file of files) {
+      if (appliedSet.has(file)) {
+        console.log(`  skip: ${file}`);
+        continue;
+      }
+
+      const sql = fs.readFileSync(path.join(__dirname, file), "utf-8");
+      console.log(`  apply: ${file}`);
+
+      await client.query("BEGIN");
+      try {
+        await client.query(sql);
+        await client.query("INSERT INTO _migrations (name) VALUES ($1)", [file]);
+        await client.query("COMMIT");
+      } catch (err) {
+        await client.query("ROLLBACK");
+        console.error(`  FAILED: ${file}`, err);
+        // libera lock antes de sair pra não deixar lock pendurado
+        try {
+          await client.query("SELECT pg_advisory_unlock(8675309)");
+        } catch {
+          /* ignore */
+        }
+        process.exit(1);
+      }
     }
 
-    const sql = fs.readFileSync(path.join(__dirname, file), "utf-8");
-    console.log(`  apply: ${file}`);
-
-    await client.query("BEGIN");
+    console.log("Migrations complete.");
+  } finally {
+    // Libera advisory lock antes de fechar conexão (boa cidadania, embora
+    // pg_advisory_unlock_all rode automaticamente ao client.end()).
     try {
-      await client.query(sql);
-      await client.query("INSERT INTO _migrations (name) VALUES ($1)", [file]);
-      await client.query("COMMIT");
-    } catch (err) {
-      await client.query("ROLLBACK");
-      console.error(`  FAILED: ${file}`, err);
-      process.exit(1);
+      await client.query("SELECT pg_advisory_unlock(8675309)");
+    } catch {
+      /* ignore — connection pode já estar fechada */
     }
+    await client.end();
   }
-
-  console.log("Migrations complete.");
-  await client.end();
 }
 
 migrate();

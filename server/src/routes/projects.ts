@@ -38,7 +38,8 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ status: "error", message: parsed.error.issues[0].message });
+    const firstIssue = parsed.error.issues[0];
+    res.status(400).json({ status: "error", message: firstIssue?.message ?? "Invalid input" });
     return;
   }
   const project = await createProject(getUserId(req), parsed.data.name, parsed.data.description);

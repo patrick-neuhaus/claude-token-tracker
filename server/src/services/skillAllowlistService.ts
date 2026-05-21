@@ -25,8 +25,9 @@ export async function getStatus(
     `SELECT status, notes FROM skill_allowlist WHERE skill_name = $1`,
     [name]
   );
-  if (result.rows.length === 0) return null;
-  return { status: result.rows[0].status, notes: result.rows[0].notes };
+  const row = result.rows[0];
+  if (!row) return null;
+  return { status: row.status, notes: row.notes };
 }
 
 /**
@@ -61,6 +62,7 @@ export async function setStatus(
   );
 
   const row = result.rows[0];
+  if (!row) throw new Error("Failed to upsert skill allowlist entry");
   return {
     skill_name: row.skill_name,
     status: row.status,

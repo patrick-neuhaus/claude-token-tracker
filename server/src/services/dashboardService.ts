@@ -15,8 +15,11 @@ function buildFilters(userId: string, filters: DashboardFilters): { where: strin
   let idx = 4;
 
   if (filters.model) {
-    conditions.push(`model ILIKE $${idx++}`);
-    params.push(`%${filters.model}%`);
+    // Onda 6 A1 P2: leading `%` em ILIKE força seq scan e ignora btree idx.
+    // Frontend é free-text mas modelo é identificador (claude-opus-4-7, gpt-4o),
+    // exact match cobre 99% do uso e usa idx_token_entries_user_model.
+    conditions.push(`model = $${idx++}`);
+    params.push(filters.model);
   }
   if (filters.source) {
     conditions.push(`source = $${idx++}`);

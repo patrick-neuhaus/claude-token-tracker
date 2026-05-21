@@ -30,8 +30,12 @@ export function ContributionGraph({ data, from, to }: Props) {
     if (dataMap[key] > maxCost) maxCost = dataMap[key];
   }
 
-  const startDate = from ? new Date(from) : new Date(now.getTime() - 90 * MS_PER_DAY);
-  const endDate = to ? new Date(to) : now;
+  function parseLocalDate(s: string): Date {
+    const [y, m, d] = s.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+  const startDate = from ? parseLocalDate(from) : new Date(now.getTime() - 90 * MS_PER_DAY);
+  const endDate = to ? parseLocalDate(to) : now;
 
   const startSunday = startOfWeek(startDate, { weekStartsOn: 0 });
   const endSaturday = endOfWeek(endDate, { weekStartsOn: 0 });

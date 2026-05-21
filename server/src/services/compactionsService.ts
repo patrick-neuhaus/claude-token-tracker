@@ -61,6 +61,19 @@ export async function recordPreCompact(
   const ts = input.timestamp ?? new Date();
   const trigger = input.trigger ?? "auto";
 
+  // Onda 6 A1 P1: IDOR defense. Atacante poderia mandar project_id arbitrário
+  // (UUID de outro user) e plantar compaction sob o projeto da vítima. Valida
+  // ownership antes do INSERT.
+  if (input.project_id) {
+    const check = await query(
+      `SELECT 1 FROM projects WHERE id = $1 AND user_id = $2`,
+      [input.project_id, input.user_id]
+    );
+    if (check.rowCount === 0) {
+      throw new Error("Project not found or access denied");
+    }
+  }
+
   const result = await query<{ id: string }>(
     `INSERT INTO compactions
        (user_id, session_id, project_id, before_tokens, trigger, timestamp)
@@ -76,7 +89,9 @@ export async function recordPreCompact(
     ]
   );
 
-  return { id: result.rows[0].id };
+  const inserted = result.rows[0];
+  if (!inserted) throw new Error("Failed to insert compaction");
+  return { id: inserted.id };
 }
 
 // ---------------------------------------------------------------------------

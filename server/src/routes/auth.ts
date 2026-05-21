@@ -1,21 +1,40 @@
 import { Router } from "express";
 import { z } from "zod";
-import { registerUser, loginUser, getMe } from "../services/authService.js";
+import crypto from "crypto";
+import {
+  registerUser,
+  loginUser,
+  getMe,
+  BootstrapEmailMismatchError,
+} from "../services/authService.js";
 import {
   createResetToken,
   consumeResetToken,
   sendResetLink,
 } from "../services/passwordResetService.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { authLimiter, forgotPasswordLimiter } from "../middleware/rateLimit.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { maskEmail, describeError } from "../utils/security.js";
+import { query } from "../config/database.js";
+import { getUserId } from "../utils/routeHelpers.js";
 import type { AuthRequest } from "../types/index.js";
 
 const router = Router();
 
+// SECURITY: password policy (trident Area 1 P0-2).
+// Enforce 12+ chars + uppercase + lowercase + digit to block weak passwords
+// like "12345678". Applied to /register and /reset.
+const passwordPolicy = z
+  .string()
+  .min(12, "Password must be at least 12 characters")
+  .regex(/[A-Z]/, "Password must contain uppercase letter")
+  .regex(/[a-z]/, "Password must contain lowercase letter")
+  .regex(/\d/, "Password must contain digit");
+
 const registerSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8),
+  password: passwordPolicy,
   display_name: z.string().optional(),
 });
 
@@ -30,14 +49,15 @@ const forgotSchema = z.object({
 
 const resetSchema = z.object({
   token: z.string().min(1),
-  password: z.string().min(8),
+  password: passwordPolicy,
 });
 
-router.post("/register", async (req, res) => {
+router.post("/register", authLimiter, async (req, res) => {
   console.log("[AUTH] Register attempt:", maskEmail(req.body?.email));
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ status: "error", message: parsed.error.issues[0].message });
+    const firstIssue = parsed.error.issues[0];
+    res.status(400).json({ status: "error", message: firstIssue?.message ?? "Invalid input" });
     return;
   }
 
@@ -57,6 +77,10 @@ router.post("/register", async (req, res) => {
     }
   } catch (err: unknown) {
     console.error("[REGISTER ERROR]", describeError(err));
+    if (err instanceof BootstrapEmailMismatchError) {
+      res.status(403).json({ status: "error", message: err.message });
+      return;
+    }
     if ((err as { code?: string })?.code === "23505") {
       res.status(409).json({ status: "error", message: "Email already registered" });
       return;
@@ -65,7 +89,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", authLimiter, async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ status: "error", message: "Invalid credentials" });
@@ -94,6 +118,7 @@ router.post("/login", async (req, res) => {
 // email not registered; we still respond with the generic success message.
 router.post(
   "/forgot",
+  forgotPasswordLimiter,
   asyncHandler(async (req, res) => {
     const parsed = forgotSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -125,13 +150,14 @@ router.post(
 // /reset — consume token + set new password.
 router.post(
   "/reset",
+  authLimiter,
   asyncHandler(async (req, res) => {
     const parsed = resetSchema.safeParse(req.body);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
       const message =
-        issue.path[0] === "password"
-          ? "Senha precisa de no minimo 8 caracteres"
+        issue?.path[0] === "password"
+          ? issue.message
           : "Token e senha obrigatorios";
       res.status(400).json({ status: "error", message });
       return;
@@ -159,7 +185,6 @@ router.post(
 );
 
 router.get("/me", authMiddleware, async (req, res) => {
-  const { getUserId } = await import("../utils/routeHelpers.js");
   const user = await getMe(getUserId(req));
   if (!user) {
     res.status(404).json({ status: "error", message: "User not found" });
@@ -167,5 +192,45 @@ router.get("/me", authMiddleware, async (req, res) => {
   }
   res.json(user);
 });
+
+/**
+ * Wave 1 hardening: rotate webhook token.
+ * Returns the new plaintext token EXACTLY ONCE — client must store it.
+ * Stored hashed in DB; plain column kept temporarily for UI Settings view.
+ */
+router.post(
+  "/rotate-webhook-token",
+  authMiddleware,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const userId = getUserId(req);
+    const newToken = crypto.randomUUID();
+    const newHash = crypto.createHash("sha256").update(newToken).digest("hex");
+
+    // TODO Onda 10+: depois que UI Settings migrar pra exibir só preview hash truncado
+    // (não o token plain inteiro), podemos NULLAR webhook_token plain aqui pra reduzir
+    // exposição. Hash continua válido pra autenticação. Por ora mantém plain pra UI legacy.
+    const result = await query(
+      `UPDATE users
+         SET webhook_token = $1::uuid,
+             webhook_token_hash = $2,
+             webhook_token_rotated_at = NOW()
+       WHERE id = $3
+       RETURNING webhook_token_rotated_at`,
+      [newToken, newHash, userId],
+    );
+
+    if (result.rows.length === 0) {
+      res.status(404).json({ status: "error", message: "User not found" });
+      return;
+    }
+
+    res.json({
+      status: "ok",
+      webhook_token: newToken,
+      rotated_at: result.rows[0].webhook_token_rotated_at,
+      warning: "Store this token now — server will not return plaintext again.",
+    });
+  }),
+);
 
 export default router;

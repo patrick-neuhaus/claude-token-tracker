@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { X, Trash2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,14 +51,23 @@ export function PricingDrawer({ open, onClose }: Props) {
   const upsert = useUpsertPricing();
   const del = useDeletePricing();
 
-  const overrides = data?.overrides ?? [];
+  // Memoize overrides por data identity — evita nova ref a cada render que
+  // dispararia o effect de model-change e apagaria edits do user (A3 P2-1).
+  const overrides = useMemo<PricingOverride[]>(() => data?.overrides ?? [], [data]);
+  const overridesRef = useRef<PricingOverride[]>(overrides);
+  useEffect(() => {
+    overridesRef.current = overrides;
+  }, [overrides]);
+
   const [selectedModel, setSelectedModel] = useState<string>(SUPPORTED_MODELS[0]);
   const [rates, setRates] = useState<PricingRates>(EMPTY_RATES);
   const [error, setError] = useState<string | null>(null);
 
   // Quando muda model selecionado, pré-popula com override existente se houver.
+  // NÃO inclui `overrides` nas deps — refetch/cache invalidate do React Query
+  // não deve resetar edits do user. Lê snapshot via ref.
   useEffect(() => {
-    const existing = overrides.find((o) => o.model_key === selectedModel);
+    const existing = overridesRef.current.find((o) => o.model_key === selectedModel);
     if (existing) {
       setRates({
         input_rate: existing.input_rate,
@@ -70,7 +79,7 @@ export function PricingDrawer({ open, onClose }: Props) {
       setRates(EMPTY_RATES);
     }
     setError(null);
-  }, [selectedModel, overrides]);
+  }, [selectedModel]);
 
   // ESC fecha
   useEffect(() => {

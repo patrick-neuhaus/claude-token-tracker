@@ -1,10 +1,17 @@
 /**
- * Anthropic Claude pricing (USD per 1M tokens).
- * Source: https://platform.claude.com/docs/en/about-claude/pricing
- * Last updated: 2026-04-29 (verified via WebFetch)
+ * Token pricing tables. USD per 1M tokens.
  *
- * Cache write rate = 5-minute TTL (1.25× input). 1-hour TTL is 2× input —
- * tracker doesn't differentiate by TTL today, so we default to 5min rate.
+ * Sources:
+ * - Anthropic Claude: https://docs.anthropic.com/en/docs/about-claude/pricing
+ * - OpenAI GPT: https://openai.com/api/pricing/
+ *
+ * Last updated: 2026-05-19
+ *
+ * Convenções:
+ * - cache_read padrão Anthropic = 10% do input rate
+ * - cache_write padrão Anthropic = 1.25× do input rate (5-min TTL; 1h TTL é 2×,
+ *   tracker não diferencia hoje — default 5min)
+ * - cache_read padrão OpenAI = 10% do input rate (gpt-5.x family)
  */
 
 export interface ModelPricing {
@@ -24,7 +31,8 @@ export interface ModelPricing {
  */
 export const PRICING: Record<string, ModelPricing> = {
   "gpt-5.5": { input: 5.0, output: 30.0, cache_read: 0.5, cache_write: 5.0 },
-  "gpt-5.5-pro": { input: 30.0, output: 180.0, cache_read: 30.0, cache_write: 30.0 },
+  // cache_read = 10% do input rate (padrao OpenAI gpt-5.x family)
+  "gpt-5.5-pro": { input: 30.0, output: 180.0, cache_read: 3.0, cache_write: 30.0 },
   "gpt-5.4": { input: 2.5, output: 15.0, cache_read: 0.25, cache_write: 2.5 },
   "gpt-5.4-mini": { input: 0.75, output: 4.5, cache_read: 0.075, cache_write: 0.75 },
   "gpt-5.4-nano": { input: 0.2, output: 1.25, cache_read: 0.02, cache_write: 0.2 },
@@ -58,4 +66,4 @@ export const PRICING: Record<string, ModelPricing> = {
   haiku: { input: 1.0, output: 5.0, cache_read: 0.1, cache_write: 1.25 },
 };
 
-export const DEFAULT_PRICING = PRICING.sonnet;
+export const DEFAULT_PRICING: ModelPricing = { input: 3.0, output: 15.0, cache_read: 0.3, cache_write: 3.75 };

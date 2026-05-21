@@ -1,4 +1,4 @@
-CREATE TABLE token_entries (
+CREATE TABLE IF NOT EXISTS token_entries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id),
   timestamp TIMESTAMPTZ NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE token_entries (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX idx_token_entries_user_ts ON token_entries (user_id, timestamp DESC);
-CREATE INDEX idx_token_entries_source ON token_entries (source);
-CREATE INDEX idx_token_entries_model ON token_entries (model);
-CREATE INDEX idx_token_entries_session ON token_entries (session_id);
+CREATE INDEX IF NOT EXISTS idx_token_entries_user_ts ON token_entries (user_id, timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_token_entries_source ON token_entries (source);
+CREATE INDEX IF NOT EXISTS idx_token_entries_model ON token_entries (model);
+CREATE INDEX IF NOT EXISTS idx_token_entries_session ON token_entries (session_id);

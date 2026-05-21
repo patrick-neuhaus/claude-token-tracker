@@ -24,6 +24,8 @@ interface Props {
   formatX?: (v: string) => string;
   /** Format Y axis tick + tooltip. Default formatUSD short. */
   formatY?: (v: number) => string;
+  /** Accessible label for screen readers. Defaults to a generic chart description. */
+  ariaLabel?: string;
 }
 
 /**
@@ -38,6 +40,7 @@ export function SvgAreaStack({
   height = 240,
   formatX = formatShortDate,
   formatY,
+  ariaLabel,
 }: Props) {
   const W = 800; // viewBox width — scales via preserveAspectRatio
   const H = height;
@@ -111,7 +114,14 @@ export function SvgAreaStack({
   return (
     <div className="w-full" style={{ height }}>
       {anchor}
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" preserveAspectRatio="none" role="img">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        width="100%"
+        height="100%"
+        preserveAspectRatio="none"
+        role="img"
+        aria-label={ariaLabel ?? `Gráfico de área ${stacked ? "empilhada" : ""} com ${series.length} série(s)`}
+      >
         {/* Grid + Y ticks */}
         {ticksY.map((tv, i) => (
           <g key={i}>

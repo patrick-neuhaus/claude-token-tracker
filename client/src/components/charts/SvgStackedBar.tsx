@@ -14,6 +14,8 @@ interface Props {
   showLegend?: boolean;
   /** Minimum visible segment width in % (segments below get a thin sliver but still visible). */
   minWidthPct?: number;
+  /** Accessible label for screen readers. Defaults to a generic chart description. */
+  ariaLabel?: string;
 }
 
 /**
@@ -27,6 +29,7 @@ export function SvgStackedBar({
   formatValue = (v) => v.toLocaleString(),
   showLegend = true,
   minWidthPct = 0.5,
+  ariaLabel,
 }: Props) {
   const W = 1000;
   const H = height;
@@ -67,6 +70,7 @@ export function SvgStackedBar({
         height={H}
         preserveAspectRatio="none"
         role="img"
+        aria-label={ariaLabel ?? `Gráfico de barra empilhada com ${segments.length} segmento(s)`}
         onMouseLeave={hide}
       >
         <rect x={0} y={0} width={W} height={H} fill="hsl(var(--muted) / 0.3)" rx={6} ry={6} />

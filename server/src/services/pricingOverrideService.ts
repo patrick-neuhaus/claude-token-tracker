@@ -1,5 +1,5 @@
 import { query } from "../config/database.js";
-import { PRICING, type ModelPricing } from "../config/pricing.js";
+import { PRICING, DEFAULT_PRICING, type ModelPricing } from "../config/pricing.js";
 import { normalizeModel } from "../utils/modelNormalizer.js";
 
 /**
@@ -58,7 +58,9 @@ export async function upsertOverride(
                cache_read_rate::float, cache_write_rate::float, updated_at`,
     [userId, modelKey, rates.input_rate, rates.output_rate, rates.cache_read_rate, rates.cache_write_rate],
   );
-  return result.rows[0];
+  const row = result.rows[0];
+  if (!row) throw new Error("Failed to upsert pricing override");
+  return row;
 }
 
 export async function deleteOverride(userId: string, modelKey: string): Promise<boolean> {
@@ -99,8 +101,12 @@ export async function getEffectivePricing(
   }
 
   // 2. Fallback: exact key in PRICING → family → DEFAULT
-  if (PRICING[key]) return PRICING[key];
+  const exact = PRICING[key];
+  if (exact) return exact;
   const family = key.split("-")[0];
-  if (PRICING[family]) return PRICING[family];
-  return PRICING.sonnet;
+  if (family) {
+    const familyPricing = PRICING[family];
+    if (familyPricing) return familyPricing;
+  }
+  return DEFAULT_PRICING;
 }

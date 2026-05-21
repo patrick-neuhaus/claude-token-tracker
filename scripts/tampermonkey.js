@@ -17,9 +17,18 @@
     // =============================================
     // URL DO SERVIDOR LOCAL
     // =============================================
-    const WEBHOOK_URL = 'http://localhost:3001/api/webhook/track-tokens';
-    const WEBHOOK_TOKEN = ''; // Cole seu webhook token aqui (encontre em Settings > Webhook Token)
+    const WEBHOOK_URL = 'http://localhost:3002/api/webhook/track-tokens';
+    // Wave 1 hardening: userscript nao tem env. Cole token via Settings > Webhook Token
+    // e nao commit o token populado neste arquivo. P3 backlog: migrar pra extension real.
+    const WEBHOOK_TOKEN = ''; // Cole webhook token aqui localmente; reverter antes de commit
     // =============================================
+
+    // DEBUG flag: false = silencioso (default), true = log cada msg enviada.
+    // Console flodava em sessao longa; mantemos console.error pra falhas criticas.
+    const DEBUG = false;
+    function debugLog(...args) {
+        if (DEBUG) console.log('[Token Tracker]', ...args);
+    }
 
     if (!WEBHOOK_TOKEN) {
         console.warn('[Token Tracker] Configure o WEBHOOK_TOKEN primeiro!');
@@ -57,11 +66,12 @@
                 'X-Webhook-Token': WEBHOOK_TOKEN
             },
             onload: function(response) {
-                console.log('[Token Tracker] Enviado:', payload.model,
+                debugLog('Enviado:', payload.model,
                     '| in:', payload.input_tokens,
                     '| out:', payload.output_tokens);
             },
             onerror: function(error) {
+                // Falha de envio = sempre console.error (nao DEBUG)
                 console.error('[Token Tracker] Erro ao enviar:', error);
             }
         });
@@ -128,7 +138,7 @@
                 }
             }
         } catch (e) {
-            console.log('[Token Tracker] Erro no stream:', e.message);
+            debugLog('Erro no stream:', e.message);
         }
     }
 
@@ -187,5 +197,5 @@
         addBadge();
     }
 
-    console.log('[Token Tracker] Ativo - monitorando tokens no claude.ai');
+    debugLog('Ativo - monitorando tokens no claude.ai');
 })();

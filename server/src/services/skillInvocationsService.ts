@@ -99,6 +99,7 @@ export async function recordInvocation(
   invalidateStatsCacheForUser(input.user_id);
 
   const row = result.rows[0];
+  if (!row) throw new Error("Failed to insert skill invocation");
   return {
     id: row.id,
     timestamp: row.timestamp.toISOString(),

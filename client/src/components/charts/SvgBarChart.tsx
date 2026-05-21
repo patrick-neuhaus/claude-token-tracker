@@ -19,6 +19,8 @@ interface Props {
   height?: number;
   formatY?: (v: number) => string;
   formatTooltip?: (key: string, value: number, row: Record<string, string | number>) => string;
+  /** Accessible label for screen readers. Defaults to a generic chart description. */
+  ariaLabel?: string;
 }
 
 /**
@@ -34,6 +36,7 @@ export function SvgBarChart({
   height = 240,
   formatY,
   formatTooltip,
+  ariaLabel,
 }: Props) {
   const W = 800;
   const H = height;
@@ -75,7 +78,15 @@ export function SvgBarChart({
     return (
       <div className="w-full" style={{ height: H }}>
         {anchor}
-        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" role="img" onMouseLeave={hide}>
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          width="100%"
+          height={H}
+          preserveAspectRatio="none"
+          role="img"
+          aria-label={ariaLabel ?? `Gráfico de barras horizontais com ${series.length} série(s)`}
+          onMouseLeave={hide}
+        >
           {/* X grid */}
           {ticksX.map((tv, i) => (
             <g key={i}>
@@ -150,7 +161,15 @@ export function SvgBarChart({
   return (
     <div className="w-full" style={{ height: H }}>
       {anchor}
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" role="img" onMouseLeave={hide}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        width="100%"
+        height={H}
+        preserveAspectRatio="none"
+        role="img"
+        aria-label={ariaLabel ?? `Gráfico de barras ${stacked ? "empilhadas" : "agrupadas"} com ${series.length} série(s)`}
+        onMouseLeave={hide}
+      >
         {ticksY.map((tv, i) => (
           <g key={i}>
             <line

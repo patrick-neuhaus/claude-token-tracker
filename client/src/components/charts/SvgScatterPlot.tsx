@@ -20,6 +20,8 @@ interface Props {
   /** Tooltip content per point. Returns string for native title. */
   formatTooltip?: (p: ScatterPoint) => string;
   fillColor?: string;
+  /** Accessible label for screen readers. Defaults to a generic chart description. */
+  ariaLabel?: string;
 }
 
 /**
@@ -34,6 +36,7 @@ export function SvgScatterPlot({
   formatY = (v) => v.toFixed(0),
   formatTooltip,
   fillColor = "hsl(var(--chart-1))",
+  ariaLabel,
 }: Props) {
   const W = 800;
   const H = height;
@@ -68,6 +71,7 @@ export function SvgScatterPlot({
         height={H}
         preserveAspectRatio="none"
         role="img"
+        aria-label={ariaLabel ?? `Gráfico de dispersão com ${data.length} ponto(s)${xLabel && yLabel ? ` — ${xLabel} versus ${yLabel}` : ""}`}
         onMouseLeave={hide}
       >
         {/* Y grid + ticks */}

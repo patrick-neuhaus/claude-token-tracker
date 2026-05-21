@@ -20,16 +20,14 @@ interface Props {
  * Uses the canonical SvgPieDonut (zero external deps).
  */
 export function TopToolsDonut({ data }: Props) {
-  const top5 = data.slice(0, 5);
-
   const pieData = useMemo(
     () =>
-      top5.map((t, i) => ({
+      data.slice(0, 5).map((t, i) => ({
         label: t.tool_name,
         value: t.count,
         color: TOOL_COLORS[i % TOOL_COLORS.length],
       })),
-    [top5]
+    [data]
   );
 
   if (pieData.length === 0) {

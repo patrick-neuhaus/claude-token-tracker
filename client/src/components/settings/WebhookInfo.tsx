@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Section } from "@/components/shared/Section";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, ChevronDown, ChevronRight } from "lucide-react";
@@ -123,12 +123,33 @@ const pricingColumns: AppTableColumn<PricingRow>[] = [
 export function WebhookInfo({ webhookToken }: Props) {
   const [copied, setCopied] = useState<string | null>(null);
   const [showClaudeAiGuide, setShowClaudeAiGuide] = useState(false);
+  const timerRef = useRef<number | null>(null);
 
   function copyText(text: string, label: string) {
-    navigator.clipboard.writeText(text);
-    setCopied(label);
-    setTimeout(() => setCopied(null), 2000);
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        if (timerRef.current !== null) {
+          window.clearTimeout(timerRef.current);
+        }
+        setCopied(label);
+        timerRef.current = window.setTimeout(() => {
+          setCopied(null);
+          timerRef.current = null;
+        }, 2000);
+      })
+      .catch((err) => {
+        console.error("[WebhookInfo] copy failed:", err);
+      });
   }
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) {
+        window.clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
 
   const webhookUrl = `${window.location.origin}/api/webhook/track-tokens`;
 
