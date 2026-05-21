@@ -1,0 +1,98 @@
+/* ============================================================
+   tokens.css — Design System foundation (Fase A4+A6)
+   ============================================================
+
+   Fonte canonica de design tokens do Claude Token Tracker.
+
+   Estrategia:
+   - Tokens core (cores HSL triplet, spacing, radius, motion, shadow,
+     typography) ja vivem em `index.css` (Wave 4 — Studio Artemis).
+   - Este arquivo adiciona ALIASES SEMANTICOS pedidos pela spec do
+     Design System unificado (Fase A — Worker PP), apontando pras
+     vars existentes.
+   - Primitivos em `components/primitives/` consomem ESTES aliases.
+
+   Convencao:
+   - `--color-*` -> alias semantico das vars `--background`,
+     `--foreground`, `--card`, etc. (Tailwind utilities continuam
+     funcionando via `@theme inline` em index.css)
+   - `--space-0..--space-12` -> escala 4px-base (preserva
+     `--space-1..--space-16` legados via index.css)
+   - Tudo cross-mode (light + dark via .dark class)
+
+   NAO REMOVER:
+   - vars legadas em index.css (3+ Waves de codigo dependem delas)
+   ============================================================ */
+
+:root {
+  /* ── Color aliases (semantic) ─────────────────────────────────
+     Apontam pras HSL triplets em index.css. Usar via:
+       color: hsl(var(--color-text));
+       background: hsl(var(--color-bg));
+  */
+  --color-bg:          var(--background);
+  --color-bg-elevated: var(--card);
+  --color-bg-muted:    var(--muted);
+  --color-text:        var(--foreground);
+  --color-text-muted:  var(--muted-foreground);
+  --color-border:      var(--border);
+
+  --color-accent:      var(--accent);
+  --color-accent-fg:   var(--accent-foreground);
+  --color-success:     var(--success);
+  --color-warning:     var(--warning);
+  --color-danger:      var(--destructive);
+  --color-info:        var(--info);
+
+  /* Brand (mapeia direto pras vars existentes) */
+  --color-brand-primary:    var(--brand-navy);
+  --color-brand-vivid:      var(--brand-blue-vivid);
+  --color-brand-deep:       var(--brand-blue-deep);
+  --color-brand-light:      var(--brand-blue-light);
+
+  /* ── Spacing (escala 4px-base) ────────────────────────────────
+     Aliases novos (--space-0..--space-12) coexistem com escala
+     antiga (--space-1, --space-1-5, --space-2..--space-16).
+  */
+  --space-0:  0;
+  --space-1:  4px;   /* ja existe */
+  --space-2:  8px;   /* ja existe */
+  --space-3:  12px;  /* ja existe */
+  --space-4:  16px;  /* ja existe */
+  --space-5:  20px;  /* ja existe */
+  --space-6:  24px;  /* ja existe */
+  --space-7:  28px;  /* NOVO */
+  --space-8:  32px;  /* ja existe */
+  --space-9:  36px;  /* NOVO */
+  --space-10: 40px;  /* ja existe */
+  --space-11: 44px;  /* NOVO */
+  --space-12: 48px;  /* ja existe */
+
+  /* ── Radius (alias) ───────────────────────────────────────────
+     `--radius-full` adicionado (nao existia). Restante reusa
+     vars existentes em index.css.
+  */
+  --radius-full: 9999px;
+
+  /* ── Typography aliases ───────────────────────────────────────
+     Spec da task pedia Lora/Poppins/Geist Mono. Patrick ja
+     configurou esses em index.css.
+  */
+  --font-size-xs:    var(--text-xs);
+  --font-size-sm:    var(--text-sm);
+  --font-size-base:  var(--text-base);
+  --font-size-lg:    var(--text-lg);
+  --font-size-xl:    var(--text-xl);
+  --font-size-2xl:   var(--text-2xl);
+  --font-size-3xl:   var(--text-3xl);
+
+  /* ── Motion aliases ───────────────────────────────────────────
+     Spec da task pedia --duration-fast/base/slow + --ease-out/in-out.
+     Tudo ja existe em index.css. Aliases redundantes mas explicitos
+     pra DS consumir.
+  */
+  --duration-fast:    var(--motion-fast);     /* 150ms */
+  --duration-base:    var(--motion-normal);   /* 200ms */
+  --duration-slow:    var(--motion-slow);     /* 300ms */
+  /* --ease-out, --ease-in-out ja existem em index.css */
+}

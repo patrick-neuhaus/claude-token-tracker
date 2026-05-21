@@ -14,9 +14,10 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { toast } from "sonner";
 
 async function downloadCsv(params: URLSearchParams) {
-  const token = localStorage.getItem("token");
+  // SECURITY (Fase A A1): cookie httpOnly auth_token enviado automático via
+  // credentials:include. GET é safe — não precisa de X-CSRF-Token.
   const res = await fetch(`/api/entries/export?${params.toString()}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: "include",
   });
   if (!res.ok) throw new Error("Erro ao exportar CSV");
   const blob = await res.blob();

@@ -1,10 +1,16 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { env } from "./config/env.js";
+import {
+  csrfProtection,
+  CSRF_SKIP_PREFIXES,
+  CSRF_SKIP_AUTH_PATHS,
+} from "./middleware/csrf.js";
 import authRouter from "./routes/auth.js";
 import webhookRouter from "./routes/webhook.js";
 import dashboardRouter from "./routes/dashboard.js";
@@ -22,6 +28,7 @@ import skillInvocationsRouter from "./routes/skillInvocations.js";
 import skillAllowlistRouter from "./routes/skillAllowlist.js";
 import toolInvocationsRouter from "./routes/toolInvocations.js";
 import compactionsRouter from "./routes/compactions.js";
+import healthRouter from "./routes/health.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { cleanupExpired } from "./services/passwordResetService.js";
 
@@ -67,9 +74,16 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false, // permite mixed assets pra dev
 }));
 
-// SECURITY (A2 P2-2): CORS origins via env (comma-separated). Default = dev pair.
-// allowedHeaders explicit to unblock preflight for X-Webhook-Token; credentials
-// off because auth is JWT in Bearer header, not cookie.
+// SECURITY (Fase A A1): cookie-parser pra cookie httpOnly signed auth_token.
+// Aplicado antes do CORS pra todos os handlers terem acesso a req.signedCookies.
+// JWT_SECRET reused como signing secret (mesmo segredo de assinatura JWT,
+// distinto do CSRF token).
+app.use(cookieParser(env.JWT_SECRET));
+
+// SECURITY (A2 P2-2 + Fase A A1): CORS origins via env (comma-separated).
+// Default = dev pair. credentials:true exigido pra browser anexar cookie
+// auth_token automático em fetch cross-origin (Vite dev 5173 → API 3002).
+// allowedHeaders inclui X-CSRF-Token (Fase A) + X-Webhook-Token (collectors).
 const allowedOrigins = (env.ALLOWED_ORIGINS ?? "http://localhost:3002,http://localhost:5173")
   .split(",")
   .map((o) => o.trim())
@@ -78,15 +92,33 @@ const allowedOrigins = (env.ALLOWED_ORIGINS ?? "http://localhost:3002,http://loc
 app.use(cors({
   origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Authorization", "Content-Type", "X-Webhook-Token"],
-  credentials: false,
+  allowedHeaders: ["Authorization", "Content-Type", "X-Webhook-Token", "X-CSRF-Token"],
+  credentials: true,
 }));
 app.use(express.json({ limit: "16kb" }));
+
+// SECURITY (Fase A A1): CSRF guard global montado ANTES dos routers.
+// Skipa webhook (X-Webhook-Token), health, e auth públicas (login/register/
+// forgot/reset/csrf-token). csurf internamente skipa GET/HEAD/OPTIONS, então
+// requests safe passam sem validação mas o cookie _csrf é gerado se faltar.
+// Detalhes do contrato + config em middleware/csrf.ts.
+app.use((req, res, next) => {
+  if (CSRF_SKIP_PREFIXES.some((p) => req.path.startsWith(p))) {
+    return next();
+  }
+  if (CSRF_SKIP_AUTH_PATHS.has(req.path)) {
+    return next();
+  }
+  return csrfProtection(req, res, next);
+});
 
 // BUG-03 fix: schema migrations now live in server/migrations/008-009.sql,
 // applied via `npm run migrate`. Boot no longer ALTERs schema.
 
-// Mount API routes (static imports — saves ~150-300ms cold start vs dynamic loop)
+// Mount API routes (static imports — saves ~150-300ms cold start vs cold loop).
+// authRouter monta /csrf-token internamente com csrfProtection aplicado direto
+// (precisa gerar o cookie _csrf + retornar req.csrfToken() — não passa pelo
+// guard global porque /api/auth/csrf-token está em CSRF_SKIP_AUTH_PATHS).
 app.use("/api/auth", authRouter);
 app.use("/api/webhook", webhookRouter);
 app.use("/api/dashboard", dashboardRouter);
@@ -104,6 +136,10 @@ app.use("/api/skill-invocations", skillInvocationsRouter);
 app.use("/api/skill-allowlist", skillAllowlistRouter);
 app.use("/api/tool-invocations", toolInvocationsRouter);
 app.use("/api/compactions", compactionsRouter);
+
+// Health endpoint — sem /api prefix por convenção pra healthchecks externos
+// (uptime monitors, docker healthcheck, k8s probes). Sem auth, sem rate limit.
+app.use("/health", healthRouter);
 
 // Serve static frontend in production
 const clientDist = path.resolve(__dirname, "../../client/dist");

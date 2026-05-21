@@ -7,7 +7,8 @@ $ErrorActionPreference = "Continue"  # continua se algum não existe
 $tasks = @(
     "Claude Token Tracker",
     "CodexTokenCollector",
-    "ClaudeTokenTrackerLogRotation"
+    "ClaudeTokenTrackerLogRotation",
+    "ClaudeTokenTrackerBackup"
 )
 
 foreach ($t in $tasks) {

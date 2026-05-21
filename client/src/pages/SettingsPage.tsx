@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DollarSign } from "lucide-react";
+import { DollarSign, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { SettingsForm } from "@/components/settings/SettingsForm";
 import { WebhookInfo } from "@/components/settings/WebhookInfo";
@@ -8,12 +8,31 @@ import { PricingDrawer } from "@/components/settings/PricingDrawer";
 import { TokenEditor } from "@/components/settings/TokenEditor";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 export function SettingsPage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [pricingOpen, setPricingOpen] = useState(false);
+  const [resettingTour, setResettingTour] = useState(false);
 
   if (!user) return null;
+
+  // Worker RR: "Refazer tour" — PATCH onboarding_completed=false, refresh user;
+  // AppLayout vai re-renderizar OnboardingWizard automático (showOnboarding cond).
+  async function handleRedoTour() {
+    setResettingTour(true);
+    try {
+      await api.patch("/auth/me/onboarding", { completed: false });
+      await refreshUser();
+      toast.success("Tour reaberto — preparando setup...");
+    } catch (err) {
+      console.error("[Settings] reset onboarding failed:", err);
+      toast.error("Não consegui reabrir o tour. Tenta de novo.");
+    } finally {
+      setResettingTour(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -21,10 +40,21 @@ export function SettingsPage() {
         title="Configurações"
         crumb="conta · configurações"
         actions={
-          <Button variant="outline" onClick={() => setPricingOpen(true)} className="gap-2">
-            <DollarSign className="h-4 w-4" />
-            Customizar pricing
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              onClick={handleRedoTour}
+              disabled={resettingTour}
+              className="gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              {resettingTour ? "Abrindo..." : "Refazer tour"}
+            </Button>
+            <Button variant="outline" onClick={() => setPricingOpen(true)} className="gap-2">
+              <DollarSign className="h-4 w-4" />
+              Customizar pricing
+            </Button>
+          </>
         }
       />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

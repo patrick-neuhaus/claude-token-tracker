@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSummary } from "@/hooks/useDashboard";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,21 +22,39 @@ import { cn } from "@/lib/utils";
 import { formatUSD } from "@/lib/formatters";
 import { ConfettiBurst } from "@/components/shared/ConfettiBurst";
 
-const STORAGE_KEY = "onboarding_completed";
 const STEPS = ["welcome", "hook", "pricing", "budget", "done"] as const;
 type StepName = (typeof STEPS)[number];
 
 interface Props {
-  /** Skip-to-end shortcut — closes wizard, marks completed. */
+  /** Skip-to-end shortcut — closes wizard, marks completed on the server. */
   onComplete: () => void;
 }
 
+// Worker RR: webhook token nunca renderiza plain inteiro. Snippet preview usa máscara
+// (mantém últimos 4 chars visíveis pra QA cruzar com /settings). Clipboard copia o
+// token completo — UX precisa do snippet utilizável sem ida ao /settings.
+function maskToken(token: string | null | undefined): string {
+  if (!token) return "<seu-token-em-/settings>";
+  const t = String(token);
+  if (t.length <= 12) return `${t.slice(0, 4)}-****`;
+  return `${t.slice(0, 8)}-****-${t.slice(-4)}`;
+}
+
+async function persistOnboardingCompletion(completed: boolean) {
+  try {
+    await api.patch("/auth/me/onboarding", { completed });
+  } catch (err) {
+    // Best-effort: server pode estar offline / 401 transitório. Refresh do
+    // user no AppLayout vai re-tentar quando voltar (mostra wizard até persistir).
+    console.warn("[Onboarding] PATCH /auth/me/onboarding failed:", err);
+  }
+}
+
 /**
- * OnboardingWizard — full-screen multi-step setup (Wave 6.4b CRIAR).
+ * OnboardingWizard — full-screen multi-step setup (Wave 6.4b CRIAR; Worker RR polish).
  *
- * Triggered by AppLayout when user.summary.entry_count === 0 AND
- * localStorage[onboarding_completed] !== "true". Self-host single-tenant
- * first-run flow.
+ * Triggered by AppLayout when user.onboarding_completed === false AND
+ * summary.entry_count === 0. Self-host single-tenant first-run flow.
  *
  * Steps:
  * 1. Welcome — brand presence
@@ -45,13 +64,17 @@ interface Props {
  * 5. Done — confetti motion + CTA dashboard
  *
  * A11y: role=dialog aria-modal, focus trap, ESC closes, Enter advances.
- * Persistence: localStorage flag; auto-completes if entry_count > 0 detected.
+ * Persistence: PATCH /api/auth/me/onboarding {completed:true} on finish/skip
+ * (user_settings.onboarding_completed migration 021). Reset via Settings →
+ * "Refazer tour" (PATCH completed:false).
+ * Security: webhook token masked in DOM (snippet preview), plain copied to clipboard.
  */
 export function OnboardingWizard({ onComplete }: Props) {
   const [step, setStep] = useState<StepName>("welcome");
 
   const handleComplete = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, "true");
+    // Fire-and-forget PATCH; UI fecha imediato pra não bloquear quem só clicou pular.
+    void persistOnboardingCompletion(true);
     onComplete();
   }, [onComplete]);
 
@@ -242,32 +265,41 @@ function HookStep({ onNext, onSkip }: { onNext: () => void; onSkip: () => void }
       ? `${window.location.protocol}//${window.location.host}`
       : "http://localhost:3002";
   const webhookUrl = `${apiBase}/api/ingest`;
-  const token = user?.webhook_token ?? "<seu-token-em-/settings>";
+  const fullToken = user?.webhook_token ?? "";
+  const tokenPlaceholder = "<seu-token-em-/settings>";
 
-  const snippets: Record<HookLang, string> = {
+  // Worker RR: TWO snippet sets.
+  //   - displaySnippets: token MASKED — vai pro DOM (`<pre>`) sem expor plain.
+  //   - copySnippets: token PLAIN — vai pro clipboard onde o user precisa do
+  //     valor utilizável. Trade-off documentado: clipboard é privilégio user-level
+  //     (browser API gate), UI pública é o vetor que importa pra screenshare.
+  const buildSnippets = (tokenValue: string): Record<HookLang, string> => ({
     bash: `# Claude Code hook (~/.claude/hooks/post-task.sh)
 curl -X POST "${webhookUrl}" \\
-  -H "Authorization: Bearer ${token}" \\
+  -H "Authorization: Bearer ${tokenValue}" \\
   -H "Content-Type: application/json" \\
   -d '{"session_id":"$SESSION_ID","model":"$MODEL","input_tokens":$INPUT,"output_tokens":$OUTPUT}'`,
     python: `# Python hook
 import requests
 requests.post(
     "${webhookUrl}",
-    headers={"Authorization": "Bearer ${token}"},
+    headers={"Authorization": "Bearer ${tokenValue}"},
     json={"session_id": session_id, "model": model, "input_tokens": input, "output_tokens": output},
 )`,
     node: `// Node.js hook
 await fetch("${webhookUrl}", {
   method: "POST",
-  headers: { "Authorization": "Bearer ${token}", "Content-Type": "application/json" },
+  headers: { "Authorization": "Bearer ${tokenValue}", "Content-Type": "application/json" },
   body: JSON.stringify({ session_id, model, input_tokens, output_tokens }),
 });`,
-  };
+  });
+
+  const displaySnippets = buildSnippets(fullToken ? maskToken(fullToken) : tokenPlaceholder);
+  const copySnippets = buildSnippets(fullToken || tokenPlaceholder);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(snippets[lang]);
+      await navigator.clipboard.writeText(copySnippets[lang]);
       if (copiedTimerRef.current !== null) {
         window.clearTimeout(copiedTimerRef.current);
       }
@@ -321,16 +353,30 @@ await fetch("${webhookUrl}", {
         ))}
       </div>
 
-      {/* Snippet */}
+      {/* Token preview (masked) — só pra confirmar pro user qual token vai pro
+          clipboard. Plain nunca aparece no DOM. */}
+      {fullToken && (
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-muted-foreground">Token:</span>
+          <code className="font-mono text-foreground/80 tabular-nums">
+            {maskToken(fullToken)}
+          </code>
+          <span className="text-muted-foreground/70">
+            (preview · valor completo vai pro clipboard ao copiar)
+          </span>
+        </div>
+      )}
+
+      {/* Snippet (token mascarado no DOM, plain vai pro clipboard via handleCopy). */}
       <div className="relative bg-card border border-border rounded-xl overflow-hidden">
         <pre className="p-4 pr-14 text-xs font-mono text-foreground overflow-x-auto leading-relaxed">
-          {snippets[lang]}
+          {displaySnippets[lang]}
         </pre>
         <button
           type="button"
           onClick={handleCopy}
           className="absolute top-3 right-3 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-muted hover:bg-accent/12 transition-colors text-xs font-medium"
-          aria-label="Copiar snippet"
+          aria-label="Copiar snippet com token completo"
         >
           {copied ? (
             <>
