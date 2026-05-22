@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { linearScale, linePath, niceTicks } from "@/lib/svg-charts";
 import { formatShortDate } from "@/lib/formatters";
-import { useChartTooltip } from "./ChartTooltip";
+import { useChartTooltip, getEventPos } from "./ChartTooltip";
 
 export interface LineSeries {
   key: string;
@@ -63,9 +63,10 @@ export function SvgLineChart({
   const { show, hide, anchor } = useChartTooltip();
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
-  function handleMove(e: React.MouseEvent<SVGRectElement>) {
+  function handleMove(e: React.MouseEvent<SVGRectElement> | React.TouchEvent<SVGRectElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
-    const relX = ((e.clientX - rect.left) / rect.width) * W;
+    const { x: clientX } = getEventPos(e);
+    const relX = ((clientX - rect.left) / rect.width) * W;
     const span = (W - padL - padR) / Math.max(1, xs.length - 1);
     const idx = Math.max(0, Math.min(xs.length - 1, Math.round((relX - padL) / span)));
     setHoverIdx(idx);
@@ -93,7 +94,7 @@ export function SvgLineChart({
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
         height={H}
-        preserveAspectRatio="none"
+        preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={ariaLabel ?? `Gráfico de linha com ${series.length} série(s)`}
       >
@@ -191,6 +192,9 @@ export function SvgLineChart({
           fill="transparent"
           onMouseMove={handleMove}
           onMouseLeave={() => { setHoverIdx(null); hide(); }}
+          onTouchStart={handleMove}
+          onTouchMove={handleMove}
+          onTouchEnd={() => { setHoverIdx(null); hide(); }}
           style={{ cursor: "crosshair" }}
         />
       </svg>

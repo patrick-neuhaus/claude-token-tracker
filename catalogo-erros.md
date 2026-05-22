@@ -31,9 +31,11 @@ Doc fonte da verdade pra qualquer sessão futura. Lista AÇÕES ainda pendentes 
 
 ---
 
-## FASE A · Ações pra Patrick usar solo confortável
+## FASE A · Ações pra Patrick usar solo confortável — ✅ RESOLVIDA (2026-05-21)
 
-### A1 · Cookie de autenticação seguro
+**Todas 7 ações fechadas + fix gráficos P1/P2 do audit incluído.** Detalhes em `resolucoes-erros.md` seção "Fase A".
+
+### ~~A1 · Cookie de autenticação seguro~~ ✅
 
 **Problema:** quando tu loga, app guarda "carteirinha de identificação" (JWT) num lugar do navegador chamado localStorage. Qualquer script estranho rodando no navegador lê essa carteirinha e finge ser tu. Hoje sem risco real (zero XSS no app), mas é prática má conhecida.
 
@@ -48,7 +50,7 @@ Doc fonte da verdade pra qualquer sessão futura. Lista AÇÕES ainda pendentes 
 
 ---
 
-### A2 · Endpoint `/health` pra monitoramento
+### ~~A2 · Endpoint `/health` pra monitoramento~~ ✅
 
 **Problema:** se app cair, ninguém sabe até tu abrir aba e ver erro. Sem rota dedicada que retorna "tô vivo" + "banco respondendo".
 
@@ -63,7 +65,7 @@ Doc fonte da verdade pra qualquer sessão futura. Lista AÇÕES ainda pendentes 
 
 ---
 
-### A3 · Backup automático do banco
+### ~~A3 · Backup automático do banco~~ ✅
 
 **Problema:** banco postgres tá rodando no Docker da máquina. Se HD pifar, container corromper, ou apagar volume sem querer = todo histórico (56k entries + sessions + projects) perdido.
 
@@ -78,7 +80,7 @@ Doc fonte da verdade pra qualquer sessão futura. Lista AÇÕES ainda pendentes 
 
 ---
 
-### A4+A6 · Design System do Token Tracker (UNIFICADO)
+### ~~A4+A6 · Design System do Token Tracker (foundation)~~ ✅ (migração gradual continua)
 
 **Combinados pela observação Patrick:** não é só fix de CSP unsafe-inline + audit de componentes duplicados. É **criar Design System próprio do tracker** — tokens, variáveis CSS, componentes unificados num único lugar consumível. Estilo brandbook, alinhado com identidade `anti-ai-design-system` que tracker já herda.
 
@@ -104,7 +106,7 @@ Doc fonte da verdade pra qualquer sessão futura. Lista AÇÕES ainda pendentes 
 
 ---
 
-### A5 · Audit gráficos completo (visual + responsivo)
+### ~~A5 · Audit gráficos + fix P1/P2~~ ✅
 
 **Problema:** dados batem 100%, mas pode ter problemas visuais: tipografia, espaçamento, contraste, mobile responsiveness, tooltips ruins, legendas cortadas, eixos sem unidade. Patrick já leu eixo errado (pico 11/05 vs achou 07/05) — possível UX issue.
 
@@ -119,7 +121,7 @@ Doc fonte da verdade pra qualquer sessão futura. Lista AÇÕES ainda pendentes 
 
 ---
 
-### A7 · Polish do onboarding (primeiro login)
+### ~~A7 · Polish do onboarding~~ ✅
 
 **Problema:** user novo se cadastra, tela inicial vazia (sem entries, sem sessions). Confuso. OnboardingWizard existe mas não validado pós-fixes recentes.
 

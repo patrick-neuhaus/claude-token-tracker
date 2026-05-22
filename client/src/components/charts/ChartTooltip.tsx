@@ -7,21 +7,36 @@ export interface TooltipState {
   content: ReactNode;
 }
 
+/** Extract clientX/clientY from a Mouse or Touch event (P2 mobile fix). */
+export function getEventPos(e: React.MouseEvent | React.TouchEvent): { x: number; y: number } {
+  if ("touches" in e) {
+    const t = e.touches[0] || e.changedTouches[0];
+    if (t) return { x: t.clientX, y: t.clientY };
+    return { x: 0, y: 0 };
+  }
+  return { x: e.clientX, y: e.clientY };
+}
+
 /**
- * useChartTooltip — mouse-following tooltip for SVG charts.
+ * useChartTooltip — pointer-following tooltip for SVG charts.
  *
  * Usage:
  *   const { tooltip, show, hide, anchor } = useChartTooltip();
- *   <svg onMouseLeave={hide}>
- *     <rect onMouseMove={(e) => show(e, <div>...</div>)} />
+ *   <svg onMouseLeave={hide} onTouchEnd={hide}>
+ *     <rect
+ *       onMouseMove={(e) => show(e, <div>...</div>)}
+ *       onTouchStart={(e) => show(e, <div>...</div>)}
+ *       onTouchMove={(e) => show(e, <div>...</div>)}
+ *     />
  *   </svg>
  *   {anchor}  // renders the floating tooltip via portal
  */
 export function useChartTooltip() {
   const [state, setState] = useState<TooltipState | null>(null);
 
-  const show = useCallback((e: React.MouseEvent, content: ReactNode) => {
-    setState({ x: e.clientX, y: e.clientY, content });
+  const show = useCallback((e: React.MouseEvent | React.TouchEvent, content: ReactNode) => {
+    const { x, y } = getEventPos(e);
+    setState({ x, y, content });
   }, []);
 
   const hide = useCallback(() => setState(null), []);

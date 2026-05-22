@@ -65,7 +65,7 @@ export function SvgGaugeBar({
         </div>
       </div>
 
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" role="img" aria-label={`${label}: ${pct.toFixed(0)}% usado`}>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="xMidYMid meet" role="img" aria-label={`${label}: ${pct.toFixed(0)}% usado`}>
         {/* Track */}
         <rect x="0" y="0" width={W} height={H} fill="hsl(var(--muted))" rx={H / 2} ry={H / 2} />
         {/* Filled */}

@@ -68,10 +68,11 @@ export function SvgStackedBar({
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
         height={H}
-        preserveAspectRatio="none"
+        preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={ariaLabel ?? `Gráfico de barra empilhada com ${segments.length} segmento(s)`}
         onMouseLeave={hide}
+        onTouchEnd={hide}
       >
         <rect x={0} y={0} width={W} height={H} fill="hsl(var(--muted) / 0.3)" rx={6} ry={6} />
         {norm.map((s, i) => {
@@ -94,6 +95,32 @@ export function SvgStackedBar({
                 ry={rx}
                 style={{ cursor: "pointer" }}
                 onMouseMove={(e) =>
+                  show(
+                    e,
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-sm" style={{ background: s.color }} />
+                        <span className="font-medium">{s.label}</span>
+                      </div>
+                      <div className="font-mono tabular-nums text-foreground">{formatValue(s.value)}</div>
+                      <div className="font-mono tabular-nums text-muted-foreground">{s.pct.toFixed(1)}% do total</div>
+                    </div>
+                  )
+                }
+                onTouchStart={(e) =>
+                  show(
+                    e,
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-sm" style={{ background: s.color }} />
+                        <span className="font-medium">{s.label}</span>
+                      </div>
+                      <div className="font-mono tabular-nums text-foreground">{formatValue(s.value)}</div>
+                      <div className="font-mono tabular-nums text-muted-foreground">{s.pct.toFixed(1)}% do total</div>
+                    </div>
+                  )
+                }
+                onTouchMove={(e) =>
                   show(
                     e,
                     <div className="space-y-0.5">

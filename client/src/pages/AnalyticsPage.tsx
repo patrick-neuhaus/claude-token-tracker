@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { formatUSD, formatShortDate } from "@/lib/formatters";
 import { SkeletonGrid } from "@/components/shared/SkeletonGrid";
@@ -9,7 +10,7 @@ import { SvgBarChart } from "@/components/charts/SvgBarChart";
 import { BarChart2 } from "lucide-react";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { ContributionGraph } from "@/components/analytics/ContributionGraph";
-import { CHART_COLORS } from "@/lib/constants";
+import { CHART_COLORS, getModelColor } from "@/lib/constants";
 import type { AnalyticsData } from "@/lib/types";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -26,7 +27,29 @@ function EmptyChart({ message }: { message: string }) {
 }
 
 export function AnalyticsPage() {
-  const [dateRange, setDateRange] = useState<{ preset?: string; from?: string; to?: string }>({});
+  // P2 fix: persistir dateRange em URL searchParams pra sobreviver refresh (F5).
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const dateRange = useMemo<{ preset?: string; from?: string; to?: string }>(() => ({
+    preset: searchParams.get("preset") ?? undefined,
+    from: searchParams.get("from") ?? undefined,
+    to: searchParams.get("to") ?? undefined,
+  }), [searchParams]);
+
+  const setDateRange = useCallback((next: { preset?: string; from?: string; to?: string }) => {
+    setSearchParams((prev) => {
+      const newSp = new URLSearchParams(prev);
+      const set = (k: string, v: string | undefined) => {
+        if (v) newSp.set(k, v);
+        else newSp.delete(k);
+      };
+      set("preset", next.preset);
+      set("from", next.from);
+      set("to", next.to);
+      return newSp;
+    }, { replace: true });
+  }, [setSearchParams]);
+
   const { data, isLoading } = useAnalytics({ from: dateRange.from, to: dateRange.to });
 
   if (isLoading) {
@@ -157,10 +180,11 @@ export function AnalyticsPage() {
           <SvgAreaStack
             data={modelTrendData as Array<Record<string, string | number>>}
             xKey="week"
-            series={modelNames.map((name, i) => ({
+            series={modelNames.map((name) => ({
               key: name,
               label: name,
-              color: CHART_COLORS[i % CHART_COLORS.length],
+              // Cor por família de modelo — consistente com DailyCostChart e ModelCostBars.
+              color: getModelColor(name),
             }))}
             stacked
             height={260}
