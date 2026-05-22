@@ -41,7 +41,7 @@ export function DailyCostChart({ data }: Props) {
   }));
 
   return (
-    <div className={`${surface.section} col-span-2`}>
+    <div className={surface.section}>
       <div className={surfaceHeader}>
         <h3 className="text-sm font-medium">Custo Diário</h3>
       </div>

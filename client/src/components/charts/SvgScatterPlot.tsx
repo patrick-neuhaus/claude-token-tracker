@@ -69,10 +69,11 @@ export function SvgScatterPlot({
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
         height={H}
-        preserveAspectRatio="none"
+        preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={ariaLabel ?? `Gráfico de dispersão com ${data.length} ponto(s)${xLabel && yLabel ? ` — ${xLabel} versus ${yLabel}` : ""}`}
         onMouseLeave={hide}
+        onTouchEnd={hide}
       >
         {/* Y grid + ticks */}
         {ticksY.map((tv, i) => (
@@ -153,6 +154,22 @@ export function SvgScatterPlot({
             strokeWidth={1}
             style={{ cursor: "pointer" }}
             onMouseMove={(e) =>
+              show(
+                e,
+                <div className="font-mono tabular-nums whitespace-pre-line">
+                  {formatTooltip ? formatTooltip(p) : p.name}
+                </div>
+              )
+            }
+            onTouchStart={(e) =>
+              show(
+                e,
+                <div className="font-mono tabular-nums whitespace-pre-line">
+                  {formatTooltip ? formatTooltip(p) : p.name}
+                </div>
+              )
+            }
+            onTouchMove={(e) =>
               show(
                 e,
                 <div className="font-mono tabular-nums whitespace-pre-line">

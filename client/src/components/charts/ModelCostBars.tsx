@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { displayModelName } from "@/lib/constants";
+import { displayModelName, getModelColor, MODEL_COLORS } from "@/lib/constants";
 import { formatUSD, formatTokens } from "@/lib/formatters";
 import { useChartTooltip } from "./ChartTooltip";
 
@@ -43,14 +43,6 @@ export function ModelCostBars({ data, maxBars = 10, topN = 4 }: Props) {
 
   const max = rows.reduce((m, r) => Math.max(m, r.cost_usd), 0) || 1;
 
-  const palette = [
-    "hsl(var(--chart-1))",
-    "hsl(var(--chart-3))",
-    "hsl(var(--chart-2))",
-    "hsl(var(--chart-4))",
-    "hsl(var(--chart-5))",
-  ];
-
   const { show, hide, anchor } = useChartTooltip();
 
   if (rows.length === 0) {
@@ -69,7 +61,10 @@ export function ModelCostBars({ data, maxBars = 10, topN = 4 }: Props) {
           : displayModelName(r.model);
         const widthPct = (r.cost_usd / max) * 100;
         const sharePct = total > 0 ? (r.cost_usd / total) * 100 : 0;
-        const color = i < topN ? palette[i] : "hsl(var(--muted-foreground) / 0.5)";
+        // Cor por família de modelo (consistente com DailyCostChart). "Outros (n)" usa cor de fallback.
+        // topN além disso ainda atenua via muted pra reduzir ruído visual.
+        const familyColor = grouped ? MODEL_COLORS.outro : getModelColor(r.model);
+        const color = i < topN ? familyColor : "hsl(var(--muted-foreground) / 0.5)";
         const shareLabel = sharePct >= 0.1 ? `${sharePct.toFixed(1)}%` : `<0.1%`;
         return (
           <div

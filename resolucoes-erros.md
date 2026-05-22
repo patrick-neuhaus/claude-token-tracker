@@ -137,6 +137,81 @@ Quando uma ação do `catalogo-erros.md` for resolvida, adicionar abaixo seguind
 
 ---
 
-## Próximas entries (placeholder)
+## 2026-05-21 · Fase A · Production-ready solo
 
-_Aguardando Onda 10 = Fase A iniciar. Resoluções A1-A7 serão registradas aqui após conclusão._
+7 ações Fase A executadas em 5 workers paralelos + 2 workers de fix do audit. Commit `4e9a438` push em master.
+
+### A1 · Auth via cookie httpOnly + CSRF (Worker NN)
+
+**Problema:** JWT em localStorage = vetor XSS exfiltration.
+**Solução:** cookie-parser + csurf instalados. Login/register seta cookie signed httpOnly. CSRF token endpoint `/api/auth/csrf-token` + middleware com skip list (webhooks, login, register, forgot, reset). AuthContext sem localStorage. Bearer fallback mantido pra coletores webhooks.
+**Files:**
+- `server/src/index.ts` + `server/src/middleware/csrf.ts` (novo) + `server/src/middleware/auth.ts` + `server/src/middleware/errorHandler.ts`
+- `server/src/routes/auth.ts` (login/register/logout/csrf-token/me)
+- `client/src/lib/api.ts` (credentials:include + X-CSRF-Token)
+- `client/src/contexts/AuthContext.tsx` (sem localStorage)
+**Caveats:** `csurf` deprecated mas funcional. Migração futura pra `csrf-csrf`.
+
+### A2 · /health endpoint (Worker OO)
+
+**Problema:** sem rota dedicada que retorna estado do app + DB.
+**Solução:** `GET /health` checa DB via `SELECT 1`, mede latência, retorna `{ok, uptime_seconds, db:{status,latency_ms}, version, timestamp}`. 503 se DB falhar. Sem auth, sem rate limit.
+**Files:** `server/src/routes/health.ts` (novo) + `server/src/index.ts` (mount).
+
+### A3 · Backup pg_dump daily (Worker OO)
+
+**Problema:** banco sem backup. HD pifar = perde tudo.
+**Solução:** `scripts/backup-db.ps1` faz pg_dump via `docker exec`, comprime gzip stream-copy 80KB chunks (não estoura memória), rotaciona retenção 30 dias. Scheduled task `ClaudeTokenTrackerBackup` daily 03:30. Restore documentado em RUNBOOK.
+**Files:** `scripts/backup-db.ps1` (novo) + `RUNBOOK.md` + `uninstall.ps1`.
+**Validação:** manual run gerou 3.16 MB gz de 14.22 MB raw em `~/Documents/backups/claude-token-tracker/`.
+
+### A4+A6 · Design System foundation (Worker PP)
+
+**Problema:** ~40 inline styles + componentes duplicados + sem source of truth visual.
+**Solução:** `client/src/styles/tokens.css` com aliases semânticos apontando pras vars já existentes em `index.css` (Wave 4 brand-fit). 3 primitivos criados: Button (4 variants × 3 sizes + loading/disabled), Card (compound c/ slots), Input (label + helper + error). Doc `docs/design-system.md`. Material de `audits/` reaproveitado.
+**Files:** `client/src/styles/tokens.css` + `client/src/components/primitives/{Button,Card,Input,index}.tsx` + `docs/design-system.md` + `client/src/index.css`.
+**Caveats:** primitivos NÃO usados em pages ainda — migração gradual em ondas futuras. Permanece `unsafe-inline` em CSP até migrar inline styles dinâmicos.
+
+### A5 · Audit gráficos + fix P1/P2 (Workers QQ + SS + TT)
+
+**Audit (Worker QQ):** doc `docs/audit-graficos-2026-05-20.md`. Top issues identificados.
+
+**Fix P1 (Worker SS):**
+- **Paleta inconsistente:** ModelCostBars + AnalyticsPage Custo por Modelo trocados pra `getModelColor(model)` (família-based). Opus agora sempre roxo em todos charts. `MODEL_COLORS` em `lib/constants.ts` é fonte única.
+- **`preserveAspectRatio="none"`** → `"xMidYMid meet"` em 7 charts SVG (não deforma mobile).
+- **`col-span-2` órfão** removido de DailyCostChart.tsx:44.
+
+**Fix P2 (Worker TT):**
+- **Touch tooltip:** `getEventPos()` helper em ChartTooltip + `onTouchStart/Move/End` em SvgAreaStack/Line/Bar/Scatter/StackedBar. iPad/celular agora tem tooltip.
+- **URL state pra filtros:** DashboardPage + AnalyticsPage usam `useSearchParams`. Refresh F5 preserva period/from/to/model/source/project_id.
+
+**Files:** `client/src/components/charts/*.tsx` (7 arquivos) + `client/src/components/charts/ChartTooltip.tsx` + `client/src/pages/DashboardPage.tsx` + `client/src/pages/AnalyticsPage.tsx` + `client/src/components/dashboard/DailyCostChart.tsx`.
+
+### A7 · Onboarding polish (Worker RR)
+
+**Problema:** wizard apenas localStorage (não cross-device), token plain no DOM, sem reset, empty state SessionsPage sem CTA.
+**Solução:**
+- Migration 021: `user_settings.onboarding_completed` BOOLEAN + `onboarding_completed_at` TIMESTAMPTZ.
+- Endpoint `PATCH /api/auth/me/onboarding` persiste flag server-side (cross-device).
+- Token mascarado no DOM (`abc12345-****-xxxx`), plain só via clipboard.
+- Botão "Refazer tour" em Settings.
+- SessionsPage empty state ganhou "Ir para Configurações" CTA.
+
+**Files:** `server/migrations/021_user_settings_onboarding.sql` (novo) + `server/src/services/authService.ts` + `server/src/routes/auth.ts` + `client/src/contexts/AuthContext.tsx` + `client/src/components/layout/AppLayout.tsx` + `client/src/components/onboarding/OnboardingWizard.tsx` + `client/src/pages/SettingsPage.tsx` + `client/src/pages/SessionsPage.tsx`.
+
+### Stats Fase A
+
+- 22 arquivos criados/editados
+- 1 migration nova (021)
+- 2 commits: `a848ac3` (Ondas 0-9) + `4e9a438` (Fase A)
+- Push origin/master OK
+- Build clean (server + client)
+- Server PID 57304 porta 3002
+
+---
+
+## Template pra novas entries
+
+[mantém template anterior]
+
+

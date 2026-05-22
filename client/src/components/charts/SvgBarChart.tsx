@@ -82,10 +82,11 @@ export function SvgBarChart({
           viewBox={`0 0 ${W} ${H}`}
           width="100%"
           height={H}
-          preserveAspectRatio="none"
+          preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label={ariaLabel ?? `Gráfico de barras horizontais com ${series.length} série(s)`}
           onMouseLeave={hide}
+          onTouchEnd={hide}
         >
           {/* X grid */}
           {ticksX.map((tv, i) => (
@@ -140,6 +141,8 @@ export function SvgBarChart({
                   ry={3}
                   style={{ cursor: "pointer" }}
                   onMouseMove={(e) => show(e, <div className="font-mono tabular-nums">{tooltip}</div>)}
+                  onTouchStart={(e) => show(e, <div className="font-mono tabular-nums">{tooltip}</div>)}
+                  onTouchMove={(e) => show(e, <div className="font-mono tabular-nums">{tooltip}</div>)}
                 />
               </g>
             );
@@ -165,10 +168,11 @@ export function SvgBarChart({
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
         height={H}
-        preserveAspectRatio="none"
+        preserveAspectRatio="xMidYMid meet"
         role="img"
         aria-label={ariaLabel ?? `Gráfico de barras ${stacked ? "empilhadas" : "agrupadas"} com ${series.length} série(s)`}
         onMouseLeave={hide}
+        onTouchEnd={hide}
       >
         {ticksY.map((tv, i) => (
           <g key={i}>
@@ -219,6 +223,8 @@ export function SvgBarChart({
                       rx={2}
                       style={{ cursor: "pointer" }}
                       onMouseMove={(e) => show(e, <div className="font-mono tabular-nums">{tooltip}</div>)}
+                      onTouchStart={(e) => show(e, <div className="font-mono tabular-nums">{tooltip}</div>)}
+                      onTouchMove={(e) => show(e, <div className="font-mono tabular-nums">{tooltip}</div>)}
                     />
                   );
                 })}
@@ -246,6 +252,8 @@ export function SvgBarChart({
                     rx={2}
                     style={{ cursor: "pointer" }}
                     onMouseMove={(e) => show(e, <div className="font-mono tabular-nums">{tooltip}</div>)}
+                    onTouchStart={(e) => show(e, <div className="font-mono tabular-nums">{tooltip}</div>)}
+                    onTouchMove={(e) => show(e, <div className="font-mono tabular-nums">{tooltip}</div>)}
                   />
                 );
               })}

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useMemo } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useSummary, useCharts, type DashboardFilters } from "@/hooks/useDashboard";
 import { useInefficientSessions } from "@/hooks/useCompactions";
 import { useProjects } from "@/hooks/useProjects";
@@ -87,10 +87,44 @@ function DashboardSkeleton() {
 export function DashboardPage() {
   // Wave 7.1: resolver preset → from/to ISO no mount evita server fallback bug
   // (parsePeriod no Node UTC computava midnight errado quando cliente só mandava preset).
-  const [filters, setFilters] = useState<DashboardFilters>(() => ({
-    period: "month",
-    ...presetToRange("month"),
-  }));
+  // P2 fix: persistir filtros em URL searchParams pra sobreviver refresh (F5).
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const filters = useMemo<DashboardFilters>(() => {
+    const period = searchParams.get("period") ?? undefined;
+    const fromQs = searchParams.get("from") ?? undefined;
+    const toQs = searchParams.get("to") ?? undefined;
+    const model = searchParams.get("model") ?? undefined;
+    const source = searchParams.get("source") ?? undefined;
+    const project_id = searchParams.get("project_id") ?? undefined;
+    // Default: período "month" com range resolvido (mantém comportamento Wave 7.1)
+    if (!period && !fromQs && !toQs) {
+      return { period: "month", ...presetToRange("month") };
+    }
+    // Se URL traz só preset sem from/to (paste de URL antiga), resolve aqui também.
+    if (period && !fromQs && !toQs) {
+      return { period, ...presetToRange(period), model, source, project_id };
+    }
+    return { period, from: fromQs, to: toQs, model, source, project_id };
+  }, [searchParams]);
+
+  const setFilters = useCallback((next: DashboardFilters) => {
+    setSearchParams((prev) => {
+      const newSp = new URLSearchParams(prev);
+      const set = (k: string, v: string | undefined) => {
+        if (v) newSp.set(k, v);
+        else newSp.delete(k);
+      };
+      set("period", next.period);
+      set("from", next.from);
+      set("to", next.to);
+      set("model", next.model);
+      set("source", next.source);
+      set("project_id", next.project_id);
+      return newSp;
+    }, { replace: true });
+  }, [setSearchParams]);
+
   const { user } = useAuth();
   const planCost = Number(user?.plan_cost_usd) || 200;
   const dailyBudget = user?.daily_budget_usd ?? null;
