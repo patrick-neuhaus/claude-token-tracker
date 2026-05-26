@@ -26,4 +26,9 @@ export const webhookLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { status: "error", message: "Webhook rate limit exceeded" },
+  skip: (req) => {
+    const ip = req.ip || req.socket.remoteAddress || "";
+    // Loopback skip — collectors locais não são ameaça
+    return ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
+  },
 });
