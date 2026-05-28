@@ -40,6 +40,23 @@ export async function listEntries(userId: string, args: ListEntriesArgs) {
   };
 }
 
+export async function listDistinctValues(userId: string) {
+  const [sources, models] = await Promise.all([
+    query(
+      `SELECT DISTINCT source FROM token_entries WHERE user_id = $1 ORDER BY source`,
+      [userId],
+    ),
+    query(
+      `SELECT DISTINCT model FROM token_entries WHERE user_id = $1 ORDER BY model`,
+      [userId],
+    ),
+  ]);
+  return {
+    sources: sources.rows.map((r) => r.source as string),
+    models: models.rows.map((r) => r.model as string),
+  };
+}
+
 export async function listEntriesForExport(
   userId: string,
   filters: EntryFilterParams,

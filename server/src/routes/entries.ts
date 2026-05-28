@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { getUserId } from "../utils/routeHelpers.js";
 import {
+  listDistinctValues,
   listEntries,
   listEntriesForExport,
   type EntryFilters,
@@ -27,6 +28,11 @@ router.get("/", async (req, res) => {
     page: Math.max(1, parseInt(req.query.page as string) || 1),
     limit: 50,
   });
+  res.json(result);
+});
+
+router.get("/distinct", async (req, res) => {
+  const result = await listDistinctValues(getUserId(req));
   res.json(result);
 });
 

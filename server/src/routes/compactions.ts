@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
 import { webhookAuth } from "../middleware/webhookAuth.js";
-import { webhookLimiter } from "../middleware/rateLimit.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { getUserId } from "../utils/routeHelpers.js";
@@ -33,7 +32,6 @@ interface TrackBody {
 
 router.post(
   "/track",
-  webhookLimiter,
   webhookAuth,
   asyncHandler<unknown, unknown, TrackBody>(async (req, res) => {
     const body = (req.body ?? {}) as TrackBody;

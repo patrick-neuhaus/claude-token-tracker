@@ -19,16 +19,3 @@ export const forgotPasswordLimiter = rateLimit({
   message: { status: "error", message: "Too many password reset requests" },
 });
 
-// Webhook — 120/min per IP (collectors can send batches)
-export const webhookLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 min
-  max: 120,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { status: "error", message: "Webhook rate limit exceeded" },
-  skip: (req) => {
-    const ip = req.ip || req.socket.remoteAddress || "";
-    // Loopback skip — collectors locais não são ameaça
-    return ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
-  },
-});

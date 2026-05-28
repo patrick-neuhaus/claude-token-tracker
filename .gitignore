@@ -31,8 +31,15 @@ Thumbs.db
 # Temporary (pattern-importer)
 .tmp/
 
-# Audit outputs (skills geram aqui)
+# Audit outputs (skills geram aqui — efêmeros)
 docs/audits/
+
+# Tooling temp (codex-delegate runs, scratch)
+tools/codex-delegate/runs/
+.scratch/
+
+# Tracker autostart logs
+tracker-*.log
 
 # Python bytecode
 __pycache__/

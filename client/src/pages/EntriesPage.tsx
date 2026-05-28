@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useEntries } from "@/hooks/useEntries";
+import { useEntriesDistinct } from "@/hooks/useEntriesDistinct";
+import { displayLabel, displayModelName } from "@/lib/constants";
 import { EntriesTable } from "@/components/entries/EntriesTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +40,7 @@ export function EntriesPage() {
   const [isExporting, setIsExporting] = useState(false);
 
   const { data, isLoading } = useEntries({ page, model, source, from, to });
+  const { data: distinct } = useEntriesDistinct();
   const d = data;
 
   function clearFilters() {
@@ -67,9 +70,9 @@ export function EntriesPage() {
             onChange={(e) => { setModel(e.target.value); setPage(1); }}
           >
             <option value="">Todos</option>
-            <option value="opus">opus</option>
-            <option value="sonnet">sonnet</option>
-            <option value="haiku">haiku</option>
+            {(distinct?.models ?? []).map((m) => (
+              <option key={m} value={m}>{displayModelName(m)}</option>
+            ))}
           </NativeSelect>
         </div>
         <div className="space-y-1">
@@ -80,8 +83,9 @@ export function EntriesPage() {
             onChange={(e) => { setSource(e.target.value); setPage(1); }}
           >
             <option value="">Todas</option>
-            <option value="claude-code">claude-code</option>
-            <option value="claude.ai">claude.ai</option>
+            {(distinct?.sources ?? []).map((s) => (
+              <option key={s} value={s}>{displayLabel(s)}</option>
+            ))}
           </NativeSelect>
         </div>
         <div className="space-y-1">
