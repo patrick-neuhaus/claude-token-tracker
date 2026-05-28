@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
 import { webhookAuth } from "../middleware/webhookAuth.js";
-import { webhookLimiter } from "../middleware/rateLimit.js";
 import { insertTokenEntry } from "../services/tokenService.js";
 import { describeError } from "../utils/security.js";
 import type { WebhookRequest } from "../types/index.js";
@@ -31,7 +30,7 @@ const payloadSchema = z.object({
   cwd: z.string().max(1000).optional(),
 });
 
-router.post("/track-tokens", webhookLimiter, webhookAuth, async (req, res) => {
+router.post("/track-tokens", webhookAuth, async (req, res) => {
   const parsed = payloadSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({

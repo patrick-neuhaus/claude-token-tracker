@@ -45,7 +45,7 @@ from psycopg2.extras import RealDictCursor
 PROJECTS_DIR = os.path.expanduser("~/.claude/projects")
 DSN = os.environ.get(
     "BACKFILL_DSN",
-    "postgresql://tracker:tracker_local_2026@localhost:5432/claude_token_tracker"
+    "postgresql://tracker:tracker_local_2026@localhost:5433/claude_token_tracker"
 )
 FIRST_INTENT_MAX = 80
 

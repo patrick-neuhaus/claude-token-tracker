@@ -21,6 +21,14 @@ Doc operacional pra debugar/operar o tracker. Atualizar quando descobrir novo fa
 2. Manual: `python codex-token-collector.py --dry-run --limit 3 --profile`. Vê se ainda lê JSONLs.
 3. Force run task: `Start-ScheduledTask -TaskName "CodexTokenCollector"`.
 
+## Recovery codex collector
+
+Se collector parar de coletar:
+1. Verificar `Get-ScheduledTaskInfo -TaskName "CodexTokenCollector"` LastTaskResult
+2. Run manual: `python codex-token-collector.py --profile`
+3. Se rows faltando, backup state + reset entries afetadas (ver scripts/recovery-codex.ps1 se houver)
+4. webhookLimiter REMOVIDO (Onda 21/05) — qualquer 429 indica config mudou
+
 ## Claude hook não envia entries
 
 1. Confirmar env: `echo $env:TOKEN_TRACKER_TOKEN` deve ter UUID atual.

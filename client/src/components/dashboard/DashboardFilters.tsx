@@ -2,20 +2,16 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useProjects } from "@/hooks/useProjects";
+import { useEntriesDistinct } from "@/hooks/useEntriesDistinct";
 import type { DashboardFilters } from "@/hooks/useDashboard";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { NativeSelect } from "@/components/shared/NativeSelect";
+import { displayLabel } from "@/lib/constants";
 
 interface Props {
   filters: DashboardFilters;
   onChange: (filters: DashboardFilters) => void;
 }
-
-const SOURCE_OPTIONS = [
-  { value: "", label: "Todas as fontes" },
-  { value: "claude-code", label: "Claude Code" },
-  { value: "claude.ai", label: "claude.ai" },
-];
 
 const PERIOD_PRESETS = [
   { value: "today", label: "Hoje" },
@@ -27,7 +23,9 @@ const PERIOD_PRESETS = [
 
 export function DashboardFilters({ filters, onChange }: Props) {
   const { data: projectsData } = useProjects();
+  const { data: distinct } = useEntriesDistinct();
   const projects = projectsData || [];
+  const sources = distinct?.sources ?? [];
 
   const hasActiveFilters = !!(filters.model || filters.source || filters.project_id);
 
@@ -67,8 +65,9 @@ export function DashboardFilters({ filters, onChange }: Props) {
           onChange={(e) => onChange({ ...filters, source: e.target.value || undefined })}
           className="w-36"
         >
-          {SOURCE_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          <option value="">Todas as fontes</option>
+          {sources.map((s) => (
+            <option key={s} value={s}>{displayLabel(s)}</option>
           ))}
         </NativeSelect>
 

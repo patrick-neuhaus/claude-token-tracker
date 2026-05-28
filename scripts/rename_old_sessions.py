@@ -16,7 +16,7 @@ Flags:
   --limit N   Processa no maximo N sessions (default: ilimitado)
   --user-id   Filtra por user_id especifico (UUID)
 
-DSN: postgresql://tracker:tracker@localhost:5432/claude_token_tracker
+DSN: postgresql://tracker:tracker@localhost:5433/claude_token_tracker
      ou env var DATABASE_URL
 """
 import sys
@@ -29,7 +29,7 @@ import psycopg2.extras
 
 DSN = os.environ.get(
     "DATABASE_URL",
-    "postgresql://tracker:tracker@localhost:5432/claude_token_tracker",
+    "postgresql://tracker:tracker@localhost:5433/claude_token_tracker",
 )
 
 # Padrao funny-name: tres palavras minusculas separadas por hifen

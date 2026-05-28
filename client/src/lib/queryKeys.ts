@@ -59,6 +59,7 @@ export const qk = {
   entries: {
     all: () => ["entries"] as const,
     list: (filters: EntriesFilters) => ["entries", filters] as const,
+    distinct: () => ["entries", "distinct"] as const,
   },
   projects: {
     all: () => ["projects"] as const,
