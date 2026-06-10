@@ -9,7 +9,7 @@
  *   "claude-3-5-sonnet-20240620" -> "sonnet-3-5"
  */
 
-const CLAUDE_FAMILIES = ["opus", "sonnet", "haiku"] as const;
+const CLAUDE_FAMILIES = ["opus", "sonnet", "haiku", "fable"] as const;
 type ClaudeFamily = typeof CLAUDE_FAMILIES[number];
 
 function detectClaudeFamily(s: string): ClaudeFamily | null {
