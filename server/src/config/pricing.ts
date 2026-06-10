@@ -38,7 +38,11 @@ export const PRICING: Record<string, ModelPricing> = {
   "gpt-5.4-nano": { input: 0.2, output: 1.25, cache_read: 0.02, cache_write: 0.2 },
   "gpt-5.3-codex": { input: 1.75, output: 14.0, cache_read: 0.175, cache_write: 1.75 },
 
+  // === Fable (tier acima do Opus) — $10 / $50 (2x Opus atual) ===
+  "fable-5": { input: 10.0, output: 50.0, cache_read: 1.0, cache_write: 12.5 },
+
   // === Opus current generation (4.5+) — $5 / $25 ===
+  "opus-4-8": { input: 5.0, output: 25.0, cache_read: 0.5, cache_write: 6.25 },
   "opus-4-7": { input: 5.0, output: 25.0, cache_read: 0.5, cache_write: 6.25 },
   "opus-4-6": { input: 5.0, output: 25.0, cache_read: 0.5, cache_write: 6.25 },
   "opus-4-5": { input: 5.0, output: 25.0, cache_read: 0.5, cache_write: 6.25 },
@@ -61,6 +65,7 @@ export const PRICING: Record<string, ModelPricing> = {
 
   // === Family fallback (current generation pricing) ===
   "gpt-5": { input: 5.0, output: 30.0, cache_read: 0.5, cache_write: 5.0 },
+  fable: { input: 10.0, output: 50.0, cache_read: 1.0, cache_write: 12.5 },
   opus: { input: 5.0, output: 25.0, cache_read: 0.5, cache_write: 6.25 },
   sonnet: { input: 3.0, output: 15.0, cache_read: 0.3, cache_write: 3.75 },
   haiku: { input: 1.0, output: 5.0, cache_read: 0.1, cache_write: 1.25 },
