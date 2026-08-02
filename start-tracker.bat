@@ -42,7 +42,12 @@ echo [%date% %time%] Docker OK. >> "%LOGFILE%"
 REM Sobe PostgreSQL
 echo [Token Tracker] Subindo PostgreSQL...
 cd /d "%BASE%"
-docker compose up -d --no-recreate >> "%LOGFILE%" 2>&1
+REM ponytail: plugin 'docker compose' sumiu no update do Docker Desktop (28.4.0) - nao esta
+REM no PATH de scheduled task. Container ja existe com restart:unless-stopped, entao
+REM 'docker start' (CLI puro, sempre disponivel) basta pra subir o DB.
+REM Ceiling: NAO recria container deletado. Se removido (docker compose down), recriar 1x
+REM via terminal do Docker Desktop; depois o 'docker start' volta a funcionar sozinho.
+docker start claude-token-tracker-db >> "%LOGFILE%" 2>&1
 
 REM Aguarda PostgreSQL aceitar conexoes
 echo [Token Tracker] Aguardando PostgreSQL...
