@@ -141,18 +141,20 @@ def extract_auto_name(transcript_path, project_name=None):
                 if text:
                     # Remove quebras de linha
                     text = ' '.join(text.split())
-                    if project_name:
-                        # Formato: "project_name: first_intent_truncated_80"
-                        prefix = project_name + ': '
-                        max_intent = 80
-                        if len(text) > max_intent:
-                            text = text[:max_intent - 3].rsplit(' ', 1)[0] + '...'
-                        return prefix + text if text else None
-                    else:
-                        # Fallback: apenas a intent truncada em 80
-                        if len(text) > 80:
-                            text = text[:77].rsplit(' ', 1)[0] + '...'
-                        return text if text else None
+                    # Intent truncada em 80 (legibilidade)
+                    if len(text) > 80:
+                        text = text[:77].rsplit(' ', 1)[0] + '...'
+                    # Formato: "project_name: first_intent"
+                    name = (project_name + ': ' + text) if project_name else text
+                    # TETO DE 120 NO NOME COMPOSTO. O servidor valida
+                    # auto_name z.string().max(120) (server/src/routes/webhook.ts)
+                    # e o Zod rejeita a REQUISICAO INTEIRA quando estoura — o
+                    # token se perde junto com o nome. Truncar so a intent nao
+                    # bastava: project_name longo estourava o total.
+                    # Mesma regra de scripts/codex-token-collector.py.
+                    if len(name) > 120:
+                        name = name[:117].rsplit(' ', 1)[0] + '...'
+                    return name or None
     except Exception as e:
         if DEBUG:
             sys.stderr.write(f"[claude_code_hook] extract_auto_name failed: {e!r}\n")
@@ -345,6 +347,117 @@ def extract_usage_entries(transcript_path, skip_lines=0):
     return entries, line_count
 
 
+SUBAGENT_DIR_NAME = 'subagents'
+
+
+def find_subagent_files(subagents_dir):
+    """agent-*.jsonl sob subagents_dir, varredura RECURSIVA.
+
+    Duas profundidades existem em disco:
+      <uuid>/subagents/agent-X.jsonl
+      <uuid>/subagents/workflows/wf_YYY/agent-Z.jsonl
+    journal.jsonl fica de fora de proposito: nao tem linha de usage nenhuma.
+    """
+    found = []
+    if not subagents_dir or not os.path.isdir(subagents_dir):
+        return found
+    for dirpath, _dirnames, filenames in os.walk(subagents_dir):
+        for fname in filenames:
+            if fname.startswith('agent-') and fname.endswith('.jsonl'):
+                found.append(os.path.join(dirpath, fname))
+    found.sort()
+    return found
+
+
+def find_subagents_dir(transcript_path, session_id):
+    """Pasta irma do transcript: <dirname>/<session_id>/subagents/.
+
+    Fallback pro nome do arquivo do transcript quando o session_id do hook
+    nao bate com ele (resume/fork). None se nenhuma das duas existir.
+    """
+    if not transcript_path:
+        return None
+    base = os.path.dirname(os.path.abspath(transcript_path))
+    stem = os.path.basename(transcript_path)
+    if stem.endswith('.jsonl'):
+        stem = stem[:-len('.jsonl')]
+
+    candidates = []
+    if session_id:
+        candidates.append(session_id)
+    if stem and stem not in candidates:
+        candidates.append(stem)
+
+    for name in candidates:
+        path = os.path.join(base, name, SUBAGENT_DIR_NAME)
+        if os.path.isdir(path):
+            return path
+    return None
+
+
+def derive_subagent_session_id(subagent_file):
+    """'<uuid-do-pai>:<nome-do-arquivo-sem-extensao>'. None se nao resolver.
+
+    O componente do caminho imediatamente antes de 'subagents' e o UUID da
+    sessao pai. O id vem do CAMINHO, nao do conteudo: o JSONL do subagente
+    carrega o sessionId DO PAI (com isSidechain: true), entao o conteudo nao
+    distingue um subagente do outro.
+    """
+    if not subagent_file:
+        return None
+    parts = os.path.normpath(os.path.abspath(subagent_file)).split(os.sep)
+    if SUBAGENT_DIR_NAME not in parts:
+        return None
+    idx = parts.index(SUBAGENT_DIR_NAME)
+    if idx == 0:
+        return None
+    parent_uuid = parts[idx - 1]
+    stem = os.path.basename(subagent_file)
+    if stem.endswith('.jsonl'):
+        stem = stem[:-len('.jsonl')]
+    if not parent_uuid or not stem:
+        return None
+    return parent_uuid + ':' + stem
+
+
+def build_payload(entry, session_id, project=None, cwd=None, auto_name=None,
+                  session_name=None, fallback_ts=None):
+    """Monta o payload do webhook a partir de uma entry de usage.
+
+    Prioriza o timestamp da linha do transcript (estavel entre re-runs).
+    Fallback datetime.now() com warn no stderr — so deve disparar se o
+    transcript estiver malformado.
+    """
+    entry_ts = entry.get('timestamp')
+    if not entry_ts:
+        sys.stderr.write(
+            "[claude_code_hook] WARN: entry sem timestamp no transcript, "
+            "usando datetime.now() (pode quebrar dedup se state file zerar)\n"
+        )
+        entry_ts = fallback_ts or datetime.now(timezone.utc).isoformat()
+
+    payload = {
+        'timestamp': entry_ts,
+        'source': 'claude-code',
+        'model': entry.get('model') or 'unknown',
+        'input_tokens': entry['input_tokens'],
+        'output_tokens': entry['output_tokens'],
+        'cache_read_tokens': entry.get('cache_read_tokens', 0),
+        'cache_write_tokens': entry.get('cache_write_tokens', 0),
+        'session_id': session_id,
+        'conversation_url': ''
+    }
+    if auto_name:
+        payload['auto_name'] = auto_name
+    if session_name:
+        payload['session_name'] = session_name
+    if project:
+        payload['project'] = project
+    if cwd:
+        payload['cwd'] = cwd
+    return payload
+
+
 def send_to_webhook(data):
     """Envia dados para o servidor local via webhook."""
     try:
@@ -406,39 +519,60 @@ def main():
     fallback_now = datetime.now(timezone.utc).isoformat()
 
     for entry in entries:
-        # Prioriza timestamp da linha do transcript (estavel entre re-runs).
-        # Fallback datetime.now() com warn no stderr - so deve disparar se
-        # transcript estiver malformado.
-        entry_ts = entry.get('timestamp')
-        if not entry_ts:
-            sys.stderr.write(
-                "[claude_code_hook] WARN: entry sem timestamp no transcript, "
-                "usando datetime.now() (pode quebrar dedup se state file zerar)\n"
-            )
-            entry_ts = fallback_now
-
-        payload = {
-            'timestamp': entry_ts,
-            'source': 'claude-code',
-            'model': entry.get('model') or 'unknown',
-            'input_tokens': entry['input_tokens'],
-            'output_tokens': entry['output_tokens'],
-            'cache_read_tokens': entry.get('cache_read_tokens', 0),
-            'cache_write_tokens': entry.get('cache_write_tokens', 0),
-            'session_id': session_id,
-            'conversation_url': ''
-        }
-        if auto_name:
-            payload['auto_name'] = auto_name
-        if session_name:
-            payload['session_name'] = session_name
-        if project_name:
-            payload['project'] = project_name
-        if cwd:
-            payload['cwd'] = cwd
-        send_to_webhook(payload)
+        send_to_webhook(build_payload(
+            entry,
+            session_id,
+            project=project_name,
+            cwd=cwd,
+            auto_name=auto_name,
+            session_name=session_name,
+            fallback_ts=fallback_now,
+        ))
 
     save_last_sent_line(session_id, total_lines)
+
+    # SUBAGENTES: gravam em <dirname>/<session_id>/subagents/**/agent-*.jsonl,
+    # arquivos que o transcript principal nunca menciona. Sem este bloco toda
+    # chamada de API feita por subagente fica invisivel pro tracker.
+    #
+    # Estado incremental: mesma .last_sent_line.json, chaveada pelo id
+    # derivado ('<uuid-do-pai>:<arquivo>'). O formato nao muda e as chaves
+    # antigas continuam validas.
+    #
+    # Roda DEPOIS do save da sessao principal e com try/except por arquivo:
+    # falha em um subagente nunca pode derrubar a coleta do transcript
+    # principal, que ja esta gravada.
+    try:
+        subagent_files = find_subagent_files(
+            find_subagents_dir(transcript_path, session_id)
+        )
+    except Exception as e:
+        if DEBUG:
+            sys.stderr.write(f"[claude_code_hook] subagent scan failed: {e!r}\n")
+        subagent_files = []
+
+    for sub_path in subagent_files:
+        try:
+            sub_session_id = derive_subagent_session_id(sub_path)
+            if not sub_session_id:
+                continue
+            sub_skip = get_last_sent_line(sub_session_id)
+            sub_entries, sub_lines = extract_usage_entries(sub_path, sub_skip)
+            for entry in sub_entries:
+                # project/cwd sao herdados do pai (mesmo cwd do hook_input).
+                send_to_webhook(build_payload(
+                    entry,
+                    sub_session_id,
+                    project=project_name,
+                    cwd=cwd,
+                    fallback_ts=fallback_now,
+                ))
+            save_last_sent_line(sub_session_id, sub_lines)
+        except Exception as e:
+            if DEBUG:
+                sys.stderr.write(
+                    f"[claude_code_hook] subagent failed ({sub_path}): {e!r}\n"
+                )
 
 
 if __name__ == '__main__':
