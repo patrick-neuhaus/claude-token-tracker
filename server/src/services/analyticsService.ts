@@ -286,6 +286,13 @@ export async function getToolP95(userId: string, days: number) {
   return result.rows;
 }
 
+// Teto de linhas de getSessionTime. A query devolve uma linha por sessão e
+// cada subagente agora é uma sessão, então sem teto a resposta cresce sem
+// limite. A tela renderiza TODAS as linhas (SessionTimePage não pagina) e
+// soma os StatCards no cliente; 1000 cobre com folga o range padrão de 7
+// dias, e a ordem por custo desc garante que o corte cai na cauda barata.
+const SESSION_TIME_ROW_LIMIT = 1000;
+
 // Tempo útil por sessão com gap configurável
 export async function getSessionTime(
   userId: string,
@@ -349,7 +356,8 @@ export async function getSessionTime(
        MAX(ts) AS fim
      FROM calc
      GROUP BY session_id, sessao
-     ORDER BY custo_usd DESC`,
+     ORDER BY custo_usd DESC
+     LIMIT ${SESSION_TIME_ROW_LIMIT}`,
     [userId, startTs, endTs, gapMinutes]
   );
 

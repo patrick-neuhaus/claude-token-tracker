@@ -1,5 +1,18 @@
 import { query } from "../config/database.js";
 
+// Teto da lista de sessões de um projeto (getProjectDetail). Cada subagente
+// agora é uma sessão, então a lista pode passar de milhares. É lista de
+// leitura — ProjectDetailPage renderiza tudo — e 200 sessões mais recentes já
+// é mais do que se rola. Os totais da tela vêm do statsResult, que segue sem
+// teto: o LIMIT não distorce número nenhum.
+const PROJECT_SESSION_LIST_LIMIT = 200;
+
+// Teto do picker de sessões sem projeto (AddSessionDialog). Sessão de
+// subagente já chega com project herdado do pai e por isso sai desta lista,
+// mas o conjunto sem projeto cresce mesmo assim. 200 mais recentes cobrem
+// qualquer escolha real.
+const UNASSIGNED_SESSION_LIMIT = 200;
+
 export async function getProjects(userId: string) {
   const result = await query(
     `SELECT p.id, p.name, p.description, p.created_at, p.updated_at,
@@ -58,7 +71,8 @@ export async function getProjectDetail(userId: string, projectId: string, from?:
               s.total_cost_usd::float, s.total_input, s.total_output, s.entry_count
        FROM sessions s
        WHERE ${sessionWhere}
-       ORDER BY s.last_seen DESC`,
+       ORDER BY s.last_seen DESC
+       LIMIT ${PROJECT_SESSION_LIST_LIMIT}`,
       sessionParams
     ),
     query(
@@ -177,7 +191,8 @@ export async function getUnassignedSessions(userId: string) {
     `SELECT id, session_id, custom_name, source, last_seen, total_cost_usd::float, entry_count
      FROM sessions
      WHERE user_id = $1 AND project_id IS NULL
-     ORDER BY last_seen DESC`,
+     ORDER BY last_seen DESC
+     LIMIT ${UNASSIGNED_SESSION_LIMIT}`,
     [userId]
   );
   return result.rows;
