@@ -39,15 +39,22 @@ if errorlevel 1 (
 )
 echo [%date% %time%] Docker OK. >> "%LOGFILE%"
 
-REM Sobe PostgreSQL
-echo [Token Tracker] Subindo PostgreSQL...
+REM Banco: container e porta 127.0.0.1:5433 do host, a porta que o servidor usa.
+REM 10/10/2026: aqui havia um 'docker start' disparado no instante em que o Docker
+REM respondia. Em 09/10 ele caiu 150 ms depois de o Docker Desktop religar a porta
+REM 5433 do container, que o proprio Docker sobe pela restart policy unless-stopped.
+REM O aprovador de portas ocupou a 5433, o encaminhamento falhou e nao voltou:
+REM container saudavel, porta fechada no host, dia inteiro sem gravar.
+REM Agora o tracker-watchdog.py --ensure-db espera o Docker religar as portas, so da
+REM 'docker start' em container parado, confere a porta NO HOST e, fechada, faz
+REM 'docker restart'. Ceiling mantido: NAO recria container deletado; se removido,
+REM recriar 1x com 'docker compose up -d' nesta pasta, num terminal comum.
+echo [Token Tracker] Conferindo PostgreSQL e a porta 5433...
 cd /d "%BASE%"
-REM ponytail: plugin 'docker compose' sumiu no update do Docker Desktop (28.4.0) - nao esta
-REM no PATH de scheduled task. Container ja existe com restart:unless-stopped, entao
-REM 'docker start' (CLI puro, sempre disponivel) basta pra subir o DB.
-REM Ceiling: NAO recria container deletado. Se removido (docker compose down), recriar 1x
-REM via terminal do Docker Desktop; depois o 'docker start' volta a funcionar sozinho.
-docker start claude-token-tracker-db >> "%LOGFILE%" 2>&1
+set "PYEXE=python"
+if exist "C:\Python313\python.exe" set "PYEXE=C:\Python313\python.exe"
+"%PYEXE%" "%BASE%\tracker-watchdog.py" --ensure-db
+if errorlevel 1 echo [%date% %time%] WARN: porta 5433 fechada no host; o servidor sobe e o watchdog insiste. >> "%LOGFILE%"
 
 REM Aguarda PostgreSQL aceitar conexoes
 echo [Token Tracker] Aguardando PostgreSQL...

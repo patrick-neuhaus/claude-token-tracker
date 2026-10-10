@@ -17,6 +17,7 @@ dist/
 # Data / state
 .last_sent_line.json
 token_log.jsonl
+.watchdog-db-state.json
 
 # Security
 *.pem
