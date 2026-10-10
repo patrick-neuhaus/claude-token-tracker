@@ -10,6 +10,31 @@ Doc operacional pra debugar/operar o tracker. Atualizar quando descobrir novo fa
 4. Manual start: `wscript.exe start-server-detached.vbs`. Bypass do bat.
 5. Manual node: `node server/dist/index.js`. Vê erro direto no terminal.
 
+## Porta 5433 fechada com o container saudável
+
+Sintoma (09/10/2026): `/health` 503, servidor com `ECONNREFUSED 127.0.0.1:5433`, container
+`healthy` no `docker ps`, mas `Test-NetConnection 127.0.0.1 -Port 5433` falha. Dia inteiro sem
+linha gravada; o hook guarda as entradas em `scripts/token_log.jsonl` com `_error`.
+
+Causa medida: no boot, o Docker Desktop religa a porta do container que ele mesmo sobe pela
+restart policy. O antigo `docker start` do `start-tracker.bat`, disparado no instante em que o
+Docker respondia, pediu aprovação de porta 150 ms depois; o aprovador ocupou a 5433 e o
+encaminhamento falhou sem nova tentativa. Linha que prova: `[W] opening a port forward ...
+127.0.0.1:5433 ... bind: Only one usage of each socket address` em
+`%LOCALAPPDATA%\Docker\log\host\com.docker.backend.exe.log*` (depois do boot, em `monitor.log`).
+
+Conserto (10/10/2026):
+- `start-tracker.bat` chama `tracker-watchdog.py --ensure-db`: espera o Docker religar as portas,
+  só dá `docker start` em container parado, confere a porta no host e, fechada, `docker restart`.
+- O watchdog de 3 min refaz a porta sozinho quando ela fica fechada em dois ticks seguidos com o
+  Docker no ar: `docker restart` (rodando) ou `docker start` (parado), no máximo 3 por hora.
+  Nunca recria nem remove container ou volume. Registro: linhas `watchdog:` em
+  `tracker-autostart.log`.
+- Casos: `python scripts/test_tracker_watchdog.py` (16).
+
+Manual: `docker restart claude-token-tracker-db` refaz o encaminhamento. Entradas perdidas no
+período: `python scripts/replay_token_log.py --since <AAAA-MM-DD> --errors-only`.
+
 ## Codex collector parou de coletar
 
 1. `Get-ScheduledTaskInfo -TaskName "CodexTokenCollector"`. Olhar `LastTaskResult`:
