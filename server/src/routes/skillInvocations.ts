@@ -6,7 +6,7 @@ import { getUserId, getDateRange } from "../utils/routeHelpers.js";
 import {
   recordInvocation,
   getStats,
-  type SkillDecision,
+  isSkillDecision,
 } from "../services/skillInvocationsService.js";
 import type { WebhookRequest } from "../types/index.js";
 
@@ -39,10 +39,10 @@ router.post(
         .json({ status: "error", message: "skill_name is required" });
       return;
     }
-    if (decision !== "allow" && decision !== "deny") {
+    if (!isSkillDecision(decision)) {
       res.status(400).json({
         status: "error",
-        message: "decision must be 'allow' or 'deny'",
+        message: "decision must be 'allow', 'deny' or 'ask'",
       });
       return;
     }
@@ -57,7 +57,7 @@ router.post(
     const result = await recordInvocation({
       user_id: webhookReq.webhookUser!.userId,
       skill_name: skill_name.trim(),
-      decision: decision as SkillDecision,
+      decision,
       source: typeof source === "string" ? source : undefined,
       session_id: typeof session_id === "string" ? session_id : undefined,
       project_id: typeof project_id === "string" ? project_id : undefined,

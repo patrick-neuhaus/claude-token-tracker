@@ -12,10 +12,11 @@ interface Props {
 const SERIES: AreaSeries[] = [
   { key: "allow", label: "Allow", color: "hsl(var(--chart-2))" },
   { key: "deny", label: "Deny", color: "hsl(var(--chart-5))" },
+  { key: "ask", label: "Ask", color: "hsl(var(--chart-3))" },
 ];
 
 /**
- * SkillUsageTimeSeries — stacked area (allow + deny) por dia.
+ * SkillUsageTimeSeries — stacked area (allow + deny + ask) por dia.
  * Reescrito com SvgAreaStack (zero deps) — substituiu recharts.
  */
 export function SkillUsageTimeSeries({ data, height = 240 }: Props) {
@@ -32,7 +33,7 @@ export function SkillUsageTimeSeries({ data, height = 240 }: Props) {
 
   const sorted = [...data]
     .sort((a, b) => a.date.localeCompare(b.date))
-    .map((r) => ({ date: r.date, allow: r.allow, deny: r.deny })) as Array<
+    .map((r) => ({ date: r.date, allow: r.allow, deny: r.deny, ask: r.ask ?? 0 })) as Array<
     Record<string, string | number>
   >;
 

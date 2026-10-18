@@ -22,8 +22,9 @@ function buildParams(filters: DashboardFilters): string {
   return params.toString();
 }
 
-export function useSummary(filters: DashboardFilters) {
+export function useSummary(filters: DashboardFilters, enabled = true) {
   return useQuery<DashboardSummary>({
+    enabled,
     queryKey: ["dashboard", "summary", filters],
     queryFn: () => api.get(`/dashboard/summary?${buildParams(filters)}`),
   });

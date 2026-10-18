@@ -4,9 +4,11 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from "react";
-import { api, ApiError, resetCsrfToken } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { api, ApiError, getAuthSessionVersion, onUnauthorized, resetAuthSession } from "@/lib/api";
 
 interface User {
   id: string;
@@ -29,6 +31,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  sessionExpired: boolean;
   login: (email: string, password: string) => Promise<{ status: string; message?: string }>;
   register: (email: string, password: string) => Promise<{ status: string; message?: string }>;
   logout: () => Promise<void>;
@@ -47,8 +50,8 @@ const AuthContext = createContext<AuthContextType | null>(null);
  *   Client guarda user em state, depois chama refreshUser pra hidratar completo.
  * - logout(): POST /api/auth/logout. Server clearCookie. Client reset state +
  *   reset CSRF token cache (próxima sessão pega novo).
- * - 401 de qualquer endpoint: api.ts joga ApiError(401); AppLayout/router
- *   redireciona /login na próxima render.
+ * - 401 protegido: api.ts avisa este provider, que limpa user e caches;
+ *   AppLayout/router redireciona /login na próxima render.
  *
  * Mudança vs Wave anterior:
  * - JWT NÃO está mais em localStorage. Cookie httpOnly NÃO é acessível por JS.
@@ -59,19 +62,35 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const authenticated = useRef(false);
+  const queryClient = useQueryClient();
 
   const refreshUser = useCallback(async () => {
+    const version = getAuthSessionVersion();
     try {
       const data = await api.get<User>("/auth/me");
+      if (version !== getAuthSessionVersion()) return;
+      authenticated.current = true;
       setUser(data);
     } catch {
+      if (version !== getAuthSessionVersion()) return;
+      authenticated.current = false;
+      queryClient.clear();
       setUser(null);
     }
-  }, []);
+  }, [queryClient]);
 
   useEffect(() => {
+    const unsubscribe = onUnauthorized(() => {
+      if (authenticated.current) setSessionExpired(true);
+      authenticated.current = false;
+      queryClient.clear();
+      setUser(null);
+    });
     refreshUser().finally(() => setLoading(false));
-  }, [refreshUser]);
+    return unsubscribe;
+  }, [refreshUser, queryClient]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -82,7 +101,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res.status === "active") {
         // Cookie já foi setado pelo server. Refresh CSRF cache pro próximo
         // POST (csurf gera novo secret na sessão recém-autenticada).
-        resetCsrfToken();
+        resetAuthSession();
+        queryClient.clear();
+        setSessionExpired(false);
         await refreshUser();
         return { status: "active" };
       }
@@ -102,7 +123,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         { email, password },
       );
       if (res.status === "active") {
-        resetCsrfToken();
+        resetAuthSession();
+        queryClient.clear();
+        setSessionExpired(false);
         await refreshUser();
         return { status: "active" };
       }
@@ -116,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    authenticated.current = false;
     try {
       // Server clearCookie. Se POST falhar (network/CSRF), ainda assim limpa
       // state local — usuário não fica "preso" em UI logada com cookie expirado.
@@ -123,13 +147,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Silent — best-effort. Cookie pode permanecer até expirar (7d).
     } finally {
-      resetCsrfToken();
+      resetAuthSession();
+      authenticated.current = false;
+      queryClient.clear();
+      setSessionExpired(false);
       setUser(null);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, sessionExpired, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

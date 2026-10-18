@@ -6,11 +6,7 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { env } from "./config/env.js";
-import {
-  csrfProtection,
-  CSRF_SKIP_PREFIXES,
-  CSRF_SKIP_AUTH_PATHS,
-} from "./middleware/csrf.js";
+import { csrfGuard } from "./middleware/csrf.js";
 import authRouter from "./routes/auth.js";
 import webhookRouter from "./routes/webhook.js";
 import dashboardRouter from "./routes/dashboard.js";
@@ -102,15 +98,7 @@ app.use(express.json({ limit: "16kb" }));
 // forgot/reset/csrf-token). csurf internamente skipa GET/HEAD/OPTIONS, então
 // requests safe passam sem validação mas o cookie _csrf é gerado se faltar.
 // Detalhes do contrato + config em middleware/csrf.ts.
-app.use((req, res, next) => {
-  if (CSRF_SKIP_PREFIXES.some((p) => req.path.startsWith(p))) {
-    return next();
-  }
-  if (CSRF_SKIP_AUTH_PATHS.has(req.path)) {
-    return next();
-  }
-  return csrfProtection(req, res, next);
-});
+app.use(csrfGuard);
 
 // BUG-03 fix: schema migrations now live in server/migrations/008-009.sql,
 // applied via `npm run migrate`. Boot no longer ALTERs schema.

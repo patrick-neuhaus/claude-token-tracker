@@ -24,10 +24,29 @@ export class ApiError extends Error {
  */
 let csrfToken: string | null = null;
 let csrfTokenPromise: Promise<string | null> | null = null;
+let csrfVersion = 0;
+let authSessionVersion = 0;
+const unauthorizedListeners = new Set<() => void>();
+
+export function onUnauthorized(listener: () => void) {
+  unauthorizedListeners.add(listener);
+  return () => { unauthorizedListeners.delete(listener); };
+}
+
+export function getAuthSessionVersion() {
+  return authSessionVersion;
+}
+
+/** Descarta respostas/CSRF pendentes da sessão anterior ao entrar ou sair. */
+export function resetAuthSession() {
+  authSessionVersion += 1;
+  resetCsrfToken();
+}
 
 async function fetchCsrfToken(): Promise<string | null> {
   // Inflight dedup: múltiplas chamadas concorrentes compartilham a mesma promise.
   if (csrfTokenPromise) return csrfTokenPromise;
+  const version = csrfVersion;
 
   csrfTokenPromise = (async () => {
     try {
@@ -36,17 +55,18 @@ async function fetchCsrfToken(): Promise<string | null> {
         credentials: "include",
       });
       if (!res.ok) {
-        csrfToken = null;
+        if (version === csrfVersion) csrfToken = null;
         return null;
       }
       const body = (await res.json()) as { csrfToken?: string };
+      if (version !== csrfVersion) return null;
       csrfToken = body.csrfToken ?? null;
       return csrfToken;
     } catch {
-      csrfToken = null;
+      if (version === csrfVersion) csrfToken = null;
       return null;
     } finally {
-      csrfTokenPromise = null;
+      if (version === csrfVersion) csrfTokenPromise = null;
     }
   })();
 
@@ -55,13 +75,25 @@ async function fetchCsrfToken(): Promise<string | null> {
 
 /** Force re-fetch (after 403 csrf_invalid or logout). */
 export function resetCsrfToken() {
+  csrfVersion += 1;
   csrfToken = null;
   csrfTokenPromise = null;
 }
 
 const STATE_CHANGING = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+const PUBLIC_AUTH_PATHS = new Set([
+  "/auth/login", "/auth/register", "/auth/forgot", "/auth/reset", "/auth/logout",
+  "/auth/csrf-token",
+]);
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const sessionVersion = authSessionVersion;
+  const protectedRequest = !PUBLIC_AUTH_PATHS.has(path.split("?")[0]);
+  const assertCurrentSession = () => {
+    if (protectedRequest && sessionVersion !== authSessionVersion) {
+      throw new ApiError(401, "Session changed", "session_changed");
+    }
+  };
   const method = (options.method ?? "GET").toUpperCase();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -80,6 +112,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     }
   }
 
+  assertCurrentSession();
   // SECURITY (Fase A A1): credentials:include exigido pra browser enviar
   // cookie httpOnly `auth_token` (signed) + `_csrf` (csurf secret) automático.
   const res = await fetch(`${BASE}${path}`, {
@@ -88,15 +121,23 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     credentials: "include",
   });
 
+  assertCurrentSession();
   if (res.status === 401) {
-    // Auth cookie missing/invalid. Nada a limpar local — cookie é httpOnly,
-    // server-side limpou no logout/expiry. Caller decide redirect via context.
-    throw new ApiError(401, "Unauthorized");
+    // Aba restaurada pode manter user em memória depois de perder o cookie.
+    // Invalida uma única vez: outros requests dessa sessão serão descartados.
+    if (protectedRequest) {
+      resetAuthSession();
+      unauthorizedListeners.forEach((listener) => listener());
+      throw new ApiError(401, "Unauthorized");
+    }
+    const body = await res.json().catch(() => ({}));
+    throw new ApiError(401, body.message || "Unauthorized", body.code);
   }
 
   if (res.status === 403) {
     // CSRF token mismatch → invalida cache + propaga pro caller decidir retry.
     const body = await res.json().catch(() => ({}));
+    assertCurrentSession();
     if (body?.code === "csrf_invalid") {
       resetCsrfToken();
       throw new ApiError(403, body.message || "CSRF invalid", "csrf_invalid");
@@ -106,10 +147,13 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ message: "Request failed" }));
+    assertCurrentSession();
     throw new ApiError(res.status, body.message || "Request failed", body.code);
   }
 
-  return res.json();
+  const data = await res.json();
+  assertCurrentSession();
+  return data;
 }
 
 export const api = {

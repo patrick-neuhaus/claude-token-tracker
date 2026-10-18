@@ -156,6 +156,10 @@ Charts (Recharts): label = data BRT via formatter. Backend agrega em BRT (R12). 
 
 ## Empty / error states
 
+### Bug conhecido: sessão ausente em aba restaurada (18/09/2026)
+
+Um 401 em endpoint protegido deve invalidar o AuthProvider e o cache de consultas, permitindo que o guard encaminhe ao login. Credenciais incorretas no formulário de login continuam sendo erro do formulário. Queries do layout dependentes do usuário aguardam o bootstrap de autenticação. O `/health` saudável não valida a sessão do navegador. Evidência e regressão: `docs/historico/2026-09-18-session-recovery.md` na raiz do projeto.
+
 Audit B3 reportou:
 - DashboardPage mostra onboarding quando filtro retorna zero (F16). Fix: distinguir `entry_count_global === 0` (sem webhook) vs `entry_count_filtered === 0` (filtro vazio).
 - AnalyticsPage / AchievementsPage não tratam `isError` (P2). Fix: ErrorState component padrão.
