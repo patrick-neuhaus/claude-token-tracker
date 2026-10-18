@@ -1,7 +1,12 @@
 import { query } from "../config/database.js";
 import { isFresh } from "../utils/ttlCache.js";
 
-export type SkillDecision = "allow" | "deny";
+export type SkillDecision = "allow" | "deny" | "ask";
+
+// O gate pode pedir confirmação; registrar "ask" preserva a decisão sem conceder permissão.
+export function isSkillDecision(value: unknown): value is SkillDecision {
+  return value === "allow" || value === "deny" || value === "ask";
+}
 
 export interface RecordInvocationInput {
   user_id: string;
@@ -35,6 +40,7 @@ export interface DailyCountRow {
   count: number;
   allow: number;
   deny: number;
+  ask: number;
 }
 
 export interface SkillStats {
@@ -72,8 +78,8 @@ export async function recordInvocation(
 ): Promise<RecordInvocationResult> {
   const skillName = input.skill_name?.trim();
   if (!skillName) throw new Error("skill_name is required");
-  if (input.decision !== "allow" && input.decision !== "deny") {
-    throw new Error("decision must be 'allow' or 'deny'");
+  if (!isSkillDecision(input.decision)) {
+    throw new Error("decision must be 'allow', 'deny' or 'ask'");
   }
 
   const source = input.source?.trim() || "claude-code";
@@ -109,7 +115,7 @@ export async function recordInvocation(
 /**
  * Aggregate stats for the UsagePage. Three buckets in parallel:
  *  - topSkills: skill_name → count (desc), top 20
- *  - dailyCount: date (São Paulo) → count + allow + deny breakdown
+ *  - dailyCount: date (São Paulo) → count + allow + deny + ask breakdown
  *  - deprecatedCount: invocations of any skill currently marked deprecated
  *
  * If from/to omitted, falls back to "all time" — Postgres still uses the index.
@@ -137,12 +143,13 @@ export async function getStats(input: SkillStatsInput): Promise<SkillStats> {
        LIMIT 20`,
       baseParams
     ),
-    query<{ date: string; count: string; allow: string; deny: string }>(
+    query<{ date: string; count: string; allow: string; deny: string; ask: string }>(
       `SELECT
          to_char((timestamp AT TIME ZONE 'America/Sao_Paulo')::date, 'YYYY-MM-DD') AS date,
          COUNT(*)::bigint AS count,
          COUNT(*) FILTER (WHERE decision = 'allow')::bigint AS allow,
-         COUNT(*) FILTER (WHERE decision = 'deny')::bigint AS deny
+         COUNT(*) FILTER (WHERE decision = 'deny')::bigint AS deny,
+         COUNT(*) FILTER (WHERE decision = 'ask')::bigint AS ask
        FROM skill_invocations
        WHERE user_id = $1 AND timestamp >= $2 AND timestamp <= $3 ${projectFilter}
        GROUP BY date
@@ -169,6 +176,7 @@ export async function getStats(input: SkillStatsInput): Promise<SkillStats> {
       count: Number(r.count),
       allow: Number(r.allow),
       deny: Number(r.deny),
+      ask: Number(r.ask),
     })),
     deprecatedCount: Number(deprecatedRes.rows[0]?.count ?? 0),
   };

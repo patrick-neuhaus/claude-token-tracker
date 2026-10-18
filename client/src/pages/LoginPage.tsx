@@ -25,7 +25,7 @@ type AuthMode = "login" | "register" | "forgot" | "reset" | "confirm";
  * still applies (Wave 6.1 MOCK_USER bypass routes /dashboard before this page).
  */
 export function LoginPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, sessionExpired } = useAuth();
   const { mode: themeMode, toggle: toggleTheme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const tokenFromUrl = searchParams.get("token");
@@ -107,6 +107,11 @@ export function LoginPage() {
       {/* Form panel */}
       <main className="flex flex-1 items-center justify-center px-6 py-10 bg-background">
         <div className="w-full max-w-md">
+          {sessionExpired && mode === "login" && (
+            <p role="status" className="mb-6 rounded-lg border border-border bg-muted p-4 text-sm text-foreground">
+              Sua sessão expirou. Entre novamente para carregar seus dados.
+            </p>
+          )}
           {mode === "login" && (
             <LoginForm
               onSwitch={() => setMode("register")}

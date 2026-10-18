@@ -95,6 +95,12 @@ Restore: `gunzip -c arquivo.sql.gz | docker exec -i claude-token-tracker-db psql
 
 `GET http://localhost:3002/health` retorna JSON `{ ok, uptime_seconds, db: { status, latency_ms }, version, timestamp }`. Sem auth, sem rate limit. HTTP 200 quando DB ok, 503 quando DB inacessível. Usar em uptime monitors e probes externos.
 
+## Dashboard com erro e servidor saudável
+
+Se `/health` retorna 200, confira o status dos pedidos `/api/dashboard/*` no navegador. HTTP 401 indica sessão ausente/inválida; exige entrar novamente. Reiniciar Docker não restaura o cookie de login. HTTP 5xx ou falha de conexão exigem consultar os logs do servidor.
+
+Em 18/09/2026, uma aba restaurada mantinha o usuário em memória após perder a credencial: a API respondia `401 No token provided`, mas o painel exibia "Erro ao carregar dados". O frontend passa a invalidar a sessão diante de 401 protegido, limpar o cache e encaminhar ao login. Registro e validação: `docs/historico/2026-09-18-session-recovery.md`.
+
 ## Reset completo
 
 ```powershell

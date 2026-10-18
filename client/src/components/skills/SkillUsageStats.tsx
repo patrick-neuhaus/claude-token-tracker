@@ -17,11 +17,14 @@ export function SkillUsageStats({ data }: Props) {
 
   let totalAllow = 0;
   let totalDeny = 0;
+  let totalAsk = 0;
+  let totalCount = 0;
   for (const day of data.dailyCount ?? []) {
     totalAllow += day.allow;
     totalDeny += day.deny;
+    totalAsk += day.ask ?? 0;
+    totalCount += day.count;
   }
-  const totalCount = totalAllow + totalDeny;
   const allowRate = totalCount > 0 ? (totalAllow / totalCount) * 100 : 0;
 
   return (
@@ -58,7 +61,7 @@ export function SkillUsageStats({ data }: Props) {
         hint={
           totalCount > 0 ? (
             <span className="text-xs text-muted-foreground">
-              {formatNumber(totalAllow)} allow / {formatNumber(totalDeny)} deny
+              {formatNumber(totalAllow)} allow / {formatNumber(totalDeny)} deny / {formatNumber(totalAsk)} ask
             </span>
           ) : undefined
         }

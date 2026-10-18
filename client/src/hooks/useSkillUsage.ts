@@ -12,6 +12,7 @@ export interface DailyCount {
   count: number;
   allow: number;
   deny: number;
+  ask: number;
 }
 
 export interface SkillUsageStats {

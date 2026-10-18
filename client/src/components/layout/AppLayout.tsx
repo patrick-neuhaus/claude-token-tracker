@@ -17,7 +17,7 @@ export function AppLayout() {
   // migration 021). Survives cross-device + powers "Refazer tour" reset em Settings.
   // Wizard dispara quando flag = false AND ainda não há entries (evita re-mostrar
   // depois que o user já viu dados rolarem).
-  const { data: summary } = useSummary({ period: "month" });
+  const { data: summary } = useSummary({ period: "month" }, !loading && !!user);
   const showOnboarding =
     !!user &&
     !user.onboarding_completed &&
